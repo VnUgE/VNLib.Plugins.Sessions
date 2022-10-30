@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Plugins.Sessions.Cache.Client</name>
+    </assembly>
+    <members>
+        <member name="T:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException">
+            <summary>
+            Raised when a request message is too large to send to 
+            the server and the server may close the connection.
+            </summary>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.String,System.Exception)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Plugins.Sessions.Cache.Client.SessionClient">
+            <summary>
+            A client that allows access to sessions located on external servers
+            </summary>
+        </member>
+        <member name="P:VNLib.Plugins.Sessions.Cache.Client.SessionClient.GetSessionId">
+            <summary>
+            A callback that produces a session-id from the connection (or a new id if needed)
+            </summary>
+        </member>
+        <member name="P:VNLib.Plugins.Sessions.Cache.Client.SessionClient.NewSessionId">
+            <summary>
+            A callback that produces a new session-id for the connection (and updates the client if necessary)
+            </summary>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.#ctor(System.Int32,System.Int32,System.Int32,VNLib.Utils.Logging.ILogProvider,VNLib.Utils.Memory.PrivateHeap)">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Plugins.Sessions.Cache.Client.SessionClient"/>
+            </summary>
+            <param name="maxMessageSize">The maxium message size (in bytes) the client will allow receiving (maximum data size for sessions)</param>
+            <param name="recvBufferSize">The size (in bytes) of the client message receive buffer</param>
+            <param name="maxCacheItems">The maximum number of sessions to keep in memory</param>
+            <param name="log">A <see cref="T:VNLib.Utils.Logging.ILogProvider"/> to write log events to</param>
+            <param name="heap">The <see cref="T:VNLib.Utils.Memory.PrivateHeap"/> to allocate buffers from</param>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.GetSessionAsync(VNLib.Net.Http.HttpEvent,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.CacheClear">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.CacheHardClear">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.OnConnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.OnError(VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionClient.OnDisconnected">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

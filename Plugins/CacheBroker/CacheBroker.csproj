@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="liveplugin\**" />
+    <EmbeddedResource Remove="liveplugin\**" />
+    <None Remove="liveplugin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ErrorProne.NET.Structs" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="RestSharp" Version="108.0.2" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <!--Enable dynamic loading-->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
+    <RootNamespace>VNLib.Plugins.Cache.Broker</RootNamespace>
+    <Authors>Vaughn Nugent</Authors>
+    <Version>1.0.0.1</Version>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\VNLib\Essentials\VNLib.Plugins.Essentials.csproj" />
+    <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
+    <ProjectReference Include="..\..\..\PluginBase\VNLib.Plugins.PluginBase.csproj" />
+    <ProjectReference Include="..\..\..\VNLib.Net.Rest.Client\VNLib.Net.Rest.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CacheBroker.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Plugins.Sessions.Cache.Client</name>
+    </assembly>
+    <members>
+        <member name="T:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient">
+            <summary>
+            A client that allows access to sessions located on external servers
+            </summary>
+        </member>
+        <member name="P:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.GetSessionId">
+            <summary>
+            A callback that produces a session-id from the connection (or a new id if needed)
+            </summary>
+        </member>
+        <member name="P:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.NewSessionId">
+            <summary>
+            A callback that produces a new session-id for the connection (and updates the client if necessary)
+            </summary>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.#ctor(System.Int32,System.Int32,VNLib.Utils.Logging.ILogProvider,VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient"/>
+            </summary>
+            <param name="maxDataSize">The maxium size (in bytes) of blob items to stored on the remote server</param>
+            <param name="maxCacheItems">The maximum number of sessions to keep in memory</param>
+            <param name="log">A <see cref="T:VNLib.Utils.Logging.ILogProvider"/> to write log events to</param>
+            <param name="heap">The <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> to allocate buffers from</param>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.GetSessionAsync(VNLib.Net.Http.HttpEvent,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.CacheClear">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.CacheHardClear">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.OnConnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.OnError(VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.SessionCacheClient.OnDisconnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.ListServersAsync(System.Uri,System.Security.Cryptography.RSA,System.Threading.CancellationToken)">
+            <summary>
+            Contacts the cache broker to get a list of active servers to connect to
+            </summary>
+            <param name="brokerAddress">The broker server to connec to</param>
+            <param name="signature">The signature algorithm used to sign messages to the broker</param>
+            <param name="cancellationToken"></param>
+            <returns>The list of active servers</returns>
+            <exception cref="T:System.Security.SecurityException"></exception>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.ConnectAsync(VNLib.Net.Messaging.FBM.Client.FBMClient,System.String,System.Security.Cryptography.RSA,System.String,System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Configures a connection to the remote cache server at the specified location
+            with proper authentication.
+            </summary>
+            <param name="client"></param>
+            <param name="serverUri">The server's address</param>
+            <param name="sigAlg">The algorithm used to signed the message</param>
+            <param name="challenge">A challenge to send to the server</param>
+            <param name="replicaId">A token used to identify the current server's event queue on the remote server</param>
+            <param name="token">A token to cancel the connection operation</param>
+            <param name="useTls">Enables the secure websocket protocol</param>
+            <returns>A Task that completes when the connection has been established</returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.ConnectAsync(VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase,System.String,System.Security.Cryptography.RSA,System.String,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Configures a connection to the remote cache server at the specified location
+            with proper authentication.
+            </summary>
+            <param name="client"></param>
+            <param name="serverUri">The server's address</param>
+            <param name="sigAlg">The algorithm used to signed the message</param>
+            <param name="challenge">A challenge to send to the server</param>
+            <param name="token">A token to cancel the connection operation</param>
+            <param name="useTls">Enables the secure websocket protocol</param>
+            <returns>A task that completes when the connection has been established</returns>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.SetSignatureAlg(VNLib.Net.Messaging.FBM.Client.FBMClient,System.ReadOnlySpan{System.Char}@,System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Sets the signing algorithm used to sign the connection request to the remote cache server.
+            </summary>
+            <param name="client"></param>
+            <param name="encryptedPem">The encrypted PEM file for the connection algorithm</param>
+            <param name="password">The password to decrypt the encrypted PEM</param>
+            <returns>A chaining client</returns>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.DiscoverNodesAsync(VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase,System.Threading.CancellationToken)">
+            <summary>
+            Discovers cache nodes in the broker configured for the current client.
+            </summary>
+            <param name="client"></param>
+            <param name="token">A token to cancel the discovery</param>
+            <returns>A task the resolves the list of active servers on the broker server</returns>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.DiscoverNodesAsync(VNLib.Net.Messaging.FBM.Client.FBMClient,System.Threading.CancellationToken)">
+            <summary>
+            Discovers cache nodes in the broker configured for the current client.
+            </summary>
+            <param name="client"></param>
+            <param name="token">A token to cancel the discovery </param>
+            <returns>A task the resolves the list of active servers on the broker server</returns>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.ConnectAndWaitForExitAsync(VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase,VNLib.Plugins.Sessions.Cache.Client.ActiveServer,System.Threading.CancellationToken)">
+            <summary>
+            Connects the client to a remote cache server 
+            </summary>
+            <param name="client"></param>
+            <param name="server">The server to connect to</param>
+            <param name="token">A token to cancel the connection and/or wait operation</param>
+            <returns>A task that resolves when cancelled or when the connection is lost to the server</returns>
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.ConnectAndWaitForExitAsync(VNLib.Net.Messaging.FBM.Client.FBMClient,VNLib.Plugins.Sessions.Cache.Client.ActiveServer,System.Threading.CancellationToken)">
+            <summary>
+            Connects the client to a remote cache server 
+            </summary>
+            <param name="client"></param>
+            <param name="server">The server to connect to</param>
+            <param name="token">A token to cancel the connection and/or wait operation</param>
+            <returns>A task that resolves when cancelled or when the connection is lost to the server</returns>
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.CacheHelpers.SelectRandom(System.Collections.Generic.ICollection{VNLib.Plugins.Sessions.Cache.Client.ActiveServer})">
+            <summary>
+            Selects a random server from a collection of active servers
+            </summary>
+            <param name="servers"></param>
+            <returns>A server selected at random</returns>
+        </member>
+        <member name="T:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException">
+            <summary>
+            Raised when a request message is too large to send to 
+            the server and the server may close the connection.
+            </summary>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.String,System.Exception)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Sessions.Cache.Client.MessageTooLargeException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

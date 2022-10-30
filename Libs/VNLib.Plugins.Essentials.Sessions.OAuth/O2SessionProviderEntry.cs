@@ -1,0 +1,117 @@
+﻿
+using System.Text.Json;
+
+using VNLib.Net.Http;
+using VNLib.Utils.Logging;
+using VNLib.Utils.Extensions;
+using VNLib.Plugins.Essentials.Oauth;
+using VNLib.Plugins.Essentials.Sessions.OAuth;
+using VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints;
+using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.Loading.Sql;
+using VNLib.Plugins.Extensions.Loading.Events;
+using VNLib.Plugins.Extensions.Loading.Routing;
+using VNLib.Plugins.Extensions.Loading.Configuration;
+
+namespace VNLib.Plugins.Essentials.Sessions.Oauth
+{
+    public sealed class O2SessionProviderEntry : IRuntimeSessionProvider
+    {
+        const string VNCACHE_CONFIG_KEY = "vncache";
+        const string OAUTH2_CONFIG_KEY = "oauth2";
+
+        private OAuth2SessionProvider? _sessions;
+
+        bool IRuntimeSessionProvider.CanProcess(IHttpEvent entity)
+        {
+            //If authorization header is set try to process as oauth2 session
+            return entity.Server.Headers.HeaderSet(System.Net.HttpRequestHeader.Authorization);
+        }
+
+        ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        {
+            return _sessions!.GetSessionAsync(entity, cancellationToken);
+        }
+        
+
+        void IRuntimeSessionProvider.Load(PluginBase plugin, ILogProvider localized)
+        {
+            //Try get vncache config element
+            IReadOnlyDictionary<string, JsonElement> cacheConfig = plugin.GetConfig(VNCACHE_CONFIG_KEY);
+            
+            IReadOnlyDictionary<string, JsonElement> oauth2Config = plugin.GetConfig(OAUTH2_CONFIG_KEY);
+
+            string tokenEpPath = oauth2Config["token_path"].GetString() ?? throw new KeyNotFoundException($"Missing required 'token_path' in '{OAUTH2_CONFIG_KEY}' config");
+
+            //TODO fix with method that will wait until cache is actually loaded
+            Lazy<ITokenManager> lazyTokenMan = new(() => _sessions!, false);
+
+            //Init auth endpoint
+            AccessTokenEndpoint authEp = new(tokenEpPath, plugin, lazyTokenMan);
+
+            //route auth endpoint
+            plugin.Route(authEp);
+            
+            //Route revocation endpoint
+            plugin.Route<RevocationEndpoint>();
+
+            //Run
+            _ = WokerDoWorkAsync(plugin, localized, cacheConfig, oauth2Config);
+        }
+
+        /*
+         * Starts and monitors the VNCache connection
+         */
+
+        private async Task WokerDoWorkAsync(PluginBase plugin, ILogProvider localized, IReadOnlyDictionary<string, JsonElement> cacheConfig, IReadOnlyDictionary<string, JsonElement> oauth2Config)
+        {
+            //Init cache client
+            using VnCacheClient cache = new(plugin.IsDebug() ? plugin.Log : null, Utils.Memory.Memory.Shared);
+            
+            try
+            {
+                int cacheLimit = oauth2Config["cache_size"].GetInt32();
+                int maxTokensPerApp = oauth2Config["max_tokens_per_app"].GetInt32();
+                int sessionIdSize = (int)oauth2Config["access_token_size"].GetUInt32();
+                TimeSpan tokenValidFor = oauth2Config["token_valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
+                TimeSpan cleanupInterval = oauth2Config["gc_interval_sec"].GetTimeSpan(TimeParseType.Seconds);
+                string sessionIdPrefix = oauth2Config["cache_prefix"].GetString() ?? throw new KeyNotFoundException($"Missing required key 'cache_prefix' in '{OAUTH2_CONFIG_KEY}' config");
+
+                //init the id provider
+                OAuth2SessionIdProvider idProv = new(sessionIdPrefix, maxTokensPerApp, sessionIdSize, tokenValidFor);
+
+                //Try loading config
+                await cache.LoadConfigAsync(plugin, cacheConfig);
+
+                //Init session provider now that client is loaded
+                _sessions = new(cache.Resource!, cacheLimit, idProv, plugin.GetContextOptions());
+
+                //Schedule cleanup interval with the plugin scheduler
+                plugin.ScheduleInterval(_sessions, cleanupInterval);
+
+
+                localized.Information("Session provider loaded");
+
+                //Run and wait for exit
+                await cache.RunAsync(localized, plugin.UnloadToken);
+
+            }
+            catch (OperationCanceledException)
+            {}
+            catch (KeyNotFoundException e)
+            {
+                localized.Error("Missing required configuration variable for VnCache client: {0}", e.Message);
+            }
+            catch (Exception ex)
+            {
+                localized.Error(ex, "Cache client error occured in session provider");
+            }
+            finally
+            {
+                _sessions = null;
+            }
+
+            localized.Information("Cache client exited");
+        }
+    }
+}

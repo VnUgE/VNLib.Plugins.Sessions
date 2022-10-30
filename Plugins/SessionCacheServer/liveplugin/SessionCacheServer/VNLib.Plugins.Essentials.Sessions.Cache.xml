@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Plugins.Essentials.Sessions.Cache</name>
+    </assembly>
+    <members>
+        <member name="T:VNLib.Plugins.Essentials.Sessions.Cache.ChangeEvent">
+            <summary>
+            An event object that is passed when change events occur
+            </summary>
+        </member>
+        <member name="T:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore">
+            <summary>
+            A <see cref="T:VNLib.Net.Messaging.FBM.Server.FBMListener"/> that caches, persists, and serves data to clients
+            </summary>
+        </member>
+        <member name="P:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.Log">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.EventQueue">
+            <summary>
+            A queue that stores update and delete events
+            </summary>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.#ctor(System.IO.DirectoryInfo,System.Int32,VNLib.Utils.Logging.ILogProvider,System.Int32,VNLib.Utils.Memory.IUnmangedHeap,System.Boolean)">
+            <summary>
+            Initialzies a new <see cref="T:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore"/>
+            </summary>
+            <param name="dir">The <see cref="T:System.IO.DirectoryInfo"/> to store blob files to</param>
+            <param name="cacheMax"></param>
+            <param name="log"></param>
+            <param name="sendBufferSize"></param>
+            <param name="heap"></param>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.ProcessAsync(VNLib.Net.Messaging.FBM.Server.FBMContext,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.DeleteItemAsync(System.String)">
+            <summary>
+            Asynchronously deletes a previously stored item
+            </summary>
+            <param name="id">The id of the object to delete</param>
+            <returns>A task that completes when the item has been deleted</returns>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.AddOrUpdateBlobAsync``1(System.String,System.String,VNLib.Plugins.Essentials.Sessions.Cache.GetBodyDataCallback{``0},``0)">
+            <summary>
+            Asynchronously adds or updates an object in the store and optionally update's its id
+            </summary>
+            <param name="objectId">The current (or old) id of the object</param>
+            <param name="alternateId">An optional id to update the blob to</param>
+            <param name="bodyData">A callback that returns the data for the blob</param>
+            <param name="state">The state parameter to pass to the data callback</param>
+            <returns></returns>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.Dispose(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Plugins.Essentials.Sessions.Cache.SessionStore.Dispose">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

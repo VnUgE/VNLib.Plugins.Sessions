@@ -1,0 +1,1615 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Net.Http</name>
+    </assembly>
+    <members>
+        <member name="T:VNLib.Net.FileUpload">
+            <summary>
+            Represents an file that was received as an entity body, either using Multipart/FormData or as the entity body itself
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.FileUpload.ContentType">
+            <summary>
+            Content type of uploaded file
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.FileUpload.FileName">
+            <summary>
+            Name of file uploaded
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.FileUpload.FileData">
+            <summary>
+            The file data captured on upload
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.FileUpload.FromString(System.ReadOnlySpan{System.Char},System.Text.Encoding,System.String,VNLib.Net.ContentType)">
+            <summary>
+            Allocates a new binary buffer, encodes, and copies the specified data to a new <see cref="T:VNLib.Net.FileUpload"/>
+            structure of the specified content type
+            </summary>
+            <param name="data">The string data to copy</param>
+            <param name="dataEncoding">The encoding instance to encode the string data from</param>
+            <param name="filename">The name of the file</param>
+            <param name="ct">The content type of the file data</param>
+            <returns>The <see cref="T:VNLib.Net.FileUpload"/> container</returns>
+        </member>
+        <member name="M:VNLib.Net.FileUpload.Free">
+            <summary>
+            Releases any memory the current instance holds if it owns the handles
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.AlternateProtocolBase">
+            <summary>
+            A base class for all non-http protocol handlers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.AlternateProtocolBase.CancelSource">
+            <summary>
+            A cancelation source that allows for canceling running tasks, that is linked 
+            to the server that called <see cref="M:VNLib.Net.Http.AlternateProtocolBase.RunAsync(System.IO.Stream)"/>.
+            </summary>
+            <remarks>
+            This property is only available while the <see cref="M:VNLib.Net.Http.AlternateProtocolBase.RunAsync(System.IO.Stream)"/> 
+            method is executing
+            </remarks>
+        </member>
+        <member name="M:VNLib.Net.Http.AlternateProtocolBase.VNLib#Net#Http#IAlternateProtocol#RunAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.AlternateProtocolBase.IsSecure">
+            <summary>
+            Is the current socket connected using transport security
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.AlternateProtocolBase.IsCancellationRequested">
+            <summary>
+            Determines if the instance is pending cancelation 
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.AlternateProtocolBase.CancelAll">
+            <summary>
+            Cancels all pending operations. This session will be unusable after this function is called
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.AlternateProtocolBase.RunAsync(System.IO.Stream)">
+            <summary>
+            Called when the protocol swtich handshake has completed and the transport is 
+            available for the new protocol
+            </summary>
+            <param name="transport">The transport stream</param>
+            <returns>A task that represents the active use of the transport, and when complete all operations are unwound</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.ConnectionInfo">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.RequestUri">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Path">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.UserAgent">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Headers">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.CrossOrigin">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.IsWebSocketRequest">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.ContentType">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Method">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.ProtocolVersion">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.IsSecure">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.SecurityProtocol">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Origin">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Referer">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Range">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.LocalEndpoint">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.RemoteEndpoint">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Encoding">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.RequestCookies">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.Accept">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.ConnectionInfo.TransportSecurity">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.ConnectionInfo.Accepts(VNLib.Net.ContentType)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.ConnectionInfo.Accepts(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.ConnectionInfo.AcceptsAny">
+            <summary>
+            Determines if the connection accepts any content type
+            </summary>
+            <returns>true if the connection accepts any content typ, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.ConnectionInfo.SetCookie(System.String,System.String,System.String,System.String,System.TimeSpan,VNLib.Net.Http.CookieSameSite,System.Boolean,System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.COMPRESSION_DISABLED_MSK">
+            <summary>
+            When set as a response flag, disables response compression for 
+            the current request/response flow
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.Request">
+            <summary>
+            The reusable http request container
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.Response">
+            <summary>
+            The reusable response controler
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.ParentServer">
+            <summary>
+            The http server that this context is bound to
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.ContextFlags">
+            <summary>
+            A collection of flags that can be used to control the way the context 
+            responds to client requests
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.Core.HttpContext.ResponseData">
+            <summary>
+            The data stream to send to the client request when closing
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpContext.Encoding">
+            <summary>
+            The default encoding type to use for encoding http data
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpContext.ServerConfig">
+            <summary>
+            Gets a referrence to the configuration of the server that is processing 
+            the current requests
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.WriteResponseInternalAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            If implementing application set a response entity body, it is written to the output stream
+            </summary>
+            <param name="sendBufferSize">The size of the buffer to use when copying data to the stream</param>
+            <param name="token">A token to cancel the operation</param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.InitializeContext(VNLib.Net.Http.ITransportContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.BeginRequest">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.WriteResponseAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.ReleaseContext">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContext.EndRequest">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.IConnectionContext">
+            <summary>
+            A request-response stream oriented connection state
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.IConnectionContext.InitializeContext(VNLib.Net.Http.ITransportContext)">
+            <summary>
+            Initializes the context to work with the specified 
+            transport context
+            </summary>
+            <param name="tranpsort">A referrence to the transport context to use</param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.IConnectionContext.BeginRequest">
+            <summary>
+            Signals the context that it should prepare to process a new request 
+            for the current transport
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.IConnectionContext.WriteResponseAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Sends any pending data associated with the request to the
+            connection that begun the request
+            </summary>
+            <param name="bufferSize">The size of the buffer used to buffer data to the transport</param>
+            <param name="cancellationToken">A token to cancel the operation</param>
+            <returns>A Task that completes when the response has completed</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.IConnectionContext.EndRequest">
+            <summary>
+            Signals to the context that it will release any request specific
+            resources
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.IConnectionContext.ReleaseContext">
+            <summary>
+            Signals that the context will no-longer be attached to an active transport
+            and should cleanup connection associated resources
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.Http11ParseExtensions.Http1ParseRequestLine(VNLib.Net.Http.Core.HttpRequest,VNLib.Net.Http.Core.Http11ParseExtensions.Http1ParseState@,VNLib.Net.Http.Core.TransportReader@,System.Span{System.Char}@)">
+            <summary>
+            Reads the first line from the transport stream using the specified buffer
+            and parses the HTTP request line components: Method, resource, Http Version
+            </summary>
+            <param name="Request"></param>
+            <param name="reader">The reader to read lines from the transport</param>
+            <param name="parseState">The HTTP1 parsing state</param>
+            <param name="lineBuf">The buffer to use when parsing the request data</param>
+            <returns>0 if the request line was successfully parsed, a status code if the request could not be processed</returns>
+            <exception cref="T:System.UriFormatException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.Http11ParseExtensions.Http1ParseHeaders(VNLib.Net.Http.Core.HttpRequest,VNLib.Net.Http.Core.Http11ParseExtensions.Http1ParseState@,VNLib.Net.Http.Core.TransportReader@,VNLib.Net.Http.HttpConfig@,System.Span{System.Char}@)">
+            <summary>
+            Reads headers from the transport using the supplied character buffer, and updates the current request
+            </summary>
+            <param name="Request"></param>
+            <param name="parseState">The HTTP1 parsing state</param>
+            <param name="Config">The current server <see cref="T:VNLib.Net.Http.HttpConfig"/></param>
+            <param name="reader">The <see cref="T:VNLib.Utils.IO.VnStreamReader"/> to read lines from the transport</param>
+            <param name="lineBuf">The buffer read data from the transport with</param>
+            <returns>0 if the request line was successfully parsed, a status code if the request could not be processed</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.Http11ParseExtensions.Http1PrepareEntityBody(VNLib.Net.Http.Core.HttpRequest,VNLib.Net.Http.Core.Http11ParseExtensions.Http1ParseState@,VNLib.Net.Http.Core.TransportReader@,VNLib.Net.Http.HttpConfig@)">
+            <summary>
+            Prepares the entity body for the current HTTP1 request
+            </summary>
+            <param name="Request"></param>
+            <param name="Config">The current server <see cref="T:VNLib.Net.Http.HttpConfig"/></param>
+            <param name="parseState">The HTTP1 parsing state</param>
+            <param name="reader">The <see cref="T:VNLib.Utils.IO.VnStreamReader"/> to read lines from the transport</param>
+            <returns>0 if the request line was successfully parsed, a status code if the request could not be processed</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.HttpInputStream">
+            <summary>
+            Specialized stream to allow reading a request entity body with a fixed content length.
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpInputStream.Prepare(System.Int64,VNLib.Utils.IO.ISlindingWindowBuffer{System.Byte})">
+            <summary>
+            Creates a new input stream object configured to allow reading of the specified content length
+            bytes from the stream and consumes the initial buffer to read data from on initial read calls
+            </summary>
+            <param name="contentLength">The number of bytes to allow being read from the transport or initial buffer</param>
+            <param name="initial">Entity body data captured on initial read</param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpInputStream.DiscardRemainingAsync(VNLib.Utils.Memory.IUnmangedHeap,System.Int32)">
+            <summary>
+            Asynchronously discards all remaining data in the stream 
+            </summary>
+            <param name="heap">The heap to alloc buffers from</param>
+            <param name="maxBufferSize">The maxium size of the buffer to allocate</param>
+            <returns>A task that represents the discard operations</returns>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpRequest.HasEntityBody">
+            <summary>
+            A value indicating whether the connection contained a request entity body.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpRequest.InputStream">
+            <summary>
+            A transport stream wrapper that is positioned for reading
+            the entity body from the input stream
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpRequest.Expect">
+            <summary>
+            A value indicating if the client's request had an Expect-100-Continue header
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.HttpRequestBody">
+            <summary>
+            Represents a higher-level request entity body (query arguments, request body etc)
+            that has been parsed and captured
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestBody.Release">
+            <summary>
+            Releases all resources used by the current instance
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestExtensions.GetCompressionSupport(VNLib.Net.Http.Core.HttpRequest)">
+            <summary>
+            Gets the <see cref="T:VNLib.Net.Http.Core.HttpRequestExtensions.CompressionType"/> that the connection accepts
+            in a default order, or none if not enabled
+            </summary>
+            <param name="request"></param>
+            <returns>A <see cref="T:VNLib.Net.Http.Core.HttpRequestExtensions.CompressionType"/> with a value the connection support</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestExtensions.IsCrossOrigin(VNLib.Net.Http.Core.HttpRequest)">
+            <summary>
+            Tests the connection's origin header against the location URL by authority. 
+            An origin matches if its scheme, host, and port match
+            </summary>
+            <returns>true if the origin header was set and does not match the current locations origin</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestExtensions.IsWebSocketRequest(VNLib.Net.Http.Core.HttpRequest)">
+            <summary>
+            Is the current connection a websocket upgrade request handshake
+            </summary>
+            <returns>true if the connection is a websocket upgrade request, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestExtensions.Initialize(VNLib.Net.Http.Core.HttpRequest,VNLib.Net.Http.ITransportContext,VNLib.Net.Http.HttpVersion)">
+            <summary>
+            Initializes the <see cref="T:VNLib.Net.Http.Core.HttpRequest"/> for an incomming connection
+            </summary>
+            <param name="server"></param>
+            <param name="ctx">The <see cref="!:TransportEventContext"/> to attach the request to</param>
+            <param name="defaultHttpVersion">The default http version</param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpRequestExtensions.InitRequestBodyAsync(VNLib.Net.Http.Core.HttpRequest,System.Int32,System.Text.Encoding)">
+            <summary>
+            Initializes the <see cref="F:VNLib.Net.Http.Core.HttpRequest.RequestBody"/> for the current request
+            </summary>
+            <param name="Request"></param>
+            <param name="maxBufferSize">The maxium buffer size allowed while parsing reqeust body data</param>
+            <param name="encoding">The request data encoding for url encoded or form data bodies</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.OverflowException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.ChunkDataAccumulator">
+            <summary>
+            A specialized <see cref="T:VNLib.Utils.IO.IDataAccumulator`1"/> for buffering data 
+            in Http/1.1 chunks
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.ChunkDataAccumulator.RemainingSize">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.ChunkDataAccumulator.Remaining">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.ChunkDataAccumulator.Accumulated">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.ChunkDataAccumulator.AccumulatedSize">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.TryBufferChunk(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Attempts to buffer as much data as possible from the specified data
+            </summary>
+            <param name="data">The data to copy</param>
+            <returns>The number of bytes that were buffered</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.Advance(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.Prepare(System.Int32)">
+            <summary>
+            Allocates the internal buffer and intializes the accumulator
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.Release">
+            <summary>
+            Releases all held resources and resets state
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.Reset">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.FlushAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>
+            Writes the buffered data as a single chunk to the stream asynchronously. The internal
+            state is reset if writing compleded successfully
+            </summary>
+            <param name="output">The stream to write data to</param>
+            <param name="cancellation">A token to cancel the operation</param>
+            <returns>A value task that resolves when the data has been written to the stream</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.ChunkDataAccumulator.Flush(System.IO.Stream)">
+            <summary>
+            Writes the buffered data as a single chunk to the stream. The internal
+            state is reset if writing compleded successfully
+            </summary>
+            <param name="output">The stream to write data to</param>
+            <returns>A value task that resolves when the data has been written to the stream</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.HttpResponse.ChunkedStream">
+            <summary>
+            Writes chunked HTTP message bodies to an underlying streamwriter 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpResponse.StatusCode">
+            <summary>
+            Sets the status code of the response
+            </summary>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.HttpResponse.Headers">
+            <summary>
+            Response header collection
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.AddCookie(VNLib.Net.Http.Core.HttpCookie)">
+            <summary>
+            Adds a new http-cookie to the collection
+            </summary>
+            <param name="cookie">Cookie to add</param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.SendEarly100ContinueAsync">
+            <summary>
+            Allows sending an early 100-Continue status message to the client
+            </summary>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.FlushHeaders">
+            <summary>
+            Sends the status message and all available headers to the client. 
+            Headers set after method returns will be sent when output stream is requested or scope exits
+            </summary>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.GetStream(System.Int64)">
+            <summary>
+            Gets a stream for writing data of a specified length directly to the client
+            </summary>
+            <param name="ContentLength"></param>
+            <returns>A <see cref="T:System.IO.Stream"/> configured for writing data to client</returns>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.GetStream">
+            <summary>
+            Sets up the client for chuncked encoding and gets a stream that allows for chuncks to be sent. User must call dispose on stream when done writing data
+            </summary>
+            <returns><see cref="T:System.IO.Stream"/> supporting chunked encoding</returns>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpResponse.CloseAsync">
+            <summary>
+            Finalzies the response to a client by sending all available headers if 
+            they have not been sent yet
+            </summary>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.HeaderDataAccumulator">
+            <summary>
+            Specialized data accumulator for compiling response headers
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HeaderDataAccumulator.Flush(System.Text.Encoding,System.IO.Stream)">
+            <summary>
+            Encodes the buffered data and writes it to the stream,
+            attemts to avoid further allocation where possible
+            </summary>
+            <param name="enc"></param>
+            <param name="baseStream"></param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HeaderDataAccumulator.Compile">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HeaderDataAccumulator.Compile(VNLib.Utils.Memory.ForwardOnlyWriter{System.Char}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HeaderDataAccumulator.Compile(System.Span{System.Char}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HeaderDataAccumulator.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.HttpContextExtensions">
+            <summary>
+            Provides extended funcionality of an <see cref="T:VNLib.Net.Http.Core.HttpContext"/>
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContextExtensions.Respond(VNLib.Net.Http.Core.HttpContext,System.Net.HttpStatusCode)">
+            <summary>
+            Responds to a connection with the given status code
+            </summary>
+            <param name="ctx"></param>
+            <param name="code">The status code to send</param>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContextExtensions.Redirect301(VNLib.Net.Http.Core.HttpContext,System.Uri)">
+            <summary>
+            Begins a 301 redirection by sending status code and message heaaders to client.
+            </summary>
+            <param name="ctx"></param>
+            <param name="location">Location to direct client to, sets the "Location" header</param>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContextExtensions.SetNoCache(VNLib.Net.Http.Core.HttpResponse)">
+            <summary>
+            Sets CacheControl and Pragma headers to no-cache
+            </summary>
+            <param name="Response"></param>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.HttpContextExtensions.SetContentRange(VNLib.Net.Http.Core.HttpResponse,System.Int64,System.Int64,System.Int64)">
+            <summary>
+            Sets the content-range header to the specified parameters
+            </summary>
+            <param name="Response"></param>
+            <param name="start">The content range start</param>
+            <param name="end">The content range end</param>
+            <param name="length">The total content length</param>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.CoreBufferHelpers">
+            <summary>
+            Provides memory pools and an internal heap for allocations.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.CoreBufferHelpers.HttpCharBufPool">
+            <summary>
+            An internal HTTP character buffer pool for HTTP specific internal buffers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.CoreBufferHelpers.HttpBinBufferPool">
+            <summary>
+            An internal HTTP character binary pool for HTTP specific internal buffers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.CoreBufferHelpers.HttpPrivateHeap">
+            <summary>
+            An <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> used for internal HTTP buffers
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.CoreBufferHelpers.GetCharBuffer(System.Int32,System.Boolean)">
+            <summary>
+            Allocates a block of unmanaged memory from the internal heap, or managed buffer pool based 
+            on compilation flags or runtime variables
+            </summary>
+            <param name="size">The number of elemnts to allocate</param>
+            <param name="zero">A value indicating of the block should be zeroed before returning</param>
+            <returns>A handle to the block of memory</returns>
+            <exception cref="T:System.Security.SecurityException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.CoreBufferHelpers.GetBinBuffer(System.Int32,System.Boolean)">
+            <summary>
+            Alloctes an unsafe block of memory from the internal heap, or buffer pool
+            </summary>
+            <param name="size">The number of elemnts to allocate</param>
+            <param name="zero">A value indicating of the block should be zeroed before returning</param>
+            <returns>A handle to the block of memory</returns>
+            <exception cref="T:System.Security.SecurityException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.CoreBufferHelpers.GetReminaingData``1(``0@,System.Int64)">
+            <summary>
+            Gets the remaining data in the reader buffer and prepares a 
+            sliding window buffer to read data from
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="reader"></param>
+            <param name="maxContentLength">Maximum content size to clamp the remaining buffer window to</param>
+            <returns></returns>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.CoreBufferHelpers.CopyToOutputAsync(System.IO.Stream,System.IO.Stream,System.Int64,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Provides an async wrapper for copying data from the current stream to another with a
+            </summary>
+            <param name="source"></param>
+            <param name="dest">The destination data stream to write data to</param>
+            <param name="bufferSize">The size of the buffer to use while copying data. (Value will be clamped to the size of the stream if seeking is available)</param>
+            <param name="count">The number of bytes to copy from the current stream to destination stream</param>
+            <param name="heap">The heap to alloc buffer from</param>
+            <param name="token">A token that may cancel asynchronous operations</param>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/> that completes when the copy operation has completed</returns>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.CoreBufferHelpers.CopyToOutputAsync(System.IO.Stream,System.IO.Stream,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Provides an async wrapper for copying data from the current stream to another using an unmanged 
+            buffer.
+            </summary>
+            <param name="source"></param>
+            <param name="dest">The destination data stream to write data to</param>
+            <param name="bufferSize">The size of the buffer to use while copying data. (Value will be clamped to the size of the stream if seeking is available)</param>
+            <param name="heap">The <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> to allocate the buffer from</param>
+            <param name="token">A token that may cancel asynchronous operations</param>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/> that completes when the copy operation has completed</returns>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Http.Core.TransportReader">
+            <summary>
+            Structure implementation of <see cref="T:VNLib.Utils.IO.IVnTextReader"/>
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.TransportReader.Encoding">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.TransportReader.LineTermination">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.TransportReader.BaseStream">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.TransportReader.#ctor(System.IO.Stream,System.Int32,System.Text.Encoding,System.ReadOnlyMemory{System.Byte})">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Net.Http.Core.TransportReader"/> for reading text lines from the transport stream
+            </summary>
+            <param name="transport">The transport stream to read data from</param>
+            <param name="bufferSize">The size of the internal binary buffer</param>
+            <param name="encoding">The encoding to use when reading bianry</param>
+            <param name="lineTermination">The line delimiter to search for</param>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.TransportReader.Available">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.Core.TransportReader.BufferedDataWindow">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.TransportReader.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.TransportReader.Advance(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.TransportReader.FillBuffer">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.Core.TransportReader.CompactBufferWindow">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpEvent.Server">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpEvent.OriginServer">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpEvent.DisableCompression">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpEvent.QueryArgs">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpEvent.RequestArgs">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpEvent.Files">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpEvent.DangerousChangeProtocol(VNLib.Net.Http.IAlternateProtocol)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpEvent.CloseResponse(System.Net.HttpStatusCode)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpEvent.CloseResponse(System.Net.HttpStatusCode,VNLib.Net.ContentType,System.IO.Stream)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpEvent.UncheckedCloseResponse(System.Net.HttpStatusCode,VNLib.Net.ContentType,System.IO.Stream)">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Http.HttpServer">
+            <summary>
+            Provides a TCP based (using <see cref="!:TcpServer"/> library) high performance single library
+            HTTP(s) server that manages sessions, data compression, websockets, and basic file processing.
+            This class cannot be inherited
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpServer.WILDCARD_KEY">
+            <summary>
+            The host key that determines a "wildcard" host, meaning the 
+            default connection handler when an incomming connection has 
+            not specific route
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpServer.KeepAliveTimeoutHeaderValue">
+            <summary>
+            The cached HTTP1/1 keepalive timeout header value
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpServer.ContextStore">
+            <summary>
+            Reusable store for obtaining <see cref="T:VNLib.Net.Http.Core.HttpContext"/> 
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpServer.HeaderLineTermination">
+            <summary>
+            The cached header-line termination value
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpServer.Config">
+            <summary>
+            The <see cref="T:VNLib.Net.Http.HttpConfig"/> for the current server
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpServer.Running">
+            <summary>
+            Gets a value indicating whether the server is listening for connections
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.#ctor(VNLib.Net.Http.HttpConfig,VNLib.Net.Http.ITransportProvider,System.Collections.Generic.IEnumerable{VNLib.Net.Http.IWebRoot})">
+            <summary>
+            Creates a new <see cref="T:VNLib.Net.Http.HttpServer"/> with the specified configration copy (using struct).
+            Immutable data structures are initialzed.
+            </summary>
+            <param name="config">The configuration used to create the instance</param>
+            <param name="transport">The transport provider to listen to connections from</param>
+            <param name="sites">A collection of <see cref="T:VNLib.Net.Http.IWebRoot"/>s that route incomming connetctions</param>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.Start(System.Threading.CancellationToken)">
+            <summary>
+            Begins listening for connections on configured interfaces for configured hostnames.
+            </summary>
+            <param name="token">A token used to stop listening for incomming connections and close all open websockets</param>
+            <exception cref="T:System.Net.Sockets.SocketException"></exception>
+            <exception cref="T:System.Threading.ThreadStateException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpServer.INVALID_FRAME_HRESULT">
+            <summary>
+            An invlaid frame size may happen if data is recieved on an open socket
+            but does not contain valid SSL handshake data
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.CacheClear">
+            <inheritdoc/>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.CacheHardClear">
+            <inheritdoc/>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.WriteSocketExecption(System.Net.Sockets.SocketException)">
+            <summary>
+            Writes the specialized log for a socket exception
+            </summary>
+            <param name="se">The socket exception to log</param>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.ProcessHttpEventAsync(VNLib.Net.Http.ITransportContext,VNLib.Net.Http.Core.HttpContext)">
+            <summary>
+            Main event handler for all incoming connections
+            </summary>
+            <param name="transportContext">The <see cref="!:TransportEventContext"/> describing the incoming connection</param>
+            <param name="context">Reusable context object</param>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.ParseRequest(VNLib.Net.Http.ITransportContext,VNLib.Net.Http.Core.HttpRequest)">
+            <summary>
+            Reads data synchronously from the transport and attempts to parse an HTTP message and 
+            built a request. 
+            </summary>
+            <param name="transport"></param>
+            <param name="Request"></param>
+            <returns>0 if the request was successfully parsed, the <see cref="T:System.Net.HttpStatusCode"/> 
+            to return to the client because the entity could not be processed</returns>
+            <remarks>
+            <para>
+            This method is synchronous for multiple memory optimization reasons,
+            and performance is not expected to be reduced as the transport layer should 
+            <br></br>
+            only raise an event when a socket has data available to be read, and entity
+            header sections are expected to fit within a single TCP buffer. 
+            </para>
+            </remarks>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpServer.ProcessAsync(VNLib.Net.Http.IWebRoot,VNLib.Net.Http.Core.HttpContext)">
+            <summary>
+            Processes a client connection after pre-processing has completed
+            </summary>
+            <param name="root">The <see cref="T:VNLib.Net.Http.IWebRoot"/> to process the event on</param>
+            <param name="ctx">The <see cref="T:VNLib.Net.Http.Core.HttpContext"/> to process</param>
+            <returns>A task that resolves when the user-code has completed processing the entity</returns>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:VNLib.Net.Http.TerminateConnectionException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Http.IHttpEvent">
+            <summary>
+            Contains an http request and session information.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHttpEvent.Server">
+            <summary>
+            Current connection information. (Like "$_SERVER" superglobal in PHP)
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHttpEvent.OriginServer">
+            <summary>
+            The <see cref="T:VNLib.Net.Http.HttpServer"/> that this connection originated from
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHttpEvent.QueryArgs">
+            <summary>
+            If the request has query arguments they are stored in key value format
+            </summary>
+            <remarks>Keys are case-insensitive</remarks>
+        </member>
+        <member name="P:VNLib.Net.Http.IHttpEvent.RequestArgs">
+            <summary>
+            If the request body has form data or url encoded arguments they are stored in key value format
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHttpEvent.Files">
+            <summary>
+            Contains all files upladed with current request
+            </summary>
+            <remarks>Keys are case-insensitive</remarks>
+        </member>
+        <member name="M:VNLib.Net.Http.IHttpEvent.CloseResponse(System.Net.HttpStatusCode)">
+            <summary>
+            Complete the session and respond to user
+            </summary>
+            <param name="code">Status code of operation</param>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.IHttpEvent.CloseResponse(System.Net.HttpStatusCode,VNLib.Net.ContentType,System.IO.Stream)">
+            <summary>
+            Responds to a client with a <see cref="T:System.IO.Stream"/> containing data to be sent to user of a given contentType.
+            Runtime will dispose of the stream during closing event
+            </summary>
+            <param name="code">Response status code</param>
+            <param name="type">MIME ContentType of data</param>
+            <param name="stream">Data to be sent to client</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+            <exception cref="T:VNLib.Net.Http.ContentTypeUnacceptableException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.IHttpEvent.DangerousChangeProtocol(VNLib.Net.Http.IAlternateProtocol)">
+            <summary>
+            Configures the server to change protocols from HTTP to the specified 
+            custom protocol handler. 
+            </summary>
+            <param name="protocolHandler">The custom protocol handler</param>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.IHttpEvent.DisableCompression">
+            <summary>
+            Disables response compression
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.IHttpEvent.UncheckedCloseResponse(System.Net.HttpStatusCode,VNLib.Net.ContentType,System.IO.Stream)">
+            <summary>
+            Responds to a client with a <see cref="T:System.IO.Stream"/> containing data to be sent to user of a given contentType.
+            Runtime will dispose of the stream during closing event
+            <br></br>
+            <br></br>
+            Does not check to see if the client accepts the specifed content type, the client may drop the connection and cause unexpected issues.
+            You should avoid using this method
+            </summary>
+            <param name="code">Response status code</param>
+            <param name="type">MIME ContentType of data</param>
+            <param name="stream">Data to be sent to client</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Http.ContentTypeUnacceptableException">
+            <summary>
+            Thrown when the application attempts to submit a response to a client 
+            when the client does not accept the given content type
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.TerminateConnectionException">
+            <summary>
+            User code may throw this exception to signal the <see cref="T:VNLib.Net.Http.HttpServer"/> to drop
+            the transport connection and return an optional status code 
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.TerminateConnectionException.#ctor">
+            <summary>
+            Creates a new instance that terminates the connection without sending a response to the connection
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.TerminateConnectionException.#ctor(System.Net.HttpStatusCode)">
+            <summary>
+            Creates a new instance of the connection exception with an error code to respond to the connection with
+            </summary>
+            <param name="responseCode">The status code to send to the user</param>
+        </member>
+        <member name="T:VNLib.Net.Http.HttpVersion">
+            <summary>
+            HTTP protocol version
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.CacheType">
+            <summary>
+            HTTP response entity cache flags
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.CookieSameSite">
+            <summary>
+            Specifies an HTTP cookie SameSite type
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.Redirect">
+            <summary>
+            Low level 301 "hard" redirect
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.Redirect.#ctor(System.String,System.String)">
+            <summary>
+            Quickly redirects a url to another url before sessions are established
+            </summary>
+            <param name="url">Url to redirect on</param>
+            <param name="redirecturl">Url to redirect to</param>
+        </member>
+        <member name="T:VNLib.Net.Http.HttpHelpers">
+            <summary>
+            Provides a set of HTTP helper functions
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpHelpers.CRLF">
+            <summary>
+            Carrage return + line feed characters used within the VNLib.Net.Http namespace to delimit http messages/lines
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpHelpers.Origin">
+            <summary>
+            Extended <see cref="T:System.Net.HttpRequestHeader"/> for origin header, DO NOT USE IN <see cref="T:System.Net.WebHeaderCollection"/>
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Http.HttpHelpers.ContentDisposition">
+            <summary>
+            Extended <see cref="T:System.Net.HttpRequestHeader"/> for Content-Disposition, DO NOT USE IN <see cref="T:System.Net.WebHeaderCollection"/>
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetContentTypeString(VNLib.Net.ContentType)">
+            <summary>
+            Returns an http formatted content type string of a specified content type
+            </summary>
+            <param name="type">Contenty type</param>
+            <returns>Http acceptable string representing a content type</returns>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetContentType(System.String)">
+            <summary>
+            Returns the <see cref="T:VNLib.Net.ContentType"/> enum value from the MIME string
+            </summary>
+            <param name="type">Content type from request</param>
+            <returns><see cref="T:VNLib.Net.ContentType"/> of request, <see cref="F:VNLib.Net.ContentType.NonSupported"/> if unknown</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetCacheString(VNLib.Net.Http.CacheType,System.Int32,System.Boolean)">
+            <summary>
+            Builds a Cache-Control MIME content header from the specified flags
+            </summary>
+            <param name="type">The cache type/mode</param>
+            <param name="maxAge">The max-age (time in seconds) argument</param>
+            <param name="immutable">Sets the immutable argument</param>
+            <returns>The string representation of the Cache-Control header</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetCacheString(VNLib.Net.Http.CacheType,System.TimeSpan,System.Boolean)">
+            <summary>
+            Builds a Cache-Control MIME content header from the specified flags
+            </summary>
+            <param name="type">The cache type/mode</param>
+            <param name="maxAge">The max-age argument</param>
+            <param name="immutable">Sets the immutable argument</param>
+            <returns>The string representation of the Cache-Control header</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetRequestMethod(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Returns an enum value of an httpmethod of an http request method string
+            </summary>
+            <param name="smethod">Http acceptable method type string</param>
+            <returns>Request method, <see cref="F:VNLib.Net.Http.HttpMethod.NOT_SUPPORTED"/> if method is malformatted or unsupported</returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.IsLocalSubnet(System.Net.IPAddress,System.Net.IPAddress)">
+            <summary>
+            Compares the first 3 bytes of IPV4 ip address or the first 6 bytes of a IPV6. Can be used to determine if the address is local to another address
+            </summary>
+            <param name="first">Address to be compared</param>
+            <param name="other">Address to be comared to first address</param>
+            <returns>True if first 2 bytes of each address match (Big Endian)</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetContentTypeFromFile(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Selects a <see cref="T:VNLib.Net.ContentType"/> for a given file extension
+            </summary>
+            <param name="path">Path (including extension) of a file</param>
+            <returns><see cref="T:VNLib.Net.ContentType"/> of file. Returns <see cref="F:VNLib.Net.ContentType.Binary"/> if extension is unknown</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetResponseString(VNLib.Net.Http.HttpVersion,System.Net.HttpStatusCode)">
+            <summary>
+            Selects a runtime compiled <see cref="T:System.String"/> matching the given <see cref="T:System.Net.HttpStatusCode"/> and <see cref="T:VNLib.Net.Http.HttpVersion"/>
+            </summary>
+            <param name="version">Version of the response string</param>
+            <param name="code">Status code of the response</param>
+            <returns>The HTTP response status line matching the code and version</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.TryParseContentType(System.String,System.String@,System.String@,System.String@)">
+            <summary>
+            Parses the mime Content-Type header value into its sub-components
+            </summary>
+            <param name="header">The Content-Type header value field</param>
+            <param name="ContentType">The mime content type field</param>
+            <param name="Charset">The mime charset</param>
+            <param name="Boundry">The multi-part form boundry parameter</param>
+            <returns>True if parsing the content type succeded, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.ParseDisposition(System.ReadOnlySpan{System.Char},System.String@,System.String@,System.String@)">
+            <summary>
+            Parses a standard HTTP Content disposition header into its sub-components, type, name, filename (optional)
+            </summary>
+            <param name="header">The buffer containing the Content-Disposition header value only</param>
+            <param name="type">The mime form type</param>
+            <param name="name">The mime name argument</param>
+            <param name="fileName">The mime filename</param>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.GetRequestHeaderEnumFromValue(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Performs a lookup of the specified header name to get the <see cref="T:System.Net.HttpRequestHeader"/> enum value
+            </summary>
+            <param name="requestHeaderName">The value of the HTTP request header to compute</param>
+            <returns>The <see cref="T:System.Net.HttpRequestHeader"/> enum value of the header, or 255 if not found</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.HttpHelpers.ParseHttpVersion(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Gets the <see cref="T:VNLib.Net.Http.HttpVersion"/> enum value from the version string
+            </summary>
+            <param name="httpVersion">The http header version string</param>
+            <returns>The <see cref="T:VNLib.Net.Http.HttpVersion"/> enum value, or 
+            <see cref="F:VNLib.Net.Http.HttpVersion.NotSupported"/> if the version could not be 
+            determined
+            </returns>
+        </member>
+        <member name="T:VNLib.Net.Http.VnWebHeaderCollection">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Http.WebHeaderExtensions">
+            <summary>
+            Extends the <see cref="T:System.Net.WebHeaderCollection"/> to provide some check methods
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.WebHeaderExtensions.HeaderSet(System.Net.WebHeaderCollection,System.Net.HttpRequestHeader)">
+            <summary>
+            Determines if the specified request header has been set in the current header collection
+            </summary>
+            <param name="headers"></param>
+            <param name="header">Header value to check</param>
+            <returns>true if the header was set, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.WebHeaderExtensions.HeaderSet(System.Net.WebHeaderCollection,System.Net.HttpResponseHeader)">
+            <summary>
+            Determines if the specified response header has been set in the current header collection
+            </summary>
+            <param name="headers"></param>
+            <param name="header">Header value to check</param>
+            <returns>true if the header was set, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.WebHeaderExtensions.HeaderSet(System.Net.WebHeaderCollection,System.String)">
+            <summary>
+            Determines if the specified header has been set in the current header collection
+            </summary>
+            <param name="headers"></param>
+            <param name="header">Header value to check</param>
+            <returns>true if the header was set, false otherwise</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.HttpConfig">
+            <summary>
+            Represents configration variables used to create the instance and manage http connections
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.ServerLog">
+            <summary>
+            A log provider that all server related log entiries will be written to
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.MaxUploadSize">
+            <summary>
+            The absolute request entity body size limit in bytes
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.MaxFormDataUploadSize">
+            <summary>
+            The maximum size in bytes allowed for an MIME form-data content type upload
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.FormDataBufferSize">
+            <summary>
+            The maximum buffer size to use when parsing Multi-part/Form-data file uploads
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.CompressionLimit">
+            <summary>
+            The maximum response entity size in bytes for which the library will allow compresssing response data
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.CompressionMinimum">
+            <summary>
+            The minimum size (in bytes) of respones data that will be compressed
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.TransportKeepalive">
+            <summary>
+            The maximum amount of time to listen for connected, but innactive transport connections
+            before closing them
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.HttpEncoding">
+            <summary>
+            The encoding to use when sending and receiving HTTP data
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.CompressionLevel">
+            <summary>
+            Sets the compression level for response entity streams of all supported types when
+            compression is used.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.DefaultHttpVersion">
+            <summary>
+            Sets the default Http version for responses when the client version cannot be parsed from the request 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.HeaderBufferSize">
+            <summary>
+            The buffer size used to read HTTP headers from the transport. 
+            </summary>
+            <remarks>
+            Setting this value too low will result in <see cref="T:System.OutOfMemoryException"/>s 
+            when HTTP header elements are larger than this value
+            </remarks>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.ActiveConnectionRecvTimeout">
+            <summary>
+            The amount of time to wait for data on a connection that is in a receive
+            state, aka active receive.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.MaxRequestHeaderCount">
+            <summary>
+            The maximum number of request headers allowed per request
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.MaxOpenConnections">
+            <summary>
+            The maximum number of open socket connections, before 503 errors
+            will be returned and new connections closed.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.ResponseHeaderBufferSize">
+            <summary>
+            The size (in bytes) of the http response header buffer 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.DiscardBufferSize">
+            <summary>
+            The size (in bytes) of the buffer to use to discard unread entity request bodies
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.ResponseBufferSize">
+            <summary>
+            The size of the buffer to use when writing response data to the transport
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.ChunkedResponseAccumulatorSize">
+            <summary>
+            The size of the buffer used to accumulate chunked response data before writing to the transport
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.HttpConfig.RequestDebugLog">
+            <summary>
+            An <see cref="T:VNLib.Utils.Logging.ILogProvider"/> for writing verbose request logs. Set to <c>null</c> 
+            to disable verbose request logging
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.IAlternateProtocol">
+            <summary>
+            Allows implementation for a protocol swtich from HTTP to another protocol
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.IAlternateProtocol.RunAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>
+            Initializes and executes the protocol-switch and the protocol handler
+            that is stored
+            </summary>
+            <param name="transport">The prepared transport stream for the new protocol</param>
+            <param name="handlerToken">A cancelation token that the caller may pass for operation cancelation and cleanup</param>
+            <returns>A task that will be awaited by the server, that when complete, will cleanup resources held by the connection</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.IConnectionInfo">
+            <summary>
+            Represents a client's connection info as interpreted by the current server
+            </summary>
+            <remarks>Methods and properties are undefined when <see cref="M:VNLib.Net.Http.IWebRoot.ClientConnectedAsync(VNLib.Net.Http.IHttpEvent)"/> returns</remarks>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.RequestUri">
+            <summary>
+            Full request uri of current connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Path">
+            <summary>
+            Current request path. Shortcut to <seealso cref="P:VNLib.Net.Http.IConnectionInfo.RequestUri"/> <see cref="P:System.Uri.LocalPath"/>
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.UserAgent">
+            <summary>
+            Current connection's user-agent header, (may be null if no user-agent header found)
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Headers">
+            <summary>
+            Current connection's headers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.CrossOrigin">
+            <summary>
+            A value that indicates if the connection's origin header was set and it's
+            authority segment does not match the <see cref="P:VNLib.Net.Http.IConnectionInfo.RequestUri"/> authority
+            segment.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.IsWebSocketRequest">
+            <summary>
+            Is the current connecion a websocket request
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.ContentType">
+            <summary>
+            Request specified content-type
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Method">
+            <summary>
+            Current request's method
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.ProtocolVersion">
+            <summary>
+            The current connection's HTTP protocol version
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.IsSecure">
+            <summary>
+            Is the connection using transport security? 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.SecurityProtocol">
+            <summary>
+            The negotiated transport protocol for the current connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Origin">
+            <summary>
+            Origin header of current connection if specified, null otherwise
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Referer">
+            <summary>
+            Referer header of current connection if specified, null otherwise
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Range">
+            <summary>
+            The parsed range header, or -1,-1 if the range header was not set
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.LocalEndpoint">
+            <summary>
+            The server endpoint that accepted the connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.RemoteEndpoint">
+            <summary>
+            The raw <see cref="T:System.Net.IPEndPoint"/> of the upstream connection. 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Encoding">
+            <summary>
+            The encoding type used to decode and encode character data to and from the current client
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.RequestCookies">
+            <summary>
+            A <see cref="T:System.Collections.Generic.IReadOnlyDictionary`2"/> of client request cookies
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.Accept">
+            <summary>
+            Gets an <see cref="T:System.Collections.Generic.IEnumerator`1"/> for the parsed accept header values
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IConnectionInfo.TransportSecurity">
+            <summary>
+            Gets the underlying transport security information for the current connection
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.IConnectionInfo.Accepts(VNLib.Net.ContentType)">
+            <summary>
+            Determines if the client accepts the response content type
+            </summary>
+            <param name="type">The desired content type</param>
+            <returns>True if the client accepts the content type, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.IConnectionInfo.Accepts(System.String)">
+            <summary>
+            Determines if the client accepts the response content type
+            </summary>
+            <param name="contentType">The desired content type</param>
+            <returns>True if the client accepts the content type, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.IConnectionInfo.SetCookie(System.String,System.String,System.String,System.String,System.TimeSpan,VNLib.Net.Http.CookieSameSite,System.Boolean,System.Boolean)">
+            <summary>
+            Add a cookie to a browser or set a current cookie
+            </summary>
+            <param name="name">Cookie name/id</param>
+            <param name="value">Value to be stored in cookie</param>
+            <param name="domain">Domain for cookie to operate</param>
+            <param name="path">Path to store cookie</param>
+            <param name="Expires">Timespan representing how long the cookie should exist</param>
+            <param name="sameSite">Samesite attribute, Default = Lax</param>
+            <param name="httpOnly">Specify the HttpOnly flag</param>
+            <param name="secure">Specify the Secure flag</param>
+        </member>
+        <member name="T:VNLib.Net.Http.IHeaderCollection">
+            <summary>
+            The container for request and response headers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHeaderCollection.RequestHeaders">
+            <summary>
+            Allows for enumeratring all requesest headers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHeaderCollection.ResponseHeaders">
+            <summary>
+            Allows for enumeratring all response headers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IHeaderCollection.Item(System.String)">
+            <summary>
+            Gets request header, or sets a response header
+            </summary>
+            <param name="index"></param>
+            <returns>Request header with key</returns>
+        </member>
+        <member name="P:VNLib.Net.Http.IHeaderCollection.Item(System.Net.HttpResponseHeader)">
+            <summary>
+            Sets a response header only with a response header index
+            </summary>
+            <param name="index">Response header</param>
+        </member>
+        <member name="P:VNLib.Net.Http.IHeaderCollection.Item(System.Net.HttpRequestHeader)">
+            <summary>
+            Gets a request header
+            </summary>
+            <param name="index">The request header enum </param>
+        </member>
+        <member name="M:VNLib.Net.Http.IHeaderCollection.HeaderSet(System.Net.HttpResponseHeader)">
+            <summary>
+            Determines if the given header is set in current response headers
+            </summary>
+            <param name="header">Header value to check response headers for</param>
+            <returns>true if header exists in current response headers, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.IHeaderCollection.HeaderSet(System.Net.HttpRequestHeader)">
+            <summary>
+            Determines if the given request header is set in current request headers
+            </summary>
+            <param name="header">Header value to check request headers for</param>
+            <returns>true if header exists in current request headers, false otherwise</returns>
+        </member>
+        <member name="M:VNLib.Net.Http.IHeaderCollection.Append(System.Net.HttpResponseHeader,System.String)">
+            <summary>
+            Overwrites (sets) the given response header to the exact value specified
+            </summary>
+            <param name="header">The enumrated header id</param>
+            <param name="value">The value to specify</param>
+        </member>
+        <member name="M:VNLib.Net.Http.IHeaderCollection.Append(System.String,System.String)">
+            <summary>
+            Overwrites (sets) the given response header to the exact value specified
+            </summary>
+            <param name="header">The header name</param>
+            <param name="value">The value to specify</param>
+        </member>
+        <member name="T:VNLib.Net.Http.ITransportContext">
+            <summary>
+            Represents an active connection for application data processing
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.ITransportContext.ConnectionStream">
+            <summary>
+            The transport network stream for application data marshaling
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.ITransportContext.SslVersion">
+            <summary>
+            The transport security layer security protocol
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.ITransportContext.LocalEndPoint">
+            <summary>
+            A copy of the local endpoint of the listening socket
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.ITransportContext.RemoteEndpoint">
+            <summary>
+            The <see cref="T:System.Net.IPEndPoint"/> representing the client's connection information
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.ITransportContext.CloseConnectionAsync">
+            <summary>
+            Closes the connection when its no longer in use and cleans up held resources.
+            </summary>
+            <returns></returns>
+            <remarks>
+            This method will always be called by the server when a connection is complete 
+            regardless of the state of the trasnport
+            </remarks>
+        </member>
+        <member name="M:VNLib.Net.Http.ITransportContext.GetSecurityInfo">
+            <summary>
+            Attemts to get the transport security details for the connection
+            </summary>
+            <returns>A the <see cref="T:VNLib.Net.Http.TransportSecurityInfo"/> structure if applicable, null otherwise</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.ITransportProvider">
+            <summary>
+            Listens for network connections and captures the information 
+            required for application processing
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.ITransportProvider.Start(System.Threading.CancellationToken)">
+            <summary>
+            Begins listening for connections (binds a socket if necessary) and is 
+            called before the server begins listening for connections.
+            </summary>
+            <param name="stopToken">A token that is cancelled when the server is closed</param>
+        </member>
+        <member name="M:VNLib.Net.Http.ITransportProvider.AcceptAsync(System.Threading.CancellationToken)">
+            <summary>
+            Waits for a new connection to be established and returns its context. This method 
+            should only return an established connection (ie: connected socket).
+            </summary>
+            <param name="cancellation">A token to cancel the wait operation</param>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/> that returns an established connection</returns>
+        </member>
+        <member name="T:VNLib.Net.Http.IWebRoot">
+            <summary>
+            Represents a root identifying the main endpoints of the server, and the primary processing actions
+            for requests to this endpoint
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.IWebRoot.Hostname">
+            <summary>
+            The hostname the server will listen for, and the hostname that will identify this root when a connection requests it
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Http.IWebRoot.ClientConnectedAsync(VNLib.Net.Http.IHttpEvent)">
+            <summary>
+            <para>
+            The main event handler for user code to process a request 
+            </para>
+            <para>
+            NOTE: This function must be thread-safe!
+            </para>
+            </summary>
+            <param name="event">An active, unprocessed event capturing the request infomration into a standard format</param>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/> that the processor will await until the entity has been processed</returns>
+        </member>
+        <member name="P:VNLib.Net.Http.IWebRoot.Redirects">
+            <summary>
+            "Low-Level" 301 redirects
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Http.TransportSecurityInfo">
+            <summary>
+            Gets the transport TLS security information for the current connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.CheckCertRevocationStatus">
+            <summary>
+            Gets a Boolean value that indicates whether the certificate revocation list is checked during the certificate validation process.
+            </summary>
+            <returns>true if the certificate revocation list is checked during validation; otherwise, false.</returns>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.CipherAlgorithm">
+            <summary>
+            Gets a value that identifies the bulk encryption algorithm used by the connection.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.CipherStrength">
+            <summary>
+            Gets a value that identifies the strength of the cipher algorithm used by the connection.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.HashAlgorithm">
+            <summary>
+            Gets the algorithm used for generating message authentication codes (MACs).
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.HashStrength">
+            <summary>
+            Gets a value that identifies the strength of the hash algorithm used by this instance.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.IsAuthenticated">
+            <summary>
+            Gets a Boolean value that indicates whether authentication was successful.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.IsEncrypted">
+            <summary>
+            Gets a Boolean value that indicates whether this connection uses data encryption.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.IsMutuallyAuthenticated">
+            <summary>
+            Gets a Boolean value that indicates whether both server and client have been authenticated.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.IsSigned">
+            <summary>
+            Gets a Boolean value that indicates whether the data sent using this connection is signed.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.KeyExchangeAlgorithm">
+            <summary>
+            Gets the key exchange algorithm used by this connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.KeyExchangeStrength">
+            <summary>
+            Gets a value that identifies the strength of the key exchange algorithm used by the transport connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.LocalCertificate">
+            <summary>
+            Gets the certificate used to authenticate the local endpoint.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.NegotiatedApplicationProtocol">
+            <summary>
+            The negotiated application protocol in TLS handshake.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.NegotiatedCipherSuite">
+            <summary>
+            Gets the cipher suite which was negotiated for this connection.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.RemoteCertificate">
+            <summary>
+            Gets the certificate used to authenticate the remote endpoint.
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Http.TransportSecurityInfo.TransportContext">
+            <summary>
+            Gets the TransportContext used for authentication using extended protection.
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.ContentType">
+            <summary>
+            Mime content type 
+            </summary>
+        </member>
+    </members>
+</doc>

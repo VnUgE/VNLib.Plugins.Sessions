@@ -1,0 +1,889 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Hashing.Portable</name>
+    </assembly>
+    <members>
+        <member name="T:VNLib.Hashing.VnArgon2">
+            <summary>
+            Implements the Argon2 data hashing library in .NET for windows
+            </summary>
+            <remarks>Buffers are allocted on an internal <see cref="T:VNLib.Utils.Memory.PrivateHeap"/> with the <see cref="F:VNLib.Utils.Memory.PrivateHeap.HEAP_ZERO_MEMORY"/> flag set.</remarks>
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Hash2id(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Byte},System.UInt32,System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Hashes a password with a salt and specified arguments
+            </summary>
+            <param name="password">Span of characters containing the password to be hashed</param>
+            <param name="salt">Span of characters contating the salt to include in the hashing</param>
+            <param name="secret">Optional secret to include in hash</param>
+            <param name="hashLen">Size of the hash in bytes</param>
+            <param name="mem_cost">Memory cost</param>
+            <param name="parallelism">Degree of parallelism</param>
+            <param name="time_cost">Time cost of operation</param>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+            <exception cref="T:System.InsufficientMemoryException"></exception>
+            <returns>A <see cref="P:System.Text.Encoding.Unicode"/> <see cref="T:System.String"/> containg the ready-to-store hash</returns>                
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Hash2id(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.UInt32,System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Hashes a password with a salt and specified arguments
+            </summary>
+            <param name="password">Span of characters containing the password to be hashed</param>
+            <param name="salt">Span of characters contating the salt to include in the hashing</param>
+            <param name="secret">Optional secret to include in hash</param>
+            <param name="hashLen">Size of the hash in bytes</param>
+            <param name="mem_cost">Memory cost</param>
+            <param name="parallelism">Degree of parallelism</param>
+            <param name="time_cost">Time cost of operation</param>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+            <exception cref="T:System.InsufficientMemoryException"></exception>
+            <returns>A <see cref="P:System.Text.Encoding.Unicode"/> <see cref="T:System.String"/> containg the ready-to-store hash</returns>
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Hash2id(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.UInt32,System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Hashes a password with a salt and specified arguments
+            </summary>
+            <param name="password">Span of characters containing the password to be hashed</param>
+            <param name="salt">Span of characters contating the salt to include in the hashing</param>
+            <param name="secret">Optional secret to include in hash</param>
+            <param name="hashLen">Size of the hash in bytes</param>
+            <param name="mem_cost">Memory cost</param>
+            <param name="parallelism">Degree of parallelism</param>
+            <param name="time_cost">Time cost of operation</param>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <returns>A <see cref="P:System.Text.Encoding.Unicode"/> <see cref="T:System.String"/>containg the ready-to-store hash</returns>                
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Hash2id(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte}@,System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Exposes the raw Argon2-ID hashing api to C#, using spans (pins memory references)
+            </summary>
+            <param name="password">Span of characters containing the password to be hashed</param>
+            <param name="rawHashOutput">The output buffer to store the raw hash output</param>
+            <param name="salt">Span of characters contating the salt to include in the hashing</param>
+            <param name="secret">Optional secret to include in hash</param>
+            <param name="mem_cost">Memory cost</param>
+            <param name="parallelism">Degree of parallelism</param>
+            <param name="time_cost">Time cost of operation</param>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Verify2id(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Compares a raw password, with a salt to a raw hash
+            </summary>
+            <param name="rawPass">Password bytes</param>
+            <param name="salt">Salt bytes</param>
+            <param name="secret">Optional secret that was included in hash</param>
+            <param name="hashBytes">Raw hash bytes</param>
+            <param name="time_cost">Time cost</param>
+            <param name="mem_cost">Memory cost</param>
+            <param name="parallelism">Degree of parallelism</param>
+            <exception cref="T:System.OverflowException"></exception>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+            <exception cref="T:System.InsufficientMemoryException"></exception>
+            <exception cref="T:VNLib.Hashing.VnArgon2PasswordFormatException"></exception>
+            <returns>True if hashes match</returns>
+        </member>
+        <member name="M:VNLib.Hashing.VnArgon2.Verify2id(System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Compares a password to a previously hashed password from this library
+            </summary>
+            <param name="rawPass">Password data</param>
+            <param name="secret">Optional secret that was included in hash</param>
+            <param name="hash">Full hash span</param>
+            <param name="hashLen">Length of hash</param>
+            <exception cref="T:System.OverflowException"></exception>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:VNLib.Hashing.VnArgon2Exception"></exception>
+            <exception cref="T:System.InsufficientMemoryException"></exception>
+            <exception cref="T:VNLib.Hashing.VnArgon2PasswordFormatException"></exception>
+            <returns>True if the password matches the hash</returns>
+        </member>
+        <member name="T:VNLib.Hashing.VnArgon2Exception">
+            <summary>
+            Argon2 operational exception
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.VnArgon2Exception.Errno">
+            <summary>
+            Argon2 error code that caused this exception
+            </summary>
+        </member>
+        <member name="T:VNLib.Hashing.VnArgon2PasswordFormatException">
+            <summary>
+            Raised if a verify operation determined the supplied password hash is not in a valid format for this library
+            </summary>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.HashingExtensions">
+            <summary>
+            Contains .NET cryptography hasing library extensions
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.HashingExtensions.ComputeBase64Hash(System.Security.Cryptography.HMAC,System.ReadOnlySpan{System.Char},System.Text.Encoding)">
+            <summary>
+            Computes the Base64 hash of the specified data using the 
+            specified character encoding, or <see cref="P:System.Text.Encoding.UTF8"/> 
+            by default.
+            </summary>
+            <param name="hmac"></param>
+            <param name="data">The data to compute the hash of</param>
+            <param name="encoding">The <see cref="T:System.Text.Encoding"/> used to encode the character buffer</param>
+            <returns>The base64 UTF8 string of the computed hash of the specified data</returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.HashingExtensions.VerifyBase64Hash(System.Security.Cryptography.HMAC,System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char},System.Text.Encoding)">
+            <summary>
+            Computes the hash of the raw data and compares the computed hash against 
+            the specified base64hash
+            </summary>
+            <param name="hmac"></param>
+            <param name="raw">The raw data buffer (encoded characters) to decode and compute the hash of</param>
+            <param name="base64Hmac">The base64 hash to verify against</param>
+            <param name="encoding">The encoding used to encode the raw data balue</param>
+            <returns>A value indicating if the hash values match</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.HashingExtensions.VerifyHash(System.Security.Cryptography.HMAC,System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Computes the hash of the raw data and compares the computed hash against 
+            the specified hash
+            </summary>
+            <param name="hmac"></param>
+            <param name="raw">The raw data to verify the hash of</param>
+            <param name="hash">The hash to compare against the computed data</param>
+            <returns>A value indicating if the hash values match</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.HashingExtensions.TryEncrypt(System.Security.Cryptography.RSA,System.ReadOnlySpan{System.Char},System.Span{System.Byte}@,System.Security.Cryptography.RSAEncryptionPadding,System.Text.Encoding)">
+            <summary>
+            Attempts to encrypt the specified character buffer using the specified encoding
+            </summary>
+            <param name="alg"></param>
+            <param name="data">The data to encrypt</param>
+            <param name="output">The output buffer</param>
+            <param name="padding">The encryption padding to use</param>
+            <param name="enc">Character encoding used to encode the character buffer</param>
+            <returns>The number of bytes encrypted, or 0/false otherwise</returns>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.Security.Cryptography.CryptographicException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.JsonWebKey">
+            <summary>
+            A mutable RFC compliant JsonWebKey, that contains a variable length of
+            single keys. 
+            </summary>
+        </member>
+        <member name="F:VNLib.Hashing.IdentityUtility.JsonWebKey.JWK_RFC_VERSION">
+            <summary>
+            The RFC version that the <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/>
+            compiles with
+            </summary>
+        </member>
+        <member name="F:VNLib.Hashing.IdentityUtility.JsonWebKey._keys">
+            <summary>
+            The internal collection of single keys
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.#ctor(System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/> with the
+            specified capacity
+            </summary>
+            <param name="capacity">The initial capacity of the internal key collection</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Parse(System.String)">
+            <summary>
+            Parses the supplied JSON string
+            which compiles to the JWK RFC version into 
+            its mutable memory representation
+            </summary>
+            <param name="jsonData">The JSON string buffer</param>
+            <returns>The <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/> from the parsed JSON</returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Parse(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Parses the supplied character buffer
+            which compiles to the JWK RFC version into 
+            its mutable memory representation
+            </summary>
+            <param name="jsonData">The JSON string buffer</param>
+            <returns>The <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/> from the parsed JSON</returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Parse(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Parses the supplied utf8 buffer
+            which compiles to the JWK RFC version into 
+            its mutable memory representation
+            </summary>
+            <param name="utf8Json">The utf8 encoded JSON data</param>
+            <returns>The <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/> from the parsed JSON</returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Parse(System.Text.Json.JsonElement@)">
+            <summary>
+            Parses the supplied <see cref="T:System.Text.Json.JsonElement"/> 
+            which compiles to the JWK RFC version into 
+            its mutable memory representation
+            </summary>
+            <param name="root">The root element that contains the JWT object</param>
+            <returns>The <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebKey"/> from the parsed JSON</returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebKey.Count">
+            <summary>
+            The number of stored keys
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebKey.Item(System.Int32)">
+            <summary>
+            Gets the key at the specified index
+            </summary>
+            <param name="index">The index of the key to get</param>
+            <returns>The key at the specified index</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.AddKey(System.String,System.String,System.String)">
+            <summary>
+            Adds a new key to the collection
+            </summary>
+            <param name="alg">The algorithm type</param>
+            <param name="use">The intended use of the key</param>
+            <param name="kid">The optional key id</param>
+            <returns>The newly added <see cref="T:VNLib.Hashing.IdentityUtility.JWKSingleKey"/></returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Clear">
+            <summary>
+            Empties and removes all keys
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Compile(VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Compiles the JWK to the RFC compliant string
+            </summary>
+            <param name="stream">The memory stream to write the compiled data to</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Compile">
+            <summary>
+            Compiles the JWK array into the RFC format
+            and write the output to the specified writer
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Compile(VNLib.Utils.Memory.ForwardOnlyWriter{System.Char}@)">
+            <summary>
+            Compiles the JWK array into the RFC format
+            and write the output to the specified writer
+            </summary>
+            <param name="writer">The FOW to write json string to</param>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebKey.Compile(System.Span{System.Char}@)">
+            <summary>
+            Compiles the JWK array into the RFC format
+            and write the output to the specified character buffer
+            </summary>
+            <param name="buffer">The character buffer to write data do</param>
+            <returns>The number of characters written to the buffer</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.JsonWebToken">
+            <summary>
+            Provides a dynamic JSON Web Token class that will store and 
+            compute Base64Url encoded WebTokens
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Parse(System.ReadOnlySpan{System.Char},VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Parses a JWT from a Base64URL encoded character buffer
+            </summary>
+            <param name="urlEncJwtString"></param>
+            <param name="heap">An optional <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> instance to alloc buffers from</param>
+            <returns>The parses <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/></returns>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Parse(System.ReadOnlySpan{System.Byte},VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Parses a buffer of UTF8 bytes of Base64URL encoded characters
+            </summary>
+            <param name="urlEncodedUtf8">The url-encoded base64 JWT data buffer</param>
+            <param name="heap">An optional <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> instance to alloc buffers from</param>
+            <returns>The parsed <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/></returns>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.ParseRaw(System.ReadOnlySpan{System.Byte},VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Parses a buffer of UTF8 bytes of NON url encoded base64 characters
+            </summary>
+            <param name="utf8JWTData">The JWT data buffer</param>
+            <param name="heap">An optional <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> instance to alloc buffers from</param>
+            <returns>The parsed <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/></returns>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.Heap">
+            <summary>
+            The heap used to allocate buffers from
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.ByteSize">
+            <summary>
+            The size (in bytes) of the encoded data that makes 
+            up the current JWT.
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.CurrentBuffer">
+            <summary>
+            A buffer that represents the current state of the JWT buffer
+            </summary>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.#ctor(VNLib.Utils.Memory.IUnmangedHeap,VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Creates a new <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/> with the specified initial state
+            </summary>
+            <param name="heap">The heap used to alloc buffers</param>
+            <param name="initialData">The initial data of the jwt</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.#ctor(VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Creates a new empty JWT instance, with an optional heap to alloc
+            buffers from. (<see cref="P:VNLib.Utils.Memory.Memory.Shared"/> is used as default)
+            </summary>
+            <param name="heap">The <see cref="T:VNLib.Utils.Memory.IUnmangedHeap"/> to alloc buffers from</param>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.HeaderData">
+            <summary>
+            The Base64 encoded UTF8 bytes of the header portion of the current JWT
+            </summary>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.WriteHeader(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Encodes and stores the specified header value to the begining of the 
+            JWT. This method may only be called once, if the header has not already been supplied.
+            </summary>
+            <param name="header">The value of the JWT header parameter</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.PayloadData">
+            <summary>
+            The Base64 encoded UTF8 bytes of the payload portion of the current JWT
+            </summary>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.HeaderAndPayload">
+            <summary>
+            The Base64 encoded UTF8 bytes of the header + '.' + palyad portion of the current jwt
+            </summary>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.WritePayload(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Encodes and stores the specified payload data and appends it to the current 
+            JWT buffer. This method may only be called once, if the header has not already been supplied.
+            </summary>
+            <param name="payload">The value of the JWT payload section</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.WriteValue(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Encodes the specified value and writes it to the 
+            internal buffer
+            </summary>
+            <param name="value">The data value to encode and buffer</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JsonWebToken.SignatureData">
+            <summary>
+            The Base64Url encoded UTF8 bytes of the signature portion of the current JWT
+            </summary>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Sign(System.Security.Cryptography.HashAlgorithm)">
+            <summary>
+            Signs the current JWT (header + payload) data
+            and writes the signature the end of the current buffer,
+            using the specified <see cref="T:System.Security.Cryptography.HashAlgorithm"/>.
+            </summary>
+            <param name="signatureAlgorithm">An alternate <see cref="T:System.Security.Cryptography.HashAlgorithm"/> instance to sign the JWT with</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Sign(System.Security.Cryptography.RSA,System.Security.Cryptography.HashAlgorithmName@,System.Security.Cryptography.RSASignaturePadding,System.Int32)">
+            <summary>
+            Use an RSA algorithm to sign the JWT message
+            </summary>
+            <param name="rsa">The algorithm used to sign the token</param>
+            <param name="hashAlg">The hash algorithm to use</param>
+            <param name="padding">The signature padding to use</param>
+            <param name="hashSize">The size (in bytes) of the hash output</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Sign(System.Security.Cryptography.ECDsa,System.Security.Cryptography.HashAlgorithmName@,System.Int32)">
+            <summary>
+            Use an RSA algorithm to sign the JWT message
+            </summary>
+            <param name="alg">The algorithm used to sign the token</param>
+            <param name="hashAlg">The hash algorithm to use</param>
+            <param name="hashSize">The size (in bytes) of the hash output</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Compile">
+            <inheritdoc/>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Compile(VNLib.Utils.Memory.ForwardOnlyWriter{System.Char}@)">
+            <inheritdoc/>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Compile(System.Span{System.Char}@)">
+            <inheritdoc/>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Reset">
+            <summary>
+            Reset's the internal JWT buffer
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.ToString">
+            <summary>
+            Compiles the current JWT instance and converts it to a string
+            </summary>
+            <returns>A Base64Url enocded string of the JWT format</returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JsonWebToken.Free">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.JWKSingleKey">
+            <summary>
+            A structure containing properies/methods for reading/manipulating 
+            a single JsonWebKey
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JWKSingleKey.Algorithm">
+            <summary>
+            The key algorithm
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JWKSingleKey.KeyId">
+            <summary>
+            The optional id of the key
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JWKSingleKey.Use">
+            <summary>
+            The intended use of the key
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JWKSingleKey.KeyType">
+            <summary>
+            The JWK key type
+            </summary>
+        </member>
+        <member name="P:VNLib.Hashing.IdentityUtility.JWKSingleKey.Item(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.Clear">
+            <summary>
+            Removes all JWK properties
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.ToString">
+            <summary>
+            Returns a JSON encoded string of the key object
+            </summary>
+            <returns>The JSON string representation of the key</returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.Prune">
+            <summary>
+            Removes null values from the key
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.Write(System.Text.Json.Utf8JsonWriter)">
+            <summary>
+            Serializes the current state to its JSON representation
+            and writes it to the writer
+            </summary>
+            <param name="writer">The <see cref="T:System.Text.Json.Utf8JsonWriter"/> to write serialzed data to</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.Equals(VNLib.Hashing.IdentityUtility.JWKSingleKey)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JWKSingleKey.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.JwtPayload">
+            <summary>
+            A fluent api structure for adding and committing claims to a <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/>
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtPayload.AddClaim(System.String,System.Object)">
+            <summary>
+            Adds a claim name-value pair to the store
+            </summary>
+            <param name="claim">The clame name</param>
+            <param name="value">The value of the claim</param>
+            <returns>The chained response object</returns>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtPayload.CommitClaims">
+            <summary>
+            Writes all claims to the <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/> payload segment
+            </summary>
+        </member>
+        <member name="T:VNLib.Hashing.IdentityUtility.JwtExtensions">
+            <summary>
+            Provides extension methods for manipulating 
+            and verifying <see cref="T:VNLib.Hashing.IdentityUtility.JsonWebToken"/>s
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.WriteHeader``1(VNLib.Hashing.IdentityUtility.JsonWebToken,``0,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            Writes the message header as the specified object
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="jwt"></param>
+            <param name="header">The header object</param>
+            <param name="jso">Optional serialize options</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.WritePayload``1(VNLib.Hashing.IdentityUtility.JsonWebToken,``0,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            Writes the message payload as the specified object
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="jwt"></param>
+            <param name="payload">The payload object</param>
+            <param name="jso">Optional serialize options</param>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.GetPayload(VNLib.Hashing.IdentityUtility.JsonWebToken)">
+            <summary>
+            Gets the body data as a <see cref="T:System.Text.Json.JsonDocument"/> 
+            </summary>
+            <param name="jwt"></param>
+            <returns>The <see cref="T:System.Text.Json.JsonDocument"/> of the jwt body</returns>
+            <exception cref="T:System.Text.Json.JsonException"></exception>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.GetPayload``1(VNLib.Hashing.IdentityUtility.JsonWebToken,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            Deserialzes the jwt payload as the specified object
+            </summary>
+            <param name="jwt"></param>
+            <param name="jso">Optional serialzie options</param>
+            <returns>The <see cref="T:System.Text.Json.JsonDocument"/> of the jwt body</returns>
+            <exception cref="T:System.Text.Json.JsonException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.Verify(VNLib.Hashing.IdentityUtility.JsonWebToken,System.Security.Cryptography.HashAlgorithm)">
+            <summary>
+            Verifies the current JWT body-segements against the parsed signature segment.
+            </summary>
+            <param name="jwt"></param>
+            <param name="verificationAlg">
+            The <see cref="T:System.Security.Cryptography.HashAlgorithm"/> to use when calculating the hash of the JWT
+            </param>
+            <returns>
+            True if the signature field of the current JWT matches the re-computed signature of the header and data-fields
+            signature
+            </returns>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.Verify(VNLib.Hashing.IdentityUtility.JsonWebToken,System.Security.Cryptography.RSA,System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+            <summary>
+            Verifies the signature of the data using the specified <see cref="T:System.Security.Cryptography.RSA"/> and hash parameters
+            </summary>
+            <param name="jwt"></param>
+            <param name="alg">The RSA algorithim to use while verifying the signature of the payload</param>
+            <param name="hashAlg">The <see cref="T:System.Security.Cryptography.HashAlgorithmName"/> used to hash the signature</param>
+            <param name="padding">The RSA signature padding method</param>
+            <returns>True if the singature has been verified, false otherwise</returns>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.Verify(VNLib.Hashing.IdentityUtility.JsonWebToken,System.Security.Cryptography.ECDsa,System.Security.Cryptography.HashAlgorithmName)">
+            <summary>
+            Verifies the signature of the data using the specified <see cref="T:System.Security.Cryptography.RSA"/> and hash parameters
+            </summary>
+            <param name="jwt"></param>
+            <param name="alg">The RSA algorithim to use while verifying the signature of the payload</param>
+            <param name="hashAlg">The <see cref="T:System.Security.Cryptography.HashAlgorithmName"/> used to hash the signature</param>
+            <returns>True if the singature has been verified, false otherwise</returns>
+            <exception cref="T:System.FormatException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.IdentityUtility.JwtExtensions.InitPayloadClaim(VNLib.Hashing.IdentityUtility.JsonWebToken,System.Int32)">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Hashing.IdentityUtility.JwtPayload"/> object for writing claims to the 
+            current tokens payload segment
+            </summary>
+            <param name="jwt"></param>
+            <param name="initCapacity">The inital cliam capacity</param>
+            <returns>The fluent chainable stucture</returns>
+        </member>
+        <member name="T:VNLib.Hashing.HashEncodingMode">
+            <summary>
+            The binary hash encoding type
+            </summary>
+        </member>
+        <member name="F:VNLib.Hashing.HashEncodingMode.Base64">
+            <summary>
+            Specifies the Base64 character encoding
+            </summary>
+        </member>
+        <member name="F:VNLib.Hashing.HashEncodingMode.Hexadecimal">
+            <summary>
+            Specifies the hexadecimal character encoding
+            </summary>
+        </member>
+        <member name="F:VNLib.Hashing.HashEncodingMode.Base32">
+            <summary>
+            Specifies the Base32 character encoding
+            </summary>
+        </member>
+        <member name="T:VNLib.Hashing.ManagedHash">
+            <summary>
+            Provides simple methods for common managed hashing functions
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Char},System.Span{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Uses the UTF8 character encoding to encode the string, then 
+            attempts to compute the hash and store the results into the output buffer
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="buffer">The hash output buffer</param>
+            <param name="type">The hash algorithm to use</param>
+            <returns>The number of bytes written to the buffer, false if the hash could not be computed</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Char},VNLib.Hashing.HashAlg)">
+            <summary>
+            Uses the UTF8 character encoding to encode the string, then 
+            attempts to compute the hash and store the results into the output buffer
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="type">The hash algorithm to use</param>
+            <returns>The number of bytes written to the buffer, false if the hash could not be computed</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Hashes the data parameter to the output buffer using the specified algorithm type
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="output">The hash output buffer</param>
+            <param name="type">The hash algorithm to use</param>
+            <returns>The number of bytes written to the buffer, <see cref="F:VNLib.Utils.ERRNO.E_FAIL"/> if the hash could not be computed</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Hashes the data parameter to the output buffer using the specified algorithm type
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="type">The hash algorithm to use</param>
+            <returns>A byte array that contains the hash of the data buffer</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Byte},VNLib.Hashing.HashAlg,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Hashes the data parameter to the output buffer using the specified algorithm type
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="type">The hash algorithm to use</param>
+            <param name="mode">The data encoding mode</param>
+            <returns>The encoded hash of the input data</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.Security.Cryptography.CryptographicException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHash(System.ReadOnlySpan{System.Char},VNLib.Hashing.HashAlg,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Uses the UTF8 character encoding to encode the string, then computes the hash and encodes 
+            the hash to the specified encoding
+            </summary>
+            <param name="data">String to hash</param>
+            <param name="type">The hash algorithm to use</param>
+            <param name="mode">The data encoding mode</param>
+            <returns>The encoded hash of the input data</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+            <exception cref="T:System.Security.Cryptography.CryptographicException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Char},System.Span{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Computes the HMAC of the specified character buffer using the specified key and 
+            writes the resuts to the output buffer.
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The character buffer to compute the encoded HMAC of</param>
+            <param name="output">The buffer to write the hash to</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <returns>The number of bytes written to the ouput buffer or <see cref="F:VNLib.Utils.ERRNO.E_FAIL"/> if the operation failed</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Char},VNLib.Hashing.HashAlg)">
+            <summary>
+            Computes the HMAC of the specified character buffer using the specified key and 
+            writes the resuts to a new buffer to return
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The data buffer to compute the HMAC of</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <returns>A buffer containg the computed HMAC</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Computes the HMAC of the specified data buffer using the specified key and 
+            writes the resuts to the output buffer.
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The data buffer to compute the HMAC of</param>
+            <param name="output">The buffer to write the hash to</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <returns>The number of bytes written to the ouput buffer or <see cref="F:VNLib.Utils.ERRNO.E_FAIL"/> if the operation failed</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},VNLib.Hashing.HashAlg)">
+            <summary>
+            Computes the HMAC of the specified data buffer using the specified key and 
+            writes the resuts to a new buffer to return
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The data buffer to compute the HMAC of</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <returns>A buffer containg the computed HMAC</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},VNLib.Hashing.HashAlg,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Computes the HMAC of the specified data buffer and encodes the result in
+            the specified <see cref="T:VNLib.Hashing.HashEncodingMode"/>
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The data buffer to compute the HMAC of</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <param name="mode">The encoding type for the output data</param>
+            <returns>The encoded string of the result</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.ManagedHash.ComputeHmac(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Char},VNLib.Hashing.HashAlg,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Computes the HMAC of the specified data buffer and encodes the result in
+            the specified <see cref="T:VNLib.Hashing.HashEncodingMode"/>
+            </summary>
+            <param name="key">The HMAC key</param>
+            <param name="data">The character buffer to compute the HMAC of</param>
+            <param name="type">The <see cref="T:VNLib.Hashing.HashAlg"/> type used to compute the HMAC</param>
+            <param name="mode">The encoding type for the output data</param>
+            <returns>The encoded string of the result</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="T:VNLib.Hashing.RandomHash">
+            <summary>
+            Produces random cryptographic data in common formats 
+            </summary>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomHash(VNLib.Hashing.HashAlg,System.Int32,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Generates a cryptographic random number, computes the hash, and encodes the hash as a string.
+            </summary>
+            <param name="alg">The hash algorithm to use when computing the hash</param>
+            <param name="size">Number of random bytes</param>
+            <param name="encoding"></param>
+            <returns>String containing hash of the random number</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetGuidHash(VNLib.Hashing.HashAlg,VNLib.Hashing.HashEncodingMode)">
+            <summary>
+            Gets the sha512 hash of a new GUID
+            </summary>
+            <returns>String containing hash of the GUID</returns>
+            <exception cref="T:System.FormatException"></exception>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetSecureGuid">
+            <summary>
+            Generates a secure random number and seeds a GUID object, then returns the string GUID
+            </summary>
+            <returns>Guid string</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomBase64(System.Int32)">
+            <summary>
+            Generates a cryptographic random number and returns the base64 string of that number
+            </summary>
+            <param name="size">Number of random bytes</param>
+            <returns>Base64 string of the random number</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomHex(System.Int32)">
+            <summary>
+            Generates a cryptographic random number and returns the hex string of that number
+            </summary>
+            <param name="size">Number of random bytes</param>
+            <returns>Hex string of the random number</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomBase32(System.Int32)">
+            <summary>
+            Generates a cryptographic random number and returns the Base32 encoded string of that number
+            </summary>
+            <param name="size">Number of random bytes</param>
+            <returns>Base32 string of the random number</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomBytes(System.Int32)">
+            <summary>
+            Allocates a new byte[] of the specified size and fills it with non-zero random values
+            </summary>
+            <param name="size">Number of random bytes</param>
+            <returns>byte[] containing the random data</returns>
+        </member>
+        <member name="M:VNLib.Hashing.RandomHash.GetRandomBytes(System.Span{System.Byte})">
+            <summary>
+            Fill the buffer with non-zero bytes 
+            </summary>
+            <param name="data">Buffer to fill</param>
+        </member>
+    </members>
+</doc>

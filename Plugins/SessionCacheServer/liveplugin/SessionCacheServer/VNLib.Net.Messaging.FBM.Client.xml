@@ -1,0 +1,723 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VNLib.Net.Messaging.FBM.Client</name>
+    </assembly>
+    <members>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ClientExtensions.WriteLocation(VNLib.Net.Messaging.FBM.Client.FBMRequest,System.ReadOnlySpan{System.Char})">
+            <summary>
+            Writes the location header of the requested resource
+            </summary>
+            <param name="request"></param>
+            <param name="location">The location address</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ClientExtensions.WriteLocation(VNLib.Net.Messaging.FBM.Client.FBMRequest,System.Uri)">
+            <summary>
+            Writes the location header of the requested resource
+            </summary>
+            <param name="request"></param>
+            <param name="location">The location address</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ClientExtensions.ThrowIfNotSet(VNLib.Net.Messaging.FBM.Client.FBMResponse)">
+            <summary>
+            If the <see cref="F:VNLib.Net.Messaging.FBM.Client.FBMResponse.IsSet"/> property is false, raises an <see cref="T:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException"/>
+            </summary>
+            <param name="response"></param>
+            <exception cref="T:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMException">
+            <summary>
+            A base exception class for all FBM Library exceptions
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMException.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMException.#ctor(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMException.#ctor(System.String,System.Exception)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMInvalidRequestException">
+            <summary>
+            Raised when a request message is not in a valid state and cannot be sent
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException">
+            <summary>
+            Raised when a response to an FBM request is not in a valid state
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException.#ctor(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException.#ctor(System.String,System.Exception)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.Exceptions.InvalidResponseException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FBMClient">
+            <summary>
+            A Fixed Buffer Message Protocol client. Allows for high performance client-server messaging
+            with minimal memory overhead.
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Client.FBMClient.REQ_RECV_BUF_QUERY_ARG">
+            <summary>
+            The WS connection query arguments to specify a receive buffer size
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Client.FBMClient.REQ_HEAD_BUF_QUERY_ARG">
+            <summary>
+            The WS connection query argument to suggest a maximum response header buffer size
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Client.FBMClient.REQ_MAX_MESS_QUERY_ARG">
+            <summary>
+            The WS connection query argument to suggest a maximum message size
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Client.FBMClient.REQ_MAX_HEADER_QUERY_ARG">
+            <summary>
+             The WS connection query argument to suggest a maximum request header buffer size
+            </summary>
+        </member>
+        <member name="E:VNLib.Net.Messaging.FBM.Client.FBMClient.ConnectionClosedOnError">
+            <summary>
+            Raised when the websocket has been closed because an error occured.
+            You may inspect the event args to determine the cause of the error.
+            </summary>
+        </member>
+        <member name="E:VNLib.Net.Messaging.FBM.Client.FBMClient.ConnectionClosed">
+            <summary>
+            Raised when the client listener operaiton has completed as a normal closure
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClient.Config">
+            <summary>
+            The configuration for the current client
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClient.ConnectionStatusHandle">
+            <summary>
+            A handle that is reset when a connection has been successfully set, and is set
+            when the connection exists
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClient.ClientSocket">
+            <summary>
+            The <see cref="T:System.Net.WebSockets.ClientWebSocket"/> to send/recieve message on
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClient.ControlFrame">
+            <summary>
+            Gets the shared control frame for the current instance. The request is reset when 
+            this property is called. (Not thread safe)
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.#ctor(VNLib.Net.Messaging.FBM.Client.FBMClientConfig)">
+            <summary>
+            Creates a new <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMClient"/> in a closed state
+            </summary>
+            <param name="config">The client configuration</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ReuseableRequestConstructor">
+            <summary>
+            Allocates and configures a new <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> message object for use within the reusable store
+            </summary>
+            <returns>The configured <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/></returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ConnectAsync(System.Uri,System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously opens a websocket connection with the specifed remote server
+            </summary>
+            <param name="address">The address of the server to connect to</param>
+            <param name="cancellation">A cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.RentRequest">
+            <summary>
+            Rents a new <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> from the internal <see cref="T:VNLib.Utils.Memory.Caching.ReusableStore`1"/>.
+            Use <see cref="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ReturnRequest(VNLib.Net.Messaging.FBM.Client.FBMRequest)"/> when request is no longer in use
+            </summary>
+            <returns>The configured (rented or new) <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> ready for use</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ReturnRequest(VNLib.Net.Messaging.FBM.Client.FBMRequest)">
+            <summary>
+            Stores (or returns) the reusable request in cache for use with <see cref="M:VNLib.Net.Messaging.FBM.Client.FBMClient.RentRequest"/>
+            </summary>
+            <param name="request">The request to return to the store</param>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.SendAsync(VNLib.Net.Messaging.FBM.Client.FBMRequest,System.Threading.CancellationToken)">
+            <summary>
+            Sends a <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> to the connected server
+            </summary>
+            <param name="request">The request message to send to the server</param>
+            <param name="cancellationToken"></param>
+            <returns>When awaited, yields the server response</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+            <exception cref="T:VNLib.Net.Messaging.FBM.Client.Exceptions.FBMInvalidRequestException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.StreamDataAsync(VNLib.Net.Messaging.FBM.Client.FBMRequest,System.IO.Stream,VNLib.Net.ContentType,System.Threading.CancellationToken)">
+            <summary>
+            Streams arbitrary binary data to the server with the initial request message
+            </summary>
+            <param name="request">The request message to send to the server</param>
+            <param name="payload">Data to stream to the server</param>
+            <param name="ct">The content type of the stream of data</param>
+            <param name="cancellationToken"></param>
+            <returns>When awaited, yields the server response</returns>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ProcessContinuousRecvAsync">
+            <summary>
+            Begins listening for messages from the server on the internal socket (must be connected),
+            until the socket is closed, or canceled
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ProcessResponse(VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Syncrhonously processes a buffered response packet
+            </summary>
+            <param name="responseMessage">The buffered response body recieved from the server</param>
+            <remarks>This method blocks the listening task. So operations should be quick</remarks>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ProcessControlFrame(VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Processes a control frame response from the server
+            </summary>
+            <param name="vms">The raw response packet from the server</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.ProcessControlFrame(VNLib.Net.Messaging.FBM.Client.FBMResponse@)">
+            <summary>
+            Processes a control frame response from the server
+            </summary>
+            <param name="response">The parsed response-packet</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.DisconnectAsync(System.Threading.CancellationToken)">
+            <summary>
+            Closes the underlying <see cref="T:System.Net.WebSockets.WebSocket"/> and cancels all pending operations
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.Free">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.CacheClear">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClient.CacheHardClear">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FBMClientConfig">
+            <summary>
+            A structure that defines readonly constants for the <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMClient"/> to use 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.RecvBufferSize">
+            <summary>
+            The size (in bytes) of the internal buffer to use when receiving messages from the server
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.RequestBufferSize">
+            <summary>
+            The size (in bytes) of the <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> internal buffer sizem, when requests are rented from the client
+            </summary>
+            <remarks>
+            This is the entire size of the request buffer including headers and payload data, unless 
+            data is streamed to the server
+            </remarks>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.ResponseHeaderBufSize">
+            <summary>
+            The size (in chars) of the client response message header buffer
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.MaxMessageSize">
+            <summary>
+            The maximum size (in bytes) of messages sent or recieved from the server
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.BufferHeap">
+            <summary>
+            The heap to allocate interal (and message) buffers from
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.KeepAliveInterval">
+            <summary>
+            The websocket keepalive interval to use (leaving this property default disables keepalives)
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientConfig.SubProtocol">
+            <summary>
+            The websocket sub-protocol to use
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase">
+            <summary>
+            A base class for objects that implement <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMClient"/>
+            operations
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.SocketOptions">
+            <summary>
+            Allows configuration of websocket configuration options
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.Client">
+            <summary>
+            The <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMClient"/> to sent requests from
+            </summary>
+        </member>
+        <member name="E:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.Connected">
+            <summary>
+            Raised when the client has connected successfully
+            </summary>
+        </member>
+        <member name="E:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.ConnectionClosed">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.InitClient(VNLib.Net.Messaging.FBM.Client.FBMClientConfig)">
+            <summary>
+            Creates and initializes a the internal <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMClient"/>
+            </summary>
+            <param name="config">The client config</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.ConnectAsync(System.Uri,System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously connects to a remote server by the specified uri
+            </summary>
+            <param name="serverUri">The remote uri of a server to connect to</param>
+            <param name="cancellationToken">A token to cancel the connect operation</param>
+            <returns>A task that compeltes when the client has connected to the remote server</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.DisconnectAsync(System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously disonnects a client only if the client is currently connected,
+            returns otherwise
+            </summary>
+            <param name="cancellationToken"></param>
+            <returns>A task that compeltes when the client has disconnected</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.OnConnected">
+            <summary>
+            Invoked when a client has successfully connected to the remote server
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.OnDisconnected">
+            <summary>
+            Invoked when the client has disconnected cleanly
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.OnError(VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs)">
+            <summary>
+            Invoked when the connected client is closed because of a connection error
+            </summary>
+            <param name="e">A <see cref="T:System.EventArgs"/> that contains the client error data</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMClientWorkerBase.Free">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FBMRequest">
+            <summary>
+            A reusable Fixed Buffer Message request container. This class is not thread-safe
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMRequest.Length">
+            <summary>
+            The size (in bytes) of the request message
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMRequest.MessageId">
+            <summary>
+            The id of the current request message
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMRequest.RequestData">
+            <summary>
+            The request message packet
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMRequest.ResponseWaitEvent">
+            <summary>
+            An <see cref="!:AsyncManualResetEvent"/> to signal request/response
+            event completion
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.#ctor(System.Int32,VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> with the sepcified message buffer size,
+            and a random messageid
+            </summary>
+            <param name="bufferSize">The fixed size of the request buffer</param>
+            <param name="heap">The heap to alloc buffers from</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.#ctor(System.Int32,System.Int32,VNLib.Utils.Memory.IUnmangedHeap)">
+            <summary>
+            Initializes a new <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest"/> with the sepcified message buffer size and a custom MessageId
+            </summary>
+            <param name="messageId">The custom message id</param>
+            <param name="bufferSize">The fixed size of the request buffer</param>
+            <param name="heap">The heap to alloc buffers from</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.WriteMessageId">
+            <summary>
+            Resets the internal buffer and writes the message-id header to the begining 
+            of the buffer
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.WriteHeader(VNLib.Net.Messaging.FBM.HeaderCommand,System.ReadOnlySpan{System.Char}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.WriteHeader(System.Byte,System.ReadOnlySpan{System.Char}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.WriteBody(System.ReadOnlySpan{System.Byte}@,VNLib.Net.ContentType)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.GetBodyWriter">
+            <summary>
+            Returns buffer writer for writing the body data to the internal message buffer
+            </summary>
+            <returns>A <see cref="T:VNLib.Net.Messaging.FBM.Client.FBMRequest.BufferWriter"/> to write message body to</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.Reset">
+            <summary>
+            Resets the internal buffer and allows for writing a new message with
+            the same message-id
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMRequest.Free">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FBMResponse">
+            <summary>
+            A disposeable Fixed Buffer Message response container
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Client.FBMResponse.IsSet">
+            <summary>
+            True when a response body was recieved and properly parsed
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMResponse.MessagePacket">
+            <summary>
+            The raw response message packet
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMResponse.Headers">
+            <summary>
+            A collection of response message headers
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMResponse.StatusFlags">
+            <summary>
+            Status flags of the message parse operation
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FBMResponse.ResponseBody">
+            <summary>
+            The body segment of the response message
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMResponse.#ctor(VNLib.Utils.IO.VnMemoryStream,System.Int32)">
+            <summary>
+            Initailzies a response message structure and parses response
+            packet structure
+            </summary>
+            <param name="vms">The message buffer (message packet)</param>
+            <param name="headerBufferSize">The size of the buffer to alloc for header value storage</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.FBMResponse.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs">
+            <summary>
+            <see cref="T:System.EventArgs"/> that is raised when an error occurs 
+            in the background listener loop 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs.ErrorClient">
+            <summary>
+            The client that the exception was raised from
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.FMBClientErrorEventArgs.Cause">
+            <summary>
+            The exception that was raised
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.IFBMMessage">
+            <summary>
+            Represents basic Fixed Buffer Message protocol operations
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.IFBMMessage.MessageId">
+            <summary>
+            The unique id of the message (nonzero)
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.IFBMMessage.WriteBody(System.ReadOnlySpan{System.Byte}@,VNLib.Net.ContentType)">
+            <summary>
+            Writes a data body to the message of the specified content type
+            </summary>
+            <param name="body">The body of the message to copy</param>
+            <param name="contentType">The content type of the message body</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.IFBMMessage.WriteHeader(System.Byte,System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Appends an arbitrary header to the current request buffer
+            </summary>
+            <param name="header">The header id</param>
+            <param name="value">The value of the header</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.IFBMMessage.WriteHeader(VNLib.Net.Messaging.FBM.HeaderCommand,System.ReadOnlySpan{System.Char}@)">
+            <summary>
+            Appends an arbitrary header to the current request buffer
+            </summary>
+            <param name="header">The <see cref="T:VNLib.Net.Messaging.FBM.HeaderCommand"/> of the header</param>
+            <param name="value">The value of the header</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.IStatefulConnection">
+            <summary>
+            An abstraction for a stateful connection client that reports its status
+            </summary>
+        </member>
+        <member name="E:VNLib.Net.Messaging.FBM.Client.IStatefulConnection.ConnectionClosed">
+            <summary>
+            An event that is raised when the connection state has transition from connected to disconnected
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.IStatefulConnection.ConnectAsync(System.Uri,System.Threading.CancellationToken)">
+            <summary>
+            Connects the client to the remote resource
+            </summary>
+            <param name="serverUri">The resource location to connect to</param>
+            <param name="cancellationToken">A token to cancel the connect opreation</param>
+            <returns>A task that compeltes when the connection has succedded</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.IStatefulConnection.DisconnectAsync(System.Threading.CancellationToken)">
+            <summary>
+            Gracefully disconnects the client from the remote resource
+            </summary>
+            <param name="cancellationToken">A token to cancel the disconnect operation</param>
+            <returns>A task that completes when the client has been disconnected</returns>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket">
+            <summary>
+            A wrapper container to manage client websockets 
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.Headers">
+            <summary>
+            A collection of headers to add to the client 
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.#ctor(System.Int32,System.Int32,System.TimeSpan,System.String)">
+            <summary>
+            Initiaizes a new <see cref="T:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket"/> that accepts an optional sub-protocol for connections
+            </summary>
+            <param name="txBufferSize">The size (in bytes) of the send buffer size</param>
+            <param name="rxBufferSize">The size (in bytes) of the receive buffer size to use</param>
+            <param name="keepAlive">The WS keepalive interval</param>
+            <param name="subProtocol">The optional sub-protocol to use</param>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.ConnectAsync(System.Uri,System.Threading.CancellationToken)">
+            <summary>
+            Asyncrhonously prepares a new client web-socket and connects to the remote endpoint
+            </summary>
+            <param name="serverUri">The endpoint to connect to</param>
+            <param name="token">A token to cancel the connect operation</param>
+            <returns>A task that compeltes when the client has connected</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.Cleanup">
+            <summary>
+            Cleans up internal resources to prepare for another connection
+            </summary>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.CloseStatus">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.CloseStatusDescription">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.State">
+            <inheritdoc/>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.SubProtocol">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.Abort">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus,System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.CloseOutputAsync(System.Net.WebSockets.WebSocketCloseStatus,System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.ReceiveAsync(System.Memory{System.Byte},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.ReceiveAsync(System.ArraySegment{System.Byte},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.SendAsync(System.ReadOnlyMemory{System.Byte},System.Net.WebSockets.WebSocketMessageType,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.SendAsync(System.ArraySegment{System.Byte},System.Net.WebSockets.WebSocketMessageType,System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Client.ManagedClientWebSocket.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.HeaderCommand">
+            <summary>
+            A Fixed Buffer Message header command value
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.NOT_USED">
+            <summary>
+            Default, do not use
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.MessageId">
+            <summary>
+            Specifies the header for a message-id
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.Location">
+            <summary>
+            Specifies a resource location
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.ContentType">
+            <summary>
+            Specifies a standard MIME content type header
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.Action">
+            <summary>
+            Specifies an action on a request
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.HeaderCommand.Status">
+            <summary>
+            Specifies a status header
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.HeaderParseStatus">
+            <summary>
+            Specifies the results of a response parsing operation
+            </summary>
+        </member>
+        <member name="T:VNLib.Net.Messaging.FBM.Helpers">
+            <summary>
+            Contains FBM library helper methods
+            </summary>
+        </member>
+        <member name="F:VNLib.Net.Messaging.FBM.Helpers.CONTROL_FRAME_MID">
+            <summary>
+            The message-id of a connection control frame / out of band message
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.GetMessageId(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Parses the header line for a message-id
+            </summary>
+            <param name="line">A sequence of bytes that make up a header line</param>
+            <returns>The message-id if parsed, -1 if message-id is not valid</returns>
+        </member>
+        <member name="P:VNLib.Net.Messaging.FBM.Helpers.RandomMessageId">
+            <summary>
+            Alloctes a random integer to use as a message id
+            </summary>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.GetRemainingData(VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Gets the remaining data after the current position of the stream.
+            </summary>
+            <param name="response">The stream to segment</param>
+            <returns>The remaining data segment</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.ReadLine(VNLib.Utils.IO.VnMemoryStream)">
+            <summary>
+            Reads the next available line from the response message
+            </summary>
+            <param name="response"></param>
+            <returns>The read line</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.ParseHeaders(VNLib.Utils.IO.VnMemoryStream,System.Char[],System.Collections.Generic.ICollection{System.Collections.Generic.KeyValuePair{VNLib.Net.Messaging.FBM.HeaderCommand,System.ReadOnlyMemory{System.Char}}})">
+            <summary>
+            Parses headers from the request stream, stores headers from the buffer into the 
+            header collection
+            </summary>
+            <param name="vms">The FBM packet buffer</param>
+            <param name="buffer">The header character buffer to write headers to</param>
+            <param name="headers">The collection to store headers in</param>
+            <returns>The results of the parse operation</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.GetHeaderCommand(System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Gets a <see cref="T:VNLib.Net.Messaging.FBM.HeaderCommand"/> enum from the first byte of the message
+            </summary>
+            <param name="line"></param>
+            <returns>The <see cref="T:VNLib.Net.Messaging.FBM.HeaderCommand"/> enum value from hte first byte of the message</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.GetHeaderValue(System.ReadOnlySpan{System.Byte},System.Span{System.Char})">
+            <summary>
+            Gets the value of the header following the colon bytes in the specifed
+            data message data line
+            </summary>
+            <param name="line">The message header line to get the value of</param>
+            <param name="output">The output character buffer to write characters to</param>
+            <returns>The number of characters encoded</returns>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.WriteHeader(VNLib.Utils.Memory.VnBufferWriter{System.Byte}@,System.Byte,System.ReadOnlySpan{System.Char},System.Text.Encoding)">
+            <summary>
+            Appends an arbitrary header to the current request buffer
+            </summary>
+            <param name="buffer"></param>
+            <param name="header">The <see cref="T:VNLib.Net.Messaging.FBM.HeaderCommand"/> of the header</param>
+            <param name="value">The value of the header</param>
+            <param name="encoding">Encoding to use when writing character message</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.WriteBody(VNLib.Utils.Memory.VnBufferWriter{System.Byte}@,System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Ends the header section of the request and appends the message body to 
+            the end of the request
+            </summary>
+            <param name="buffer"></param>
+            <param name="body">The message body to send with request</param>
+            <exception cref="T:System.OutOfMemoryException"></exception>
+        </member>
+        <member name="M:VNLib.Net.Messaging.FBM.Helpers.WriteTermination(VNLib.Utils.Memory.VnBufferWriter{System.Byte}@)">
+            <summary>
+            Writes a line termination to the message buffer
+            </summary>
+            <param name="buffer"></param>
+        </member>
+    </members>
+</doc>

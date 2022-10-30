@@ -1,0 +1,183 @@
+﻿using System;
+using System.Net;
+
+using Microsoft.EntityFrameworkCore;
+
+using VNLib.Utils;
+using VNLib.Utils.Logging;
+using VNLib.Net.Http;
+using VNLib.Data.Caching;
+using VNLib.Data.Caching.Exceptions;
+using VNLib.Net.Messaging.FBM.Client;
+using VNLib.Plugins.Essentials.Oauth;
+using VNLib.Plugins.Essentials.Oauth.Tokens;
+using VNLib.Plugins.Sessions.Cache.Client;
+using VNLib.Plugins.Extensions.Loading.Events;
+
+namespace VNLib.Plugins.Essentials.Sessions.OAuth
+{
+
+    /// <summary>
+    /// Provides OAuth2 session management
+    /// </summary>
+    internal sealed class OAuth2SessionProvider : SessionCacheClient, ISessionProvider, ITokenManager, IIntervalScheduleable
+    {
+
+        private static readonly SessionHandle NotFoundHandle = new(null, FileProcessArgs.NotFound, null);
+        static readonly TimeSpan BackgroundTimeout = TimeSpan.FromSeconds(10);
+
+        private readonly IOauthSessionIdFactory factory;
+        private readonly TokenStore TokenStore;
+
+        public OAuth2SessionProvider(FBMClient client, int maxCacheItems, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
+            : base(client, maxCacheItems)
+        {
+            factory = idFactory;
+            TokenStore = new(dbCtx);
+        }
+
+        ///<inheritdoc/>
+        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Client, BackgroundTimeout, InvlidatateCache);
+
+        private void InvlidatateCache(OAuth2Session session)
+        {
+            lock (CacheLock)
+            {
+                _ = CacheTable.Remove(session.SessionID);
+            }
+        }
+
+        ///<inheritdoc/>
+        public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        {
+            //Callback to close the session when the handle is closeed
+            static ValueTask HandleClosedAsync(ISession session, IHttpEvent entity)
+            {
+                return ((SessionBase)session).UpdateAndRelease(true, entity);
+            }
+            try
+            {
+                //Get session id
+                if (!factory.TryGetSessionId(entity, out string? sessionId))
+                {
+                    //Id not allowed/found, so do not attach a session
+                    return SessionHandle.Empty;
+                }
+
+                //Recover the session
+                RemoteSession session = await base.GetSessionAsync(entity, sessionId, cancellationToken);
+                
+                //Session should not be new
+                if (session.IsNew)
+                {
+                    //Invalidate the session, so it is deleted
+                    session.Invalidate();
+                    await session.UpdateAndRelease(true, entity);
+                    return SessionHandle.Empty;
+                }
+                //Make sure session is still valid
+                if (session.Created.Add(factory.SessionValidFor) < DateTimeOffset.UtcNow)
+                {
+                    //Invalidate the handle
+                    session.Invalidate();
+                    //Flush changes
+                    await session.UpdateAndRelease(false, entity);
+                    //Remove the token from the db backing store
+                    await TokenStore.RevokeTokenAsync(sessionId, cancellationToken);
+                    //close entity
+                    entity.CloseResponseError(HttpStatusCode.Unauthorized, ErrorType.InvalidToken, "The token has expired");
+                    //return a completed handle
+                    return NotFoundHandle;
+                }
+                
+                return new SessionHandle(session, HandleClosedAsync);
+            }
+            //Pass session exceptions
+            catch (SessionException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new SessionException("Exception raised while retreiving or loading OAuth2 session", ex);
+            }
+        }
+        ///<inheritdoc/>
+        async Task<IOAuth2TokenResult?> ITokenManager.CreateAccessTokenAsync(IHttpEvent ev, UserApplication app, CancellationToken cancellation)
+        {
+            //Get a new session for the current connection
+            TokenAndSessionIdResult ids = factory.GenerateTokensAndId();
+            //try to insert token into the store, may fail if max has been reached
+            if (await TokenStore.InsertTokenAsync(ids.SessionId, app.Id, ids.RefreshToken, factory.MaxTokensPerApp, cancellation) != ERRNO.SUCCESS)
+            {
+                return null;
+            }
+            //Create new session from the session id
+            RemoteSession session = SessionCtor(ids.SessionId);
+            await session.WaitAndLoadAsync(ev, cancellation);
+            try
+            {
+                //Init new session
+                factory.InitNewSession(session, app, ev);
+            }
+            finally
+            {
+                await session.UpdateAndRelease(false, ev);
+            }
+            //Init new token result to pass to client
+            return new OAuth2TokenResult()
+            {
+                ExpiresSeconds = (int)factory.SessionValidFor.TotalSeconds,
+                TokenType = factory.TokenType,
+                //Return token and refresh token
+                AccessToken = ids.AccessToken,
+                RefreshToken = ids.RefreshToken,
+            };
+        }
+        ///<inheritdoc/>
+        Task ITokenManager.RevokeTokensAsync(IReadOnlyCollection<string> tokens, CancellationToken cancellation)
+        {
+            throw new NotImplementedException();
+        }
+        ///<inheritdoc/>
+        Task ITokenManager.RevokeTokensForAppAsync(string appId, CancellationToken cancellation)
+        {
+            throw new NotImplementedException();
+        }
+        
+        async Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
+        {
+            //Calculate valid token time
+            DateTimeOffset validAfter = DateTimeOffset.UtcNow.Subtract(factory.SessionValidFor);
+            //Remove tokens from db store
+            IReadOnlyCollection<ActiveToken> revoked = await TokenStore.CleanupExpiredTokensAsync(validAfter, cancellationToken);
+            //exception list
+            List<Exception>? errors = null;
+            //Remove all sessions from the store
+            foreach (ActiveToken token in revoked)
+            {
+                try
+                {
+                    //Remove tokens by thier object id from cache
+                    await base.Client.DeleteObjectAsync(token.Id, cancellationToken);
+                }
+                //Ignore if the object has already been removed
+                catch (ObjectNotFoundException)
+                {}
+                catch (Exception ex)
+                {
+                    errors ??= new();
+                    errors.Add(ex);
+                }
+            }
+            if (errors?.Count > 0)
+            {
+                throw new AggregateException(errors);
+            }
+            if(revoked.Count > 0)
+            {
+                log.Debug("Cleaned up {0} expired tokens", revoked.Count);
+            }
+        }
+    }
+}
