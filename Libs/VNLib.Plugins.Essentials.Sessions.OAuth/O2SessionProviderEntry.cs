@@ -5,6 +5,7 @@ using VNLib.Net.Http;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Plugins.Essentials.Oauth;
+using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Essentials.Sessions.OAuth;
 using VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints;
 using VNLib.Plugins.Extensions.Loading;
@@ -43,11 +44,12 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
 
             string tokenEpPath = oauth2Config["token_path"].GetString() ?? throw new KeyNotFoundException($"Missing required 'token_path' in '{OAUTH2_CONFIG_KEY}' config");
 
-            //TODO fix with method that will wait until cache is actually loaded
-            Lazy<ITokenManager> lazyTokenMan = new(() => _sessions!, false);
+            //Optional application jwt token 
+            Task<JsonDocument?> jwtTokenSecret = plugin.TryGetSecretAsync("application_token_key")
+                .ContinueWith(static t => t.Result == null ? null : JsonDocument.Parse(t.Result));
 
             //Init auth endpoint
-            AccessTokenEndpoint authEp = new(tokenEpPath, plugin, lazyTokenMan);
+            AccessTokenEndpoint authEp = new(tokenEpPath, plugin, CreateTokenDelegateAsync, jwtTokenSecret);
 
             //route auth endpoint
             plugin.Route(authEp);
@@ -56,14 +58,21 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
             plugin.Route<RevocationEndpoint>();
 
             //Run
-            _ = WokerDoWorkAsync(plugin, localized, cacheConfig, oauth2Config);
+            _ = CacheWokerDoWorkAsync(plugin, localized, cacheConfig, oauth2Config);
+        }
+
+        private async Task<IOAuth2TokenResult?> CreateTokenDelegateAsync(HttpEntity entity, UserApplication app, CancellationToken cancellation)
+        {
+            return await _sessions!.CreateAccessTokenAsync(entity, app, cancellation).ConfigureAwait(false);
         }
 
         /*
          * Starts and monitors the VNCache connection
          */
 
-        private async Task WokerDoWorkAsync(PluginBase plugin, ILogProvider localized, IReadOnlyDictionary<string, JsonElement> cacheConfig, IReadOnlyDictionary<string, JsonElement> oauth2Config)
+        private async Task CacheWokerDoWorkAsync(PluginBase plugin, ILogProvider localized, 
+            IReadOnlyDictionary<string, JsonElement> cacheConfig, 
+            IReadOnlyDictionary<string, JsonElement> oauth2Config)
         {
             //Init cache client
             using VnCacheClient cache = new(plugin.IsDebug() ? plugin.Log : null, Utils.Memory.Memory.Shared);
@@ -88,7 +97,6 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
 
                 //Schedule cleanup interval with the plugin scheduler
                 plugin.ScheduleInterval(_sessions, cleanupInterval);
-
 
                 localized.Information("Session provider loaded");
 

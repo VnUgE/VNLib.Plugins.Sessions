@@ -16,15 +16,16 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
     {
         private readonly Dictionary<string, string> DataStorage;
 
-        private readonly MemorySessionStore SessionStore;
+        private readonly Func<IHttpEvent, string, string> OnSessionUpdate;
 
-        public MemorySession(IPAddress ipAddress, MemorySessionStore SessionStore)
+        public MemorySession(string sessionId, IPAddress ipAddress, Func<IHttpEvent, string, string> onSessionUpdate)
         {
             //Set the initial is-new flag
             DataStorage = new Dictionary<string, string>(10);
-            this.SessionStore = SessionStore;
+            
+            OnSessionUpdate = onSessionUpdate;
             //Get new session id
-            SessionID = SessionStore.NewSessionID;
+            SessionID = sessionId;
             UserIP = ipAddress;
             SessionType = SessionType.Web;
             Created = DateTimeOffset.UtcNow;
@@ -45,7 +46,8 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             {
                 //Clear storage, and regenerate the sessionid
                 DataStorage.Clear();
-                RegenId(state);
+                //store new sessionid
+                SessionID = OnSessionUpdate(state, SessionID);
                 //Reset ip-address
                 UserIP = state.Server.GetTrustedIp();
                 //Update created-time
@@ -58,26 +60,14 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             else if (Flags.IsSet(REGEN_ID_MSK))
             {
                 //Regen id without modifying the data store
-                RegenId(state);
+                SessionID = OnSessionUpdate(state, SessionID);
             }
             //Clear flags
             Flags.ClearAll();
             //Memory session always completes 
             return ValueTask.FromResult<Task?>(null);
         }
-
-        private void RegenId(IHttpEvent entity)
-        {
-            //Get a new session-id
-            string newId = SessionStore.NewSessionID;
-            //Update the cache entry
-            SessionStore.UpdateRecord(newId, this);
-            //store new sessionid
-            SessionID = newId;
-            //set cookie
-            SessionStore.SetSessionCookie(entity, this);
-        }       
-
+        
         protected override Task OnEvictedAsync()
         {
             //Clear all session data

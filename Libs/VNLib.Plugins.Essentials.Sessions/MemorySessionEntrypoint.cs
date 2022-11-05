@@ -52,6 +52,9 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
 
             //Schedule garbage collector
             _ = plugin.ScheduleInterval(this, TimeSpan.FromMinutes(1));
+
+            //Call cleanup on exit
+            _ = plugin.UnloadToken.RegisterUnobserved(_sessions.Cleanup);
         }
 
         Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)

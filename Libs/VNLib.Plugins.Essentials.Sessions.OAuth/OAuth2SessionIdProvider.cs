@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-using VNLib.Utils;
 using VNLib.Utils.Memory;
 using VNLib.Utils.Extensions;
 using VNLib.Hashing;
 using VNLib.Net.Http;
-using VNLib.Plugins.Essentials.Oauth;
+using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Sessions.Cache.Client;
 using static VNLib.Plugins.Essentials.Oauth.OauthSessionExtensions;
@@ -90,7 +89,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
             string sessionId = ComputeSessionIdFromToken(token);
             
             //Clear buffer
-            Utils.Memory.Memory.InitializeBlock(mem.Span);
+            Memory.InitializeBlock(mem.Span);
             
             //Return sessid result
             return new(sessionId, token, null);

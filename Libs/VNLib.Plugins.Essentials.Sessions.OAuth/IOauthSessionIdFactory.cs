@@ -1,7 +1,7 @@
 ﻿using System;
 
 using VNLib.Net.Http;
-using VNLib.Plugins.Essentials.Oauth;
+using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth

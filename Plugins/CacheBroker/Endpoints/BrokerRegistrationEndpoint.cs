@@ -22,12 +22,12 @@ using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Hashing.IdentityUtility;
 using VNLib.Plugins.Essentials;
+using VNLib.Plugins.Essentials.Endpoints;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Events;
 using VNLib.Plugins.Extensions.Loading.Configuration;
 using VNLib.Net.Rest.Client;
-
 
 #nullable enable
 
@@ -188,7 +188,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             //Copy input stream to buffer
             await inputStream.CopyToAsync(buffer, 4096, Memory.Shared);
             //Parse jwt
-            return JsonWebToken.Parse(buffer.AsSpan());
+            return JsonWebToken.ParseRaw(buffer.AsSpan());
         }
 
         protected override async ValueTask<VfReturnType> PutAsync(HttpEntity entity)
@@ -200,7 +200,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             {
                 alg.ImportSubjectPublicKeyInfo(CachePubKey.Result, out _);
                 //Verify the jwt
-                if (!jwt.Verify(alg, SignatureHashAlg))
+                if (!jwt.Verify(alg, in SignatureHashAlg))
                 {
                     entity.CloseResponse(HttpStatusCode.Unauthorized);
                     return VfReturnType.VirtualSkip;

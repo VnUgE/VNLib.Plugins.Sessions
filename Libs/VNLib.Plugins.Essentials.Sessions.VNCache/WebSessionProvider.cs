@@ -109,6 +109,10 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
                 }
                 return new SessionHandle(session, HandleClosedAsync);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (SessionException)
             {
                 throw;

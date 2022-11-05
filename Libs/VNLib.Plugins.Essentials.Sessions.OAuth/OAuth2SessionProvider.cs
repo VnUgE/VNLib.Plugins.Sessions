@@ -9,9 +9,10 @@ using VNLib.Net.Http;
 using VNLib.Data.Caching;
 using VNLib.Data.Caching.Exceptions;
 using VNLib.Net.Messaging.FBM.Client;
+using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
-using VNLib.Plugins.Sessions.Cache.Client;
+using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading.Events;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth
@@ -24,8 +25,10 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
     {
 
         private static readonly SessionHandle NotFoundHandle = new(null, FileProcessArgs.NotFound, null);
-        static readonly TimeSpan BackgroundTimeout = TimeSpan.FromSeconds(10);
+        
+        private static readonly TimeSpan BackgroundTimeout = TimeSpan.FromSeconds(10);
 
+        
         private readonly IOauthSessionIdFactory factory;
         private readonly TokenStore TokenStore;
 
@@ -103,26 +106,26 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
             }
         }
         ///<inheritdoc/>
-        async Task<IOAuth2TokenResult?> ITokenManager.CreateAccessTokenAsync(IHttpEvent ev, UserApplication app, CancellationToken cancellation)
+        public async Task<IOAuth2TokenResult?> CreateAccessTokenAsync(HttpEntity ev, UserApplication app, CancellationToken cancellation)
         {
             //Get a new session for the current connection
             TokenAndSessionIdResult ids = factory.GenerateTokensAndId();
             //try to insert token into the store, may fail if max has been reached
-            if (await TokenStore.InsertTokenAsync(ids.SessionId, app.Id, ids.RefreshToken, factory.MaxTokensPerApp, cancellation) != ERRNO.SUCCESS)
+            if (await TokenStore.InsertTokenAsync(ids.SessionId, app.Id!, ids.RefreshToken, factory.MaxTokensPerApp, cancellation) != ERRNO.SUCCESS)
             {
                 return null;
             }
             //Create new session from the session id
             RemoteSession session = SessionCtor(ids.SessionId);
-            await session.WaitAndLoadAsync(ev, cancellation);
+            await session.WaitAndLoadAsync(ev.Entity, cancellation);
             try
             {
                 //Init new session
-                factory.InitNewSession(session, app, ev);
+                factory.InitNewSession(session, app, ev.Entity);
             }
             finally
             {
-                await session.UpdateAndRelease(false, ev);
+                await session.UpdateAndRelease(false, ev.Entity);
             }
             //Init new token result to pass to client
             return new OAuth2TokenResult()
@@ -137,14 +140,20 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
         ///<inheritdoc/>
         Task ITokenManager.RevokeTokensAsync(IReadOnlyCollection<string> tokens, CancellationToken cancellation)
         {
-            throw new NotImplementedException();
+            return TokenStore.RevokeTokensAsync(tokens, cancellation);
         }
         ///<inheritdoc/>
         Task ITokenManager.RevokeTokensForAppAsync(string appId, CancellationToken cancellation)
         {
-            throw new NotImplementedException();
+            return TokenStore.RevokeTokenAsync(appId, cancellation);
         }
-        
+
+
+        /*
+         * Interval for remving expired tokens
+         */
+
+        ///<inheritdoc/>
         async Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
         {
             //Calculate valid token time

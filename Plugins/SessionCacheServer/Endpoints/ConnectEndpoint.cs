@@ -18,6 +18,7 @@ using VNLib.Net.Messaging.FBM.Server;
 using VNLib.Data.Caching.Extensions;
 using VNLib.Data.Caching.ObjectCache;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Essentials.Endpoints;
 using VNLib.Plugins.Essentials.Extensions;
 
 
