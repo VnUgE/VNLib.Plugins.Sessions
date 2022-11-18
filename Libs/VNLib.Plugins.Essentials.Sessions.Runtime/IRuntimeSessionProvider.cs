@@ -1,8 +1,7 @@
-﻿
-using VNLib.Net.Http;
+﻿using VNLib.Net.Http;
 using VNLib.Utils.Logging;
 
-namespace VNLib.Plugins.Essentials.Sessions
+namespace VNLib.Plugins.Essentials.Sessions.Runtime
 {
     /// <summary>
     /// Represents a dynamically loadable type that an provide sessions to http connections

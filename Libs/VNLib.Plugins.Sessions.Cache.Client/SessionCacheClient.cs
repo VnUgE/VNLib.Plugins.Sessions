@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Memory.Caching;
-using VNLib.Net.Http;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Sessions;
 
@@ -14,7 +14,7 @@ using VNLib.Plugins.Essentials.Sessions;
 
 namespace VNLib.Plugins.Sessions.Cache.Client
 {
- 
+
     /// <summary>
     /// A client that allows access to sessions located on external servers
     /// </summary>

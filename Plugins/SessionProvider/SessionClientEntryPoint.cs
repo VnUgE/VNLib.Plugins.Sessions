@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using VNLib.Net.Http;
 using VNLib.Utils.Logging;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Essentials.Sessions.Runtime;
 
 namespace VNLib.Plugins.Essentials.Sessions
 {

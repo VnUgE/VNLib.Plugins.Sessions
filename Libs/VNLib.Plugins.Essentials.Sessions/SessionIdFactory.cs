@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using VNLib.Hashing;
 using VNLib.Net.Http;
 using VNLib.Plugins.Essentials.Extensions;
+using VNLib.Plugins.Essentials.Sessions.Runtime;
 
 #nullable enable
 
@@ -33,7 +34,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             //return session-id value from cookie value
             return cookie;
         }
-
+        
         public bool TryGetSessionId(IHttpEvent entity, [NotNullWhen(true)] out string? sessionId)
         {
             //Get authorization token and make sure its not too large to cause a buffer overflow

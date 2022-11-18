@@ -1,4 +1,4 @@
-﻿using VNLib.Plugins.Essentials.Oauth;
+﻿using VNLib.Plugins.Essentials.Oauth.Tokens;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth
 {

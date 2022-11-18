@@ -22,7 +22,7 @@ using VNLib.Plugins.Essentials.Endpoints;
 using VNLib.Plugins.Essentials.Extensions;
 
 
-namespace VNLib.Plugins.Essentials.Sessions.Server
+namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 {
     class ConnectEndpoint : ResourceEndpointBase
     {
@@ -95,8 +95,8 @@ namespace VNLib.Plugins.Essentials.Sessions.Server
                 }
             }
             catch (OperationCanceledException)
-            {}
-            catch(Exception ex)
+            { }
+            catch (Exception ex)
             {
                 Log.Error(ex);
             }
@@ -107,7 +107,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server
             public int RecvBufferSize { get; init; }
             public int MaxHeaderBufferSize { get; init; }
             public int MaxMessageSize { get; init; }
-            public int MaxResponseBufferSize { get; init; } 
+            public int MaxResponseBufferSize { get; init; }
             public AsyncQueue<ChangeEvent>? SyncQueue { get; init; }
         }
 
@@ -207,7 +207,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server
             try
             {
                 WsUserState state = (wss.UserState as WsUserState)!;
-                
+
                 //Init listener args from request
                 FBMListenerSessionParams args = new()
                 {

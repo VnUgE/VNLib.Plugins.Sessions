@@ -5,7 +5,7 @@ using VNLib.Utils.Memory;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Plugins.Extensions.Loading;
-using VNLib.Plugins.Extensions.Loading.Configuration;
+using VNLib.Plugins.Essentials.Sessions.Runtime;
 
 namespace VNLib.Plugins.Essentials.Sessions.VNCache
 {

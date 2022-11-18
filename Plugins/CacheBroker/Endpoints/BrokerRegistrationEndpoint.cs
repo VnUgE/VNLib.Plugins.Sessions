@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 using RestSharp;
 
-using VNLib.Net;
+using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.IO;
 using VNLib.Utils.Memory;
@@ -26,7 +26,6 @@ using VNLib.Plugins.Essentials.Endpoints;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Events;
-using VNLib.Plugins.Extensions.Loading.Configuration;
 using VNLib.Net.Rest.Client;
 
 #nullable enable
@@ -122,13 +121,13 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
         protected override async ValueTask<VfReturnType> PostAsync(HttpEntity entity)
         {
             //Parse jwt
-            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync);
+            using JsonWebToken jwt = await entity.ParseFileAsAsync(ParseJwtAsync) ?? throw new Exception("Invalid JWT");
             //Verify with the client's pub key
             using (ECDsa alg = ECDsa.Create(DefaultCurve))
             {
                 alg.ImportSubjectPublicKeyInfo(ClientPubKey.Result, out _);
                 //Verify with client public key
-                if (!jwt.Verify(alg, SignatureHashAlg))
+                if (!jwt.Verify(alg, in SignatureHashAlg))
                 {
                     entity.CloseResponse(HttpStatusCode.Unauthorized);
                     return VfReturnType.VirtualSkip;
@@ -304,7 +303,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
          * Schedule heartbeat interval
          */
         [ConfigurableAsyncInterval("heartbeat_sec", IntervalResultionType.Seconds)]
-        public async Task OnIntervalAsync(BrokerRegistrationEndpoint bep, CancellationToken pluginExit)
+        public async Task OnIntervalAsync(ILogProvider log, CancellationToken pluginExit)
         {
             ActiveServer[] servers;
             //Get the current list of active servers
@@ -312,11 +311,11 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             {
                 servers = ActiveServers.Values.ToArray();
             }
-            List<Task> all = new();
+            LinkedList<Task> all = new();
             //Run keeplaive request for all active servers
             foreach (ActiveServer server in servers)
             {
-                all.Add(RunHeartbeatAsync(server));
+                all.AddLast(RunHeartbeatAsync(server));
             }
             //Wait for all to complete
             await Task.WhenAll(all);
@@ -356,7 +355,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                 keepaliveRequest.AddHeader("Authorization", authMessage);
 
                 //Rent client from pool
-                using ClientContract client = await ClientPool.GetClientAsync();
+                using ClientContract client = ClientPool.Lease();
                 //Exec
                 RestResponse response = await client.Resource.ExecuteAsync(keepaliveRequest);
                 //If the response was successful, then keep it in the list, if the response fails, 

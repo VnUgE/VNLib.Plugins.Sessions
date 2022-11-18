@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 using VNLib.Utils;
 using VNLib.Utils.Logging;
-using VNLib.Net.Http;
 using VNLib.Data.Caching;
 using VNLib.Data.Caching.Exceptions;
 using VNLib.Net.Messaging.FBM.Client;
@@ -14,6 +13,8 @@ using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading.Events;
+using VNLib.Net.Http.Core;
+using VNLib.Net.Http;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth
 {

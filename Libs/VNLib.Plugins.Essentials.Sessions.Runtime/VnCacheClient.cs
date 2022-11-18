@@ -12,7 +12,7 @@ using VNLib.Data.Caching.Extensions;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Extensions.Loading;
 
-namespace VNLib.Plugins.Essentials.Sessions
+namespace VNLib.Plugins.Essentials.Sessions.Runtime
 {
     /// <summary>
     /// A wrapper to simplify a cache client object
@@ -28,7 +28,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
 
         private TimeSpan RetryInterval;
-        
+
         private readonly ILogProvider? DebugLog;
         private readonly IUnmangedHeap? ClientHeap;
 
@@ -73,7 +73,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             byte[] privKey = Convert.FromBase64String(keys[0] ?? throw new KeyNotFoundException("Missing required secret client_private_key"));
             byte[] brokerPub = Convert.FromBase64String(keys[1] ?? throw new KeyNotFoundException("Missing required secret broker_public_key"));
-            
+
             RetryInterval = config["retry_interval_sec"].GetTimeSpan(TimeParseType.Seconds);
 
             Uri brokerUri = new(brokerAddress);

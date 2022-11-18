@@ -2,7 +2,7 @@
 
 using VNLib.Net.Http;
 
-namespace VNLib.Plugins.Essentials.Sessions
+namespace VNLib.Plugins.Essentials.Sessions.Runtime
 {
     public interface ISessionIdFactory
     {

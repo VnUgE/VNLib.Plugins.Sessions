@@ -3,6 +3,7 @@
 using VNLib.Net.Http;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Sessions.Cache.Client;
+using VNLib.Plugins.Sessions.Cache.Client.Exceptions;
 
 using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
 

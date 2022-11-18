@@ -2,10 +2,9 @@
 using System.Net;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
-using VNLib.Net.Http;
 using VNLib.Plugins.Essentials.Extensions;
 
+using VNLib.Net.Http;
 using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
 
 #nullable enable

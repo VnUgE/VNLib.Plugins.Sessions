@@ -11,6 +11,7 @@ using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Validation;
+using VNLib.Plugins.Essentials.Oauth.Tokens;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
 {

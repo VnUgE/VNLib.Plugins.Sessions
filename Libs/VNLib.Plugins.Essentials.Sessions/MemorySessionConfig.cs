@@ -1,7 +1,8 @@
 ﻿using System;
+
 using VNLib.Utils.Logging;
 
-namespace VNLib.Net.Sessions
+namespace VNLib.Plugins.Essentials.Sessions.Memory
 {
     /// <summary>
     /// Represents configration variables used to create and operate http sessions. 
@@ -15,7 +16,7 @@ namespace VNLib.Net.Sessions
         /// <summary>
         /// The size (in bytes) of the genreated SessionIds
         /// </summary>
-        public uint SessionIdSizeBytes { get; init; }      
+        public uint SessionIdSizeBytes { get; init; }
         /// <summary>
         /// The amount of time a session is valid (within the backing store)
         /// </summary>

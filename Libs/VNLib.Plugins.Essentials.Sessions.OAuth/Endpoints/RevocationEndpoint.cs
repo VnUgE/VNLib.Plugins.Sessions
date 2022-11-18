@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 using VNLib.Plugins.Essentials.Oauth;
-using VNLib.Plugins.Extensions.Loading.Configuration;
+using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
 {

@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using VNLib.Net.Http;
-using VNLib.Net.Sessions;
 using VNLib.Utils;
 using VNLib.Utils.Async;
 using VNLib.Utils.Extensions;
 using VNLib.Plugins.Essentials.Extensions;
+using VNLib.Net.Http.Core;
 
 #nullable enable
 
