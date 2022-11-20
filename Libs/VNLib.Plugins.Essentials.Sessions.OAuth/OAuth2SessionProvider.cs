@@ -9,17 +9,17 @@
 * VNLib collection of libraries and utilities.
 *
 * VNLib.Plugins.Essentials.Sessions.OAuth is free software: you can redistribute it and/or modify 
-* it under the terms of the GNU General Public License as published
-* by the Free Software Foundation, either version 2 of the License,
-* or (at your option) any later version.
+* it under the terms of the GNU Affero General Public License as 
+* published by the Free Software Foundation, either version 3 of the
+* License, or (at your option) any later version.
 *
 * VNLib.Plugins.Essentials.Sessions.OAuth is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-* General Public License for more details.
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Affero General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
-* along with VNLib.Plugins.Essentials.Sessions.OAuth. If not, see http://www.gnu.org/licenses/.
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see https://www.gnu.org/licenses/.
 */
 
 using System;
@@ -131,7 +131,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
             }
         }
         ///<inheritdoc/>
-        public async Task<IOAuth2TokenResult?> CreateAccessTokenAsync(HttpEntity ev, UserApplication app, CancellationToken cancellation)
+        public async Task<IOAuth2TokenResult?> CreateAccessTokenAsync(IHttpEvent ev, UserApplication app, CancellationToken cancellation)
         {
             //Get a new session for the current connection
             TokenAndSessionIdResult ids = factory.GenerateTokensAndId();
@@ -142,15 +142,15 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
             }
             //Create new session from the session id
             RemoteSession session = SessionCtor(ids.SessionId);
-            await session.WaitAndLoadAsync(ev.Entity, cancellation);
+            await session.WaitAndLoadAsync(ev, cancellation);
             try
             {
                 //Init new session
-                factory.InitNewSession(session, app, ev.Entity);
+                factory.InitNewSession(session, app, ev);
             }
             finally
             {
-                await session.UpdateAndRelease(false, ev.Entity);
+                await session.UpdateAndRelease(false, ev);
             }
             //Init new token result to pass to client
             return new OAuth2TokenResult()

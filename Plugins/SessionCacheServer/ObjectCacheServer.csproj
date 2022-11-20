@@ -42,7 +42,7 @@
 
 
   <ItemGroup>
-    <None Update="SessionCacheServer.json">
+    <None Update="ObjectCacheServer.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

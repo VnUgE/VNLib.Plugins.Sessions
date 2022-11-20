@@ -353,3 +353,4 @@ MigrationBackup/
 *.json
 
 [Ll]iveplugin/
+*.licenseheader
