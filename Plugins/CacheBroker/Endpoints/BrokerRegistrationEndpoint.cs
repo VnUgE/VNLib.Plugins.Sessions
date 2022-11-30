@@ -51,6 +51,7 @@ using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Events;
 using VNLib.Net.Rest.Client;
+using VaultSharp.V1.SystemBackend;
 
 #nullable enable
 
@@ -101,7 +102,14 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
         private readonly Task<byte[]> ClientPubKey;
         private readonly Task<byte[]> BrokerPrivateKey;
 
-        protected override ProtectionSettings EndpointProtectionSettings { get; }
+        //Loosen up protection settings since this endpoint is not desinged for browsers or sessions
+        protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
+        {
+            BrowsersOnly = false,
+            CrossSiteDenied = false,
+            SessionsRequired = false,
+            VerifySessionCors = false,
+        };
 
         public BrokerRegistrationEndpoint(PluginBase plugin, IReadOnlyDictionary<string, JsonElement> config)
         {
@@ -112,30 +120,21 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             {
                 _ = secret.Result ?? throw new InvalidOperationException("Broker private key not found in vault");
                 return Convert.FromBase64String(secret.Result);
-            });
+            }, TaskScheduler.Default);
 
             CachePubKey = plugin.TryGetSecretAsync("cache_public_key").ContinueWith((Task<string?> secret) =>
             {
                 _ = secret.Result ?? throw new InvalidOperationException("Cache public key not found in vault");
                 return Convert.FromBase64String(secret.Result);
-            });
+            }, TaskScheduler.Default);
 
             ClientPubKey = plugin.TryGetSecretAsync("client_public_key").ContinueWith((Task<string?> secret) =>
             {
                 _ = secret.Result ?? throw new InvalidOperationException("Client public key not found in vault");
                 return Convert.FromBase64String(secret.Result);
-            });
-
+            }, TaskScheduler.Default);
 
             InitPathAndLog(path, plugin.Log);
-
-            //Loosen up protection settings since this endpoint is not desinged for browsers or sessions
-            EndpointProtectionSettings = new()
-            {
-                SessionsRequired = false,
-                BrowsersOnly = false,
-                CrossSiteDenied = false,
-            };
 
             ListLock = new();
             ActiveServers = new();
@@ -149,7 +148,8 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             //Verify with the client's pub key
             using (ECDsa alg = ECDsa.Create(DefaultCurve))
             {
-                alg.ImportSubjectPublicKeyInfo(ClientPubKey.Result, out _);
+                ReadOnlyMemory<byte> client = await ClientPubKey; 
+                alg.ImportSubjectPublicKeyInfo(client.Span, out _);
                 //Verify with client public key
                 if (!jwt.Verify(alg, in SignatureHashAlg))
                 {
@@ -176,20 +176,14 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                 //Sign the jwt using the broker key
                 using(ECDsa alg = ECDsa.Create(DefaultCurve))
                 {
-                    alg.ImportPkcs8PrivateKey(BrokerPrivateKey.Result, out _);
+                    ReadOnlyMemory<byte> brokerPrivate = await BrokerPrivateKey;
+                    
+                    alg.ImportPkcs8PrivateKey(brokerPrivate.Span, out _);
 
                     response.Sign(alg, in SignatureHashAlg, 128);
                 }
                 
-                //Alloc output buffer
-                int bufSize = response.ByteSize * 2;
-                
-                using UnsafeMemoryHandle<char> charBuf = Memory.UnsafeAlloc<char>(bufSize, true);
-
-                //compile jwt
-                ERRNO count = response.Compile(charBuf);
-                
-                entity.CloseResponse(HttpStatusCode.OK, ContentType.Text, charBuf.Span[..(int)count]);
+                entity.CloseResponse(HttpStatusCode.OK, ContentType.Text, response.DataBuffer);
                 return VfReturnType.VirtualSkip;
             }
             catch (KeyNotFoundException)
@@ -217,11 +211,13 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
         protected override async ValueTask<VfReturnType> PutAsync(HttpEntity entity)
         {
             //Parse jwt
-            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync);
+            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync) ?? throw new Exception("");
             //Verify with the cache server's pub key
             using (ECDsa alg = ECDsa.Create(DefaultCurve))
             {
-                alg.ImportSubjectPublicKeyInfo(CachePubKey.Result, out _);
+                ReadOnlyMemory<byte> cache = await CachePubKey;
+                
+                alg.ImportSubjectPublicKeyInfo(cache.Span, out _);
                 //Verify the jwt
                 if (!jwt.Verify(alg, in SignatureHashAlg))
                 {
@@ -237,7 +233,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                 using JsonDocument requestBody = jwt.GetPayload();
                 
                 //Get request keys
-                string? serverId = requestBody.RootElement.GetProperty("server_id").GetString();
+                string? serverId = requestBody.RootElement.GetProperty("sub").GetString();
                 string? hostname = requestBody.RootElement.GetProperty("address").GetString();
                 string? token = requestBody.RootElement.GetProperty("token").GetString();
 
@@ -366,7 +362,9 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                     //Sign the jwt using the broker key
                     using (ECDsa alg = ECDsa.Create(DefaultCurve))
                     {
-                        alg.ImportPkcs8PrivateKey(BrokerPrivateKey.Result, out _);
+                        ReadOnlyMemory<byte> broker = await BrokerPrivateKey;
+
+                        alg.ImportPkcs8PrivateKey(broker.Span, out _);
                         //Sign with broker key
                         jwt.Sign(alg, in SignatureHashAlg, 128);
                     }

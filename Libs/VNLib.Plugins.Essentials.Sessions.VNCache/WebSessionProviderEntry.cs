@@ -30,6 +30,7 @@ using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Essentials.Sessions.Runtime;
+using VNLib.Data.Caching.Extensions;
 
 namespace VNLib.Plugins.Essentials.Sessions.VNCache
 {
@@ -63,12 +64,11 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
             string cachePrefix = webSessionConfig["cache_prefix"].GetString() ?? throw new KeyNotFoundException($"Missing required element 'cache_prefix' for config '{WEB_SESSION_CONFIG}'");
             TimeSpan validFor = webSessionConfig["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
 
-
             //Init id factory
             WebSessionIdFactoryImpl idFactory = new(cookieSize, cookieName, cachePrefix, validFor);
 
             //Run client connection
-            _ = WokerDoWorkAsync(plugin, localized, idFactory, cacheConfig, webSessionConfig);
+            _ = plugin.DeferTask(() => WokerDoWorkAsync(plugin, localized, idFactory, cacheConfig, webSessionConfig)); 
         }
 
        
@@ -109,6 +109,10 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
             catch (KeyNotFoundException e)
             {
                 localized.Error("Missing required configuration variable for VnCache client: {0}", e.Message);
+            }
+            catch (FBMServerNegiationException fne)
+            {
+                localized.Error("Failed to negotiate connection with cache server {reason}", fne.Message);
             }
             catch (Exception ex)
             {

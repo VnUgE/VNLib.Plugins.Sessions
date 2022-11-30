@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <RootNamespace>VNLib.Plugins.Essentials.Sessions</RootNamespace>
     <AssemblyName>SessionProvider</AssemblyName>
     <PackageId>SessionProvider</PackageId>
@@ -10,7 +9,8 @@
     <Product>SessionProvider</Product>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
     <Version>1.0.3.1</Version>
-    <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
+    <PackageProjectUrl>www.vaughnnugent.com/resources</PackageProjectUrl>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,10 +27,16 @@
   <!-- Resolve nuget dll files and store them in the output dir -->
   <PropertyGroup>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <AnalysisLevel>latest-all</AnalysisLevel>
+    <AssemblyVersion>1.0.2.1</AssemblyVersion>
+    <FileVersion>1.0.2.1</FileVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Deterministic>False</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Deterministic>False</Deterministic>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
@@ -48,7 +54,7 @@
   </Target>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="erase &quot;F:\Programming\Web Plugins\DevPlugins\$(TargetName)&quot; /q &gt; nul" />
+    <Exec Command="erase &quot;F:\Programming\Web Plugins\DevPlugins\$(TargetName)&quot; &gt; nul" />
   </Target>
 
 </Project>

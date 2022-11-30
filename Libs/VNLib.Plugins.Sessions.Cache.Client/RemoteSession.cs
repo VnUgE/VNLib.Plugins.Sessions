@@ -59,7 +59,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// </summary>
         protected Dictionary<string, string>? DataStore;
 
-        public RemoteSession(string sessionId, FBMClient client, TimeSpan backgroundTimeOut)
+        protected RemoteSession(string sessionId, FBMClient client, TimeSpan backgroundTimeOut)
         {
             SessionID = sessionId;
             UpdateTimeout = backgroundTimeOut;

@@ -34,13 +34,13 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
     /// An OAuth2 authorized endpoint for revoking the access token
     /// held by the current connection
     /// </summary>
-    [ConfigurationName("oauth2")]
+    [ConfigurationName("o2_revocation_endpoint")]
     internal class RevocationEndpoint : O2EndpointBase
     {
 
         public RevocationEndpoint(PluginBase pbase, IReadOnlyDictionary<string, JsonElement> config)
         {
-            string? path = config["revocation_path"].GetString();
+            string? path = config["path"].GetString();
             InitPathAndLog(path, pbase.Log);
         }
 

@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
+    <RootNamespace>VNLib.Plugins.Cache.Broker</RootNamespace>
+    <Authors>Vaughn Nugent</Authors>
+    <Version>1.0.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,10 +29,18 @@
   <PropertyGroup>
     <!--Enable dynamic loading-->
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
-    <RootNamespace>VNLib.Plugins.Cache.Broker</RootNamespace>
-    <Authors>Vaughn Nugent</Authors>
-    <Version>1.0.0.1</Version>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Deterministic>False</Deterministic>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Deterministic>False</Deterministic>
   </PropertyGroup>
 
 

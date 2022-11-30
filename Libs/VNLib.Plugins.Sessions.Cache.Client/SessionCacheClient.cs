@@ -74,7 +74,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// </summary>
         /// <param name="client"></param>
         /// <param name="maxCacheItems">The maximum number of sessions to keep in memory</param>
-        public SessionCacheClient(FBMClient client, int maxCacheItems)
+        protected SessionCacheClient(FBMClient client, int maxCacheItems)
         {
             MaxLoadedEntires = maxCacheItems;
             CacheLock = new();

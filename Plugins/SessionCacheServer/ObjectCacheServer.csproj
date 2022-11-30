@@ -2,17 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <Authors>Vaughn Nugent</Authors>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.1.1</Version>
     <RootNamespace>VNLib.Plugins.Essentials.Sessions.Server</RootNamespace>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
-    <Platforms>AnyCPU;x64</Platforms>
+    
   </PropertyGroup>
 
   <!-- Resolve nuget dll files and store them in the output dir -->
   <PropertyGroup>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="liveplugin2\**" />

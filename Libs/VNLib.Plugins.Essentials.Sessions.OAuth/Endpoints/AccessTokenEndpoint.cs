@@ -49,7 +49,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
     {
 
         private readonly CreateTokenImpl CreateToken;
-        private readonly Applications Applications;
+        private readonly ApplicationStore Applications;
 
         private readonly Task<JsonDocument?> JWTVerificationKey;
 

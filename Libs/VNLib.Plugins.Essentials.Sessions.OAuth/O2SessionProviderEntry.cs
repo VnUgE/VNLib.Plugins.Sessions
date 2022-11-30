@@ -27,6 +27,7 @@ using System.Text.Json;
 using VNLib.Net.Http;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
+using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Essentials.Sessions.OAuth;
 using VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints;
@@ -35,10 +36,11 @@ using VNLib.Plugins.Extensions.Loading.Routing;
 using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Loading.Events;
 using VNLib.Plugins.Essentials.Sessions.Runtime;
-using VNLib.Plugins.Essentials.Oauth.Tokens;
+using VNLib.Data.Caching.Extensions;
 
 namespace VNLib.Plugins.Essentials.Sessions.Oauth
 {
+
     public sealed class O2SessionProviderEntry : IRuntimeSessionProvider
     {
         const string VNCACHE_CONFIG_KEY = "vncache";
@@ -49,7 +51,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
         bool IRuntimeSessionProvider.CanProcess(IHttpEvent entity)
         {
             //If authorization header is set try to process as oauth2 session
-            return entity.Server.Headers.HeaderSet(System.Net.HttpRequestHeader.Authorization);
+            return _sessions != null && entity.Server.Headers.HeaderSet(System.Net.HttpRequestHeader.Authorization);
         }
 
         ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
@@ -65,23 +67,30 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
             
             IReadOnlyDictionary<string, JsonElement> oauth2Config = plugin.GetConfig(OAUTH2_CONFIG_KEY);
 
-            string tokenEpPath = oauth2Config["token_path"].GetString() ?? throw new KeyNotFoundException($"Missing required 'token_path' in '{OAUTH2_CONFIG_KEY}' config");
-
             //Optional application jwt token 
             Task<JsonDocument?> jwtTokenSecret = plugin.TryGetSecretAsync("application_token_key")
-                .ContinueWith(static t => t.Result == null ? null : JsonDocument.Parse(t.Result));
+                .ContinueWith(static t => t.Result == null ? null : JsonDocument.Parse(t.Result), TaskScheduler.Default);
 
-            //Init auth endpoint
-            AccessTokenEndpoint authEp = new(tokenEpPath, plugin, CreateTokenDelegateAsync, jwtTokenSecret);
+            //Access token endpoint is optional
+            if (oauth2Config.TryGetValue("token_path", out JsonElement el))
+            {
+                //Init auth endpoint
+                AccessTokenEndpoint authEp = new(el.GetString()!, plugin, CreateTokenDelegateAsync, jwtTokenSecret);
 
-            //route auth endpoint
-            plugin.Route(authEp);
-            
-            //Route revocation endpoint
-            plugin.Route<RevocationEndpoint>();
+                //route auth endpoint
+                plugin.Route(authEp);
+            }
+
+            //Optional revocation endpoint
+            if (plugin.HasConfigForType<RevocationEndpoint>())
+            {
+                //Route revocation endpoint
+                plugin.Route<RevocationEndpoint>();
+            }
 
             //Run
-            _ = CacheWokerDoWorkAsync(plugin, localized, cacheConfig, oauth2Config);
+            _ = plugin.DeferTask(() => CacheWokerDoWorkAsync(plugin, localized, cacheConfig, oauth2Config), 100);
+            
         }
 
         private async Task<IOAuth2TokenResult?> CreateTokenDelegateAsync(HttpEntity entity, UserApplication app, CancellationToken cancellation)
@@ -132,6 +141,10 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
             catch (KeyNotFoundException e)
             {
                 localized.Error("Missing required configuration variable for VnCache client: {0}", e.Message);
+            }
+            catch(FBMServerNegiationException fne)
+            {
+                localized.Error("Failed to negotiate connection with cache server {reason}", fne.Message);
             }
             catch (Exception ex)
             {

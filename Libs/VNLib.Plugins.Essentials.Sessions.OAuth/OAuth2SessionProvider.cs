@@ -27,6 +27,7 @@ using System.Net;
 
 using Microsoft.EntityFrameworkCore;
 
+using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
 using VNLib.Data.Caching;
@@ -37,8 +38,6 @@ using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading.Events;
-using VNLib.Net.Http.Core;
-using VNLib.Net.Http;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth
 {
@@ -200,8 +199,10 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
                 {}
                 catch (Exception ex)
                 {
-                    errors ??= new();
-                    errors.Add(ex);
+                    errors = new()
+                    {
+                        ex
+                    };
                 }
             }
             if (errors?.Count > 0)

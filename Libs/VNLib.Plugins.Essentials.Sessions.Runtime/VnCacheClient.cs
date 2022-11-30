@@ -81,6 +81,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
         /// Loads required configuration variables from the config store and 
         /// intializes the interal client
         /// </summary>
+        /// <param name="pbase"></param>
         /// <param name="config">A dictionary of configuration varables</param>
         /// <exception cref="KeyNotFoundException"></exception>
         public async Task LoadConfigAsync(PluginBase pbase, IReadOnlyDictionary<string, JsonElement> config)
@@ -107,10 +108,11 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
 
             _client = new(conf);
             //Add the configuration
-            _client.UseBroker(brokerUri)
-                .ImportBrokerPublicKey(brokerPub)
-                .ImportClientPrivateKey(privKey)
-                .UseTls(brokerUri.Scheme == Uri.UriSchemeHttps);
+            _client.GetCacheConfiguration()
+                .WithBroker(brokerUri)
+                .ImportVerificationKey(brokerPub)
+                .ImportSigningKey(privKey)
+                .WithTls(brokerUri.Scheme == Uri.UriSchemeHttps);
 
             //Zero the key memory
             Memory.InitializeBlock(privKey.AsSpan());
@@ -139,7 +141,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
                     {
                         Log.Debug("Discovering cluster nodes in broker");
                         //Get server list
-                        servers = await Resource.DiscoverNodesAsync(cancellationToken);
+                        servers = await Resource.DiscoverCacheNodesAsync(cancellationToken);
                         break;
                     }
                     catch (HttpRequestException re) when (re.InnerException is SocketException)
@@ -150,6 +152,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
                     {
                         Log.Warn("Failed to get server list from broker, reason {r}", ex.Message);
                     }
+                    
                     //Gen random ms delay
                     int randomMsDelay = RandomNumberGenerator.GetInt32(1000, 2000);
                     await Task.Delay(randomMsDelay, cancellationToken);
@@ -160,13 +163,18 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
                     await Task.Delay(RetryInterval, cancellationToken);
                     continue;
                 }
-                //select random server from the list of servers
-                ActiveServer selected = servers!.SelectRandom();
+                
                 try
                 {
-                    Log.Debug("Connecting to server {server}", selected.ServerId);
-                    //Try to connect to server
-                    await Resource.ConnectAndWaitForExitAsync(selected, cancellationToken);
+                    Log.Debug("Connecting to random cache server");
+                    
+                    //Connect to a random server
+                    ActiveServer selected = await Resource.ConnectToRandomCacheAsync(cancellationToken);
+                    Log.Debug("Connected to cache server {s}", selected.ServerId);
+                    
+                    //Wait for disconnect
+                    await Resource.WaitForExitAsync(cancellationToken);
+
                     Log.Debug("Cache server disconnected");
                 }
                 catch (WebSocketException wse)
@@ -176,7 +184,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
                 }
                 catch (HttpRequestException he) when (he.InnerException is SocketException)
                 {
-                    Log.Debug("Failed to connect to recommended server {server}", selected.ServerId);
+                    Log.Debug("Failed to connect to random cache server server");
                     //Continue next loop
                     continue;
                 }
