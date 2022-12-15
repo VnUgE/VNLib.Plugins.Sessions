@@ -24,25 +24,21 @@
 
 using System;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Channels;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Collections.Concurrent;
 
 using VNLib.Net.Http;
 using VNLib.Hashing;
 using VNLib.Utils.Async;
-using VNLib.Utils.Memory;
 using VNLib.Utils.Logging;
 using VNLib.Hashing.IdentityUtility;
 using VNLib.Net.Messaging.FBM;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Net.Messaging.FBM.Server;
-using VNLib.Data.Caching.Extensions;
 using VNLib.Data.Caching.ObjectCache;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Essentials.Endpoints;
@@ -77,9 +73,9 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
         //Loosen up protection settings
         protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
         {
-            BrowsersOnly = false,
-            SessionsRequired = false,
-            CrossSiteDenied = false
+            DisableBrowsersOnly = true,
+            DisableSessionsRequired = true,
+            DisableCrossSiteDenied = true
         };
 
         public ConnectEndpoint(string path, ObjectCacheStore store, PluginBase pbase)
@@ -121,20 +117,33 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 
             string? nodeId = null;
             string? challenge = null;
+            bool isPeer = false;
 
             // Parse jwt
             using (JsonWebToken jwt = JsonWebToken.Parse(jwtAuth))
             {
-                //Get the client public key
-                byte[] clientPub = await GetClientPubAsync();
+                bool verified = false;
 
-                //Init sig alg
-                using ECDsa verAlg = ECDsa.Create(FBMDataCacheExtensions.CacheCurve);
-                //Import client pub key
-                verAlg.ImportSubjectPublicKeyInfo(clientPub, out _);
-                
-                //verify signature for client
-                if (!jwt.Verify(verAlg, in FBMDataCacheExtensions.CacheJwtAlgorithm))
+                //Get the client public key certificate to verify the client's message
+                using(ReadOnlyJsonWebKey cert = await GetClientPubAsync())
+                {
+                    //verify signature for client
+                    if (jwt.VerifyFromJwk(cert))
+                    {
+                        verified = true;
+                    }
+                    //May be signed by a cahce server
+                    else
+                    {
+                        using ReadOnlyJsonWebKey cacheCert = await GetCachePubAsync();
+                        
+                        //Set peer and verified flag since the another cache server signed the request
+                        isPeer = verified = jwt.VerifyFromJwk(cacheCert);
+                    }
+                }
+              
+                //Check flag
+                if (!verified)
                 {
                     Log.Information("Client signature verification failed");
                     entity.CloseResponse(HttpStatusCode.Unauthorized);
@@ -154,36 +163,28 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
             }
 
             Log.Debug("Received negotiation request from node {node}", nodeId);
-
             //Verified, now we can create an auth message with a short expiration
             using JsonWebToken auth = new();
-            auth.WriteHeader(FBMDataCacheExtensions.JwtMessageHeader.Span);
-            auth.InitPayloadClaim()
-                .AddClaim("aud", AudienceLocalServerId)
-                .AddClaim("exp", DateTimeOffset.UtcNow.Add(AuthTokenExpiration).ToUnixTimeSeconds())
-                .AddClaim("nonce", RandomHash.GetRandomHex(8))
-                .AddClaim("chl", challenge)
-                //Specify the server's node id if set
-                .AddClaim("sub", nodeId)
-                //Add negotiaion args
-                .AddClaim(FBMClient.REQ_HEAD_BUF_QUERY_ARG, MAX_HEAD_BUF_SIZE)
-                .AddClaim(FBMClient.REQ_RECV_BUF_QUERY_ARG, MAX_RECV_BUF_SIZE)
-                .AddClaim(FBMClient.REQ_MAX_MESS_QUERY_ARG, MAX_MESSAGE_SIZE)
-                .CommitClaims();
-            
-            //Sign the auth message
-            ECDsa sigAlg = ECDsa.Create(FBMDataCacheExtensions.CacheCurve);
-            byte[] cachePrivate = await GetCachePrivateKeyAsync();
-            try
+            //Sign the auth message from the cache certificate's private key
+            using (ReadOnlyJsonWebKey cert = await GetCachePrivateKeyAsync())
             {
-                sigAlg.ImportPkcs8PrivateKey(cachePrivate, out _);
-                //sign jwt
-                auth.Sign(sigAlg, in FBMDataCacheExtensions.CacheJwtAlgorithm, 256);
-            }
-            finally
-            {
-                Memory.InitializeBlock(cachePrivate.AsSpan());
-                sigAlg.Dispose();
+                auth.WriteHeader(cert.JwtHeader);
+                auth.InitPayloadClaim()
+                    .AddClaim("aud", AudienceLocalServerId)
+                    .AddClaim("exp", DateTimeOffset.UtcNow.Add(AuthTokenExpiration).ToUnixTimeSeconds())
+                    .AddClaim("nonce", RandomHash.GetRandomBase32(8))
+                    .AddClaim("chl", challenge!)
+                    //Set the ispeer flag if the request was signed by a cache server
+                    .AddClaim("isPeer", isPeer)
+                    //Specify the server's node id if set
+                    .AddClaim("sub", nodeId!)
+                    //Add negotiaion args
+                    .AddClaim(FBMClient.REQ_HEAD_BUF_QUERY_ARG, MAX_HEAD_BUF_SIZE)
+                    .AddClaim(FBMClient.REQ_RECV_BUF_QUERY_ARG, MAX_RECV_BUF_SIZE)
+                    .AddClaim(FBMClient.REQ_MAX_MESS_QUERY_ARG, MAX_MESSAGE_SIZE)
+                    .CommitClaims();
+
+                auth.SignFromJwk(cert);
             }
          
             //Close response
@@ -191,27 +192,23 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
             return VfReturnType.VirtualSkip;
         }
 
-        private async Task<byte[]> GetClientPubAsync()
+        private async Task<ReadOnlyJsonWebKey> GetClientPubAsync()
         {
-            string? brokerPubKey = await Pbase.TryGetSecretAsync("client_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-
-            return Convert.FromBase64String(brokerPubKey);
-        }
-        private async Task<byte[]> GetCachePubAsync()
-        {
-            string? brokerPubKey = await Pbase.TryGetSecretAsync("cache_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-
-            return Convert.FromBase64String(brokerPubKey);
-        }
-        private async Task<byte[]> GetCachePrivateKeyAsync()
-        {
-            string? cachePrivate = await Pbase.TryGetSecretAsync("cache_private_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-
-            byte[] data = Convert.FromBase64String(cachePrivate);
-
-            Memory.UnsafeZeroMemory<char>(cachePrivate);
+            using SecretResult brokerPubKey = await Pbase.TryGetSecretAsync("client_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
             
-            return data;
+            return brokerPubKey.GetJsonWebKey();
+        }
+        private async Task<ReadOnlyJsonWebKey> GetCachePubAsync()
+        {
+            using SecretResult cachPublic = await Pbase.TryGetSecretAsync("cache_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
+
+            return cachPublic.GetJsonWebKey();
+        }
+        private async Task<ReadOnlyJsonWebKey> GetCachePrivateKeyAsync()
+        {
+            using SecretResult cachePrivate = await Pbase.TryGetSecretAsync("cache_private_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
+
+            return cachePrivate.GetJsonWebKey();
         }
 
         private async Task ChangeWorkerAsync(CancellationToken cancellation)
@@ -265,16 +262,11 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
                 //Parse jwt
                 using (JsonWebToken jwt = JsonWebToken.Parse(jwtAuth))
                 {
-                    //Init sig alg, we will verify that the token was signed by this server
-                    using (ECDsa sigAlg = ECDsa.Create(FBMDataCacheExtensions.CacheCurve))
+                    //Get the client public key certificate to verify the client's message
+                    using (ReadOnlyJsonWebKey cert = await GetCachePubAsync())
                     {
-                        //Get the cache public key
-                        byte[] cachePub = await GetCachePubAsync();
-                        
-                        sigAlg.ImportSubjectPublicKeyInfo(cachePub, out _);
-                        
-                        //verify signature against the cache public key, since this server have signed it
-                        if (!jwt.Verify(sigAlg, in FBMDataCacheExtensions.CacheJwtAlgorithm))
+                        //verify signature against the cache public key, since this server must have signed it
+                        if (!jwt.VerifyFromJwk(cert))
                         {
                             entity.CloseResponse(HttpStatusCode.Unauthorized);
                             return VfReturnType.VirtualSkip;
@@ -286,8 +278,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 
                     //Verify audience, expiration
 
-                    if (!doc.RootElement.TryGetProperty("aud", out JsonElement audEl) 
-                        || AudienceLocalServerId.Equals(audEl.GetString(), StringComparison.OrdinalIgnoreCase))
+                    if (!doc.RootElement.TryGetProperty("aud", out JsonElement audEl) || !AudienceLocalServerId.Equals(audEl.GetString(), StringComparison.OrdinalIgnoreCase))
                     {
                         entity.CloseResponse(HttpStatusCode.Unauthorized);
                         return VfReturnType.VirtualSkip;
@@ -300,8 +291,11 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
                         return VfReturnType.VirtualSkip;
                     }
 
-                    //The node id is optional and stored in the 'sub' field 
-                    if (doc.RootElement.TryGetProperty("sub", out JsonElement servIdEl))
+                    //Check if the client is a peer
+                    bool isPeer = doc.RootElement.TryGetProperty("isPeer", out JsonElement isPeerEl) && isPeerEl.GetBoolean();
+
+                    //The node id is optional and stored in the 'sub' field, ignore if the client is not a peer
+                    if (isPeer && doc.RootElement.TryGetProperty("sub", out JsonElement servIdEl))
                     {
                         nodeId = servIdEl.GetString();
                     }
@@ -342,6 +336,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
                     //Get the queue
                     nodeQueue = StatefulEventQueue[nodeId];
                 }
+                
                 //Init new ws state object and clamp the suggested buffer sizes
                 WsUserState state = new()
                 {
@@ -363,6 +358,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
                 return VfReturnType.BadRequest;
             }
         }
+        
         private async Task WebsocketAcceptedAsync(WebSocketSession wss)
         {
             //Inc connected count

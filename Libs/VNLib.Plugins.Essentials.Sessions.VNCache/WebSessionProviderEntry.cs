@@ -84,7 +84,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
             IReadOnlyDictionary<string, JsonElement> webSessionConfig)
         {
             //Init cache client
-            using VnCacheClient cache = new(plugin.IsDebug() ? plugin.Log : null, Memory.Shared);
+            using VnCacheClient cache = new(plugin.IsDebug() ? localized : null, Memory.Shared);
 
             try
             {
@@ -97,8 +97,10 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
                 //Init provider
                 _sessions = new(cache.Resource!, cacheLimit, maxConnections, idFactory);
 
-
                 localized.Information("Session provider loaded");
+
+                //Listen for cache table events
+                _ = plugin.DeferTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken));
 
                 //Run and wait for exit
                 await cache.RunAsync(localized, plugin.UnloadToken);

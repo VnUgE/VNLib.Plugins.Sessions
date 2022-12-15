@@ -35,11 +35,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
+using System.Security.Cryptography.X509Certificates;
 
 using RestSharp;
 
 using VNLib.Net.Http;
-using VNLib.Utils;
 using VNLib.Utils.IO;
 using VNLib.Utils.Memory;
 using VNLib.Utils.Logging;
@@ -50,8 +50,8 @@ using VNLib.Plugins.Essentials.Endpoints;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Events;
+using VNLib.Plugins.Extensions.Loading.Routing;
 using VNLib.Net.Rest.Client;
-using VaultSharp.V1.SystemBackend;
 
 #nullable enable
 
@@ -69,16 +69,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             MaxTimeout = 10 * 1000,
             ThrowOnAnyError = true
         }, null);
-
-        private static readonly HashAlgorithmName SignatureHashAlg = HashAlgorithmName.SHA384;
-        //using the es384 algorithm for signing
-        private static readonly ECCurve DefaultCurve = ECCurve.CreateFromFriendlyName("secp384r1");
-
-        private static readonly IReadOnlyDictionary<string, string> BrokerJwtHeader = new Dictionary<string, string>()
-        {
-            { "alg","ES384" },
-            { "typ", "JWT"}
-        };
+      
 
         private class ActiveServer
         {
@@ -98,41 +89,18 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
         private readonly object ListLock;
         private readonly Dictionary<string, ActiveServer> ActiveServers;
 
-        private readonly Task<byte[]> CachePubKey;
-        private readonly Task<byte[]> ClientPubKey;
-        private readonly Task<byte[]> BrokerPrivateKey;
-
         //Loosen up protection settings since this endpoint is not desinged for browsers or sessions
         protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
         {
-            BrowsersOnly = false,
-            CrossSiteDenied = false,
-            SessionsRequired = false,
-            VerifySessionCors = false,
+            DisableBrowsersOnly = true,
+            DisableCrossSiteDenied = true,
+            DisableSessionsRequired = true,
+            DisableVerifySessionCors = true,
         };
 
         public BrokerRegistrationEndpoint(PluginBase plugin, IReadOnlyDictionary<string, JsonElement> config)
         {
             string? path = config["path"].GetString();
-           
-            //Get the keys from the vault
-            BrokerPrivateKey = plugin.TryGetSecretAsync("broker_private_key").ContinueWith((Task<string?> secret) =>
-            {
-                _ = secret.Result ?? throw new InvalidOperationException("Broker private key not found in vault");
-                return Convert.FromBase64String(secret.Result);
-            }, TaskScheduler.Default);
-
-            CachePubKey = plugin.TryGetSecretAsync("cache_public_key").ContinueWith((Task<string?> secret) =>
-            {
-                _ = secret.Result ?? throw new InvalidOperationException("Cache public key not found in vault");
-                return Convert.FromBase64String(secret.Result);
-            }, TaskScheduler.Default);
-
-            ClientPubKey = plugin.TryGetSecretAsync("client_public_key").ContinueWith((Task<string?> secret) =>
-            {
-                _ = secret.Result ?? throw new InvalidOperationException("Client public key not found in vault");
-                return Convert.FromBase64String(secret.Result);
-            }, TaskScheduler.Default);
 
             InitPathAndLog(path, plugin.Log);
 
@@ -140,23 +108,62 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             ActiveServers = new();
         }
 
+        private async Task<ReadOnlyJsonWebKey> GetClientPublic()
+        {
+            using SecretResult secret = await this.GetPlugin().TryGetSecretAsync("client_public_key") ?? throw new InvalidOperationException("Client public key not found in vault");
+            return secret.GetJsonWebKey();
+        }
+
+        private async Task<ReadOnlyJsonWebKey> GetCachePublic()
+        {
+            using SecretResult secret = await this.GetPlugin().TryGetSecretAsync("cache_public_key") ?? throw new InvalidOperationException("Cache public key not found in vault");
+            return secret.GetJsonWebKey();
+        }
+
+        private async Task<ReadOnlyJsonWebKey> GetBrokerCertificate()
+        {
+            using SecretResult secret = await this.GetPlugin().TryGetSecretAsync("broker_private_key") ?? throw new InvalidOperationException("Broker private key not found in vault");
+            return secret.GetJsonWebKey();
+        }
+
+        /*
+         * Clients and servers use the post method to discover cache 
+         * server nodes
+         */
 
         protected override async ValueTask<VfReturnType> PostAsync(HttpEntity entity)
         {
             //Parse jwt
-            using JsonWebToken jwt = await entity.ParseFileAsAsync(ParseJwtAsync) ?? throw new Exception("Invalid JWT");
-            //Verify with the client's pub key
-            using (ECDsa alg = ECDsa.Create(DefaultCurve))
+            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync);
+
+            if(jwt == null)
             {
-                ReadOnlyMemory<byte> client = await ClientPubKey; 
-                alg.ImportSubjectPublicKeyInfo(client.Span, out _);
-                //Verify with client public key
-                if (!jwt.Verify(alg, in SignatureHashAlg))
+                return VfReturnType.BadRequest;
+            }
+
+            //Verify with the client's pub key
+            using (ReadOnlyJsonWebKey cpCert = await GetClientPublic())
+            {
+                if (jwt.VerifyFromJwk(cpCert))
                 {
-                    entity.CloseResponse(HttpStatusCode.Unauthorized);
-                    return VfReturnType.VirtualSkip;
+                    goto Accepted;
                 }
             }
+
+            //Accept usng the cache server key
+            using (ReadOnlyJsonWebKey cacheCert = await GetCachePublic())
+            {
+                if (jwt.VerifyFromJwk(cacheCert))
+                {
+                    goto Accepted;
+                }
+            }
+
+            entity.CloseResponse(HttpStatusCode.Unauthorized);
+            return VfReturnType.VirtualSkip;
+
+        Accepted:
+          
             try
             {
                 //Get all active servers
@@ -165,23 +172,17 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                 {
                     servers = ActiveServers.Values.ToArray();
                 }
-
+                using ReadOnlyJsonWebKey bpCert = await GetBrokerCertificate();
+                
                 //Create response payload with list of active servers and sign it
                 using JsonWebToken response = new();
-                response.WriteHeader(BrokerJwtHeader);
+                response.WriteHeader(bpCert.JwtHeader);
                 response.InitPayloadClaim(1)
                     .AddClaim("servers", servers)
                     .CommitClaims();
 
                 //Sign the jwt using the broker key
-                using(ECDsa alg = ECDsa.Create(DefaultCurve))
-                {
-                    ReadOnlyMemory<byte> brokerPrivate = await BrokerPrivateKey;
-                    
-                    alg.ImportPkcs8PrivateKey(brokerPrivate.Span, out _);
-
-                    response.Sign(alg, in SignatureHashAlg, 128);
-                }
+                response.SignFromJwk(bpCert);                
                 
                 entity.CloseResponse(HttpStatusCode.OK, ContentType.Text, response.DataBuffer);
                 return VfReturnType.VirtualSkip;
@@ -211,15 +212,18 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
         protected override async ValueTask<VfReturnType> PutAsync(HttpEntity entity)
         {
             //Parse jwt
-            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync) ?? throw new Exception("");
-            //Verify with the cache server's pub key
-            using (ECDsa alg = ECDsa.Create(DefaultCurve))
+            using JsonWebToken? jwt = await entity.ParseFileAsAsync(ParseJwtAsync);
+
+            if(jwt == null)
             {
-                ReadOnlyMemory<byte> cache = await CachePubKey;
-                
-                alg.ImportSubjectPublicKeyInfo(cache.Span, out _);
+                return VfReturnType.BadRequest;
+            }
+
+            //Only cache servers may update the list
+            using (ReadOnlyJsonWebKey cpCert = await GetCachePublic())
+            {
                 //Verify the jwt
-                if (!jwt.Verify(alg, in SignatureHashAlg))
+                if (!jwt.VerifyFromJwk(cpCert))
                 {
                     entity.CloseResponse(HttpStatusCode.Unauthorized);
                     return VfReturnType.VirtualSkip;
@@ -227,8 +231,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             }
             
             try
-            {
-                
+            {                
                 //Get message body
                 using JsonDocument requestBody = jwt.GetPayload();
                 
@@ -331,17 +334,21 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
             {
                 servers = ActiveServers.Values.ToArray();
             }
+
+            using ReadOnlyJsonWebKey jwk = await GetBrokerCertificate();
+
             LinkedList<Task> all = new();
             //Run keeplaive request for all active servers
             foreach (ActiveServer server in servers)
             {
-                all.AddLast(RunHeartbeatAsync(server));
+                all.AddLast(RunHeartbeatAsync(server, jwk));
             }
+            
             //Wait for all to complete
             await Task.WhenAll(all);
         }
-
-        private async Task RunHeartbeatAsync(ActiveServer server)
+        
+        private async Task RunHeartbeatAsync(ActiveServer server, ReadOnlyJsonWebKey privKey)
         {
             try
             {
@@ -350,27 +357,23 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
                 {
                     Path = HEARTBEAT_PATH
                 };
+                
                 string authMessage;
                 //Init jwt for signing auth messages
                 using (JsonWebToken jwt = new())
                 {
-                    jwt.WriteHeader(BrokerJwtHeader);
+                    jwt.WriteHeader(privKey.JwtHeader);
                     jwt.InitPayloadClaim()
                         .AddClaim("token", server.Token)
                         .CommitClaims();
-
-                    //Sign the jwt using the broker key
-                    using (ECDsa alg = ECDsa.Create(DefaultCurve))
-                    {
-                        ReadOnlyMemory<byte> broker = await BrokerPrivateKey;
-
-                        alg.ImportPkcs8PrivateKey(broker.Span, out _);
-                        //Sign with broker key
-                        jwt.Sign(alg, in SignatureHashAlg, 128);
-                    }
+                  
+                    //Sign the jwt
+                    jwt.SignFromJwk(privKey);
+                    
                     //compile
                     authMessage = jwt.Compile();
                 }
+                
                 //Build keeplaive request
                 RestRequest keepaliveRequest = new(uri.Uri, Method.Get);
                 //Add authorization token

@@ -32,6 +32,8 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\VNLib\Essentials\src\VNLib.Plugins.Essentials.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
     <ProjectReference Include="..\..\Libs\VNLib.Plugins.Essentials.Sessions.Runtime\VNLib.Plugins.Essentials.Sessions.Runtime.csproj" />

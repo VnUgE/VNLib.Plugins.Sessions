@@ -12,6 +12,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
     <AnalysisLevel>latest-all</AnalysisLevel>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -36,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\VNLib\Essentials\VNLib.Plugins.Essentials.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Essentials\src\VNLib.Plugins.Essentials.csproj" />
     <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
   </ItemGroup>
 

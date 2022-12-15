@@ -37,7 +37,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\VNLib\Essentials\VNLib.Plugins.Essentials.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Essentials\src\VNLib.Plugins.Essentials.csproj" />
     <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.Extensions\VNLib.Data.Caching.Extensions.csproj" />
     <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.ObjectCache\VNLib.Data.Caching.ObjectCache.csproj" />
     <ProjectReference Include="..\..\..\PluginBase\VNLib.Plugins.PluginBase.csproj" />

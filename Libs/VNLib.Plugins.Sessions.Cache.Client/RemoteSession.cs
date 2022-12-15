@@ -37,8 +37,6 @@ using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Extensions;
 
-#nullable enable
-
 namespace VNLib.Plugins.Sessions.Cache.Client
 {
     /// <summary>
@@ -48,9 +46,9 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     public abstract class RemoteSession : SessionBase
     {
         protected const string CREATED_TIME_ENTRY = "__.i.ctime";
-
-        protected readonly FBMClient Client;
-        protected readonly TimeSpan UpdateTimeout;
+        
+        protected FBMClient Client { get; }
+        protected TimeSpan UpdateTimeout { get; }
 
         private readonly AsyncLazyInitializer Initializer;
         
@@ -119,6 +117,8 @@ namespace VNLib.Plugins.Sessions.Cache.Client
 
             protected set => this.SetValueType(CREATED_TIME_ENTRY, value.ToUnixTimeMilliseconds());
         }
+     
+
         ///<inheritdoc/>
         protected override string IndexerGet(string key)
         {
@@ -185,13 +185,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 MainLock.Release();
                 throw;
             }
-        }
-        ///<inheritdoc/>
-        protected override Task OnEvictedAsync()
-        {
-            //empty the dict to help the GC
-            DataStore!.Clear();
-            return Task.CompletedTask;
         }
     }
 }

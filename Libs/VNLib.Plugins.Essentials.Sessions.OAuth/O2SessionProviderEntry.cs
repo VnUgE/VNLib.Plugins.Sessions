@@ -27,16 +27,17 @@ using System.Text.Json;
 using VNLib.Net.Http;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
+using VNLib.Data.Caching.Extensions;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Essentials.Sessions.OAuth;
+using VNLib.Plugins.Essentials.Sessions.Runtime;
 using VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Routing;
 using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Loading.Events;
-using VNLib.Plugins.Essentials.Sessions.Runtime;
-using VNLib.Data.Caching.Extensions;
+
 
 namespace VNLib.Plugins.Essentials.Sessions.Oauth
 {
@@ -69,7 +70,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
 
             //Optional application jwt token 
             Task<JsonDocument?> jwtTokenSecret = plugin.TryGetSecretAsync("application_token_key")
-                .ContinueWith(static t => t.Result == null ? null : JsonDocument.Parse(t.Result), TaskScheduler.Default);
+                .ContinueWith(static t => t.Result == null ? null : t.Result.GetJsonDocument(), TaskScheduler.Default);
 
             //Access token endpoint is optional
             if (oauth2Config.TryGetValue("token_path", out JsonElement el))
@@ -107,7 +108,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
             IReadOnlyDictionary<string, JsonElement> oauth2Config)
         {
             //Init cache client
-            using VnCacheClient cache = new(plugin.IsDebug() ? plugin.Log : null, Utils.Memory.Memory.Shared);
+            using VnCacheClient cache = new(plugin.IsDebug() ? localized : null, Utils.Memory.Memory.Shared);
             
             try
             {
@@ -125,7 +126,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Oauth
                 await cache.LoadConfigAsync(plugin, cacheConfig);
 
                 //Init session provider now that client is loaded
-                _sessions = new(cache.Resource!, cacheLimit, idProv, plugin.GetContextOptions());
+                _sessions = new(cache.Resource!, cacheLimit, 100, idProv, plugin.GetContextOptions());
 
                 //Schedule cleanup interval with the plugin scheduler
                 plugin.ScheduleInterval(_sessions, cleanupInterval);

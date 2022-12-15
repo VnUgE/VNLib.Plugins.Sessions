@@ -31,7 +31,7 @@
     <Exec Command="erase &quot;F:\Programming\Web Plugins\DevPlugins\RuntimeAssets\$(TargetName)&quot; /q &gt; nul" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\VNLib\Http\VNLib.Net.Http.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Plugins\src\VNLib.Plugins.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
     <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.Extensions\VNLib.Data.Caching.Extensions.csproj" />

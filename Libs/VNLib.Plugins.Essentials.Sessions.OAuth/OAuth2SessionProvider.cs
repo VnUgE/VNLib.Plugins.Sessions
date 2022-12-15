@@ -55,18 +55,20 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
         
         private readonly IOauthSessionIdFactory factory;
         private readonly TokenStore TokenStore;
-
-        public OAuth2SessionProvider(FBMClient client, int maxCacheItems, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
+        private readonly uint MaxConnections;
+        
+        public OAuth2SessionProvider(FBMClient client, int maxCacheItems, uint maxConnections, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
             : base(client, maxCacheItems)
         {
             factory = idFactory;
             TokenStore = new(dbCtx);
+            MaxConnections = maxConnections;
         }
 
         ///<inheritdoc/>
-        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Client, BackgroundTimeout, InvlidatateCache);
+        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Client, BackgroundTimeout, InvalidatateCache);
 
-        private void InvlidatateCache(OAuth2Session session)
+        private void InvalidatateCache(OAuth2Session session)
         {
             lock (CacheLock)
             {
@@ -89,6 +91,14 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
                 {
                     //Id not allowed/found, so do not attach a session
                     return SessionHandle.Empty;
+                }
+
+                //Limit max number of waiting clients
+                if (WaitingConnections > MaxConnections)
+                {
+                    //Set 503 for temporary unavail
+                    entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);
+                    return new SessionHandle(null, FileProcessArgs.VirtualSkip, null);
                 }
 
                 //Recover the session
@@ -174,14 +184,14 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
 
 
         /*
-         * Interval for remving expired tokens
+         * Interval for removing expired tokens
          */
 
         ///<inheritdoc/>
         async Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
         {
             //Calculate valid token time
-            DateTimeOffset validAfter = DateTimeOffset.UtcNow.Subtract(factory.SessionValidFor);
+            DateTime validAfter = DateTime.UtcNow.Subtract(factory.SessionValidFor);
             //Remove tokens from db store
             IReadOnlyCollection<ActiveToken> revoked = await TokenStore.CleanupExpiredTokensAsync(validAfter, cancellationToken);
             //exception list

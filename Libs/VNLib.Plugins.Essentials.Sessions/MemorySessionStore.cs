@@ -28,11 +28,12 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using VNLib.Net.Http;
+using VNLib.Net.Http.Core;
 using VNLib.Utils;
 using VNLib.Utils.Async;
+using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Plugins.Essentials.Extensions;
-using VNLib.Net.Http.Core;
 
 #nullable enable
 
@@ -47,12 +48,14 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
 
         internal readonly MemorySessionConfig Config;
         internal readonly SessionIdFactory IdFactory;
+        internal readonly AsyncQueue<MemorySession> ExpiredSessions;
 
         public MemorySessionStore(MemorySessionConfig config)
         {
             Config = config;
             SessionsStore = new(config.MaxAllowedSessions, StringComparer.Ordinal);
             IdFactory = new(config.SessionIdSizeBytes, config.SessionCookieID, config.SessionTimeout);
+            ExpiredSessions = new(false, true);
         }
         
         ///<inheritdoc/>
@@ -68,7 +71,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             if (IdFactory.TryGetSessionId(entity, out string? sessionId))
             {
                 //Try to get the old record or evict it
-                ERRNO result = SessionsStore.TryGetOrEvictRecord(sessionId, out MemorySession session);
+                ERRNO result = SessionsStore.TryGetOrEvictRecord(sessionId, out MemorySession? session);
                 if(result > 0)
                 {
                     //Valid, now wait for exclusive access
@@ -89,7 +92,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
                         return new(null, FileProcessArgs.VirtualSkip, null);
                     }
                     //Initialze a new session
-                    session = new(sessionId, entity.Server.GetTrustedIp(), UpdateSessionId);
+                    session = new(sessionId, entity.Server.GetTrustedIp(), UpdateSessionId, ExpiredSessions);
                     //Increment the semaphore
                     (session as IWaitHandle).WaitOne();
                     //store the session in cache while holding semaphore, and set its expiration
@@ -101,6 +104,31 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             else
             {
                 return SessionHandle.Empty;
+            }
+        }
+
+        public async Task CleanupExiredAsync(ILogProvider log, CancellationToken token)
+        {
+            while (true)
+            {
+                try
+                {
+                    //Wait for expired session and dispose it
+                    using MemorySession session = await ExpiredSessions.DequeueAsync(token);
+
+                    //Obtain lock on session
+                    await session.WaitOneAsync(CancellationToken.None);
+
+                    log.Verbose("Removed expired session {id}", session.SessionID);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex);
+                }
             }
         }
 

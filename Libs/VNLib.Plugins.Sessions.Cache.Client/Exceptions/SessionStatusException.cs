@@ -29,6 +29,9 @@ using VNLib.Plugins.Essentials.Sessions;
 
 namespace VNLib.Plugins.Sessions.Cache.Client.Exceptions
 {
+    /// <summary>
+    /// Raised when the status of the session is invalid and cannot be used
+    /// </summary>
     public class SessionStatusException : SessionException
     {
         public SessionStatusException()

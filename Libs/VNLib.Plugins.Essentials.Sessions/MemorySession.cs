@@ -28,23 +28,27 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using VNLib.Plugins.Essentials.Extensions;
 
+using VNLib.Utils.Async;
 using VNLib.Net.Http;
+using VNLib.Utils.Memory.Caching;
 using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
 
 #nullable enable
 
 namespace VNLib.Plugins.Essentials.Sessions.Memory
 {
-    internal class MemorySession : SessionBase
+    internal class MemorySession : SessionBase, ICacheable
     {
         private readonly Dictionary<string, string> DataStorage;
 
         private readonly Func<IHttpEvent, string, string> OnSessionUpdate;
+        private readonly AsyncQueue<MemorySession> ExpiredTable;
 
-        public MemorySession(string sessionId, IPAddress ipAddress, Func<IHttpEvent, string, string> onSessionUpdate)
+        public MemorySession(string sessionId, IPAddress ipAddress, Func<IHttpEvent, string, string> onSessionUpdate, AsyncQueue<MemorySession> expired)
         {
             //Set the initial is-new flag
             DataStorage = new Dictionary<string, string>(10);
+            ExpiredTable = expired;
             
             OnSessionUpdate = onSessionUpdate;
             //Get new session id
@@ -90,14 +94,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             //Memory session always completes 
             return ValueTask.FromResult<Task?>(null);
         }
-        
-        protected override Task OnEvictedAsync()
-        {
-            //Clear all session data
-            DataStorage.Clear();
-            return Task.CompletedTask;
-        }
-
+       
         protected override string IndexerGet(string key)
         {
             return DataStorage.GetValueOrDefault(key, string.Empty);
@@ -116,5 +113,18 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             }
             DataStorage[key] = value;
         }
+
+
+        DateTime ICacheable.Expires { get; set; }
+
+        void ICacheable.Evicted()
+        {
+            DataStorage.Clear();
+            //Enque cleanup
+            _ = ExpiredTable.TryEnque(this);
+        }
+
+        bool IEquatable<ICacheable>.Equals(ICacheable? other) => other is ISession ses && SessionID.Equals(ses.SessionID, StringComparison.Ordinal);
+      
     }
 }

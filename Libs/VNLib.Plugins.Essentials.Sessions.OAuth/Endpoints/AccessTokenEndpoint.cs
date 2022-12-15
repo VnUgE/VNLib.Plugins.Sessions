@@ -30,12 +30,12 @@ using VNLib.Utils.Memory;
 using VNLib.Hashing.IdentityUtility;
 using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Endpoints;
+using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Validation;
-using VNLib.Plugins.Essentials.Oauth.Tokens;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
 {
@@ -56,9 +56,9 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
         //override protection settings to allow most connections to authenticate
         protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
         {
-            BrowsersOnly = false,
-            SessionsRequired = false,
-            VerifySessionCors = false
+            DisableBrowsersOnly = true,
+            DisableSessionsRequired = true,
+            DisableVerifySessionCors = true
         };
 
         public AccessTokenEndpoint(string path, PluginBase pbase, CreateTokenImpl tokenStore, Task<JsonDocument?> verificationKey)
@@ -117,7 +117,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
                     secret = secret.ToLower();
 
                     //Convert secret to private string that is unreferrenced
-                    PrivateString secretPv = new(secret, false);
+                    using PrivateString secretPv = new(secret, false);
                     
                     //Get the application from apps store
                     UserApplication? app = await Applications.VerifyAppAsync(clientId, secretPv);
@@ -171,7 +171,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth.Endpoints
             
             if (result == null)
             {
-                entity.CloseResponseError(HttpStatusCode.ServiceUnavailable, ErrorType.TemporarilyUnabavailable, "You have reached the maximum number of valid tokens for this application");
+                entity.CloseResponseError(HttpStatusCode.TooManyRequests, ErrorType.TemporarilyUnabavailable, "You have reached the maximum number of valid tokens for this application");
                 return VfReturnType.VirtualSkip;
             }
             

@@ -29,12 +29,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 using VNLib.Net.Http;
-using VNLib.Utils;
+using VNLib.Utils.Async;
+using VNLib.Utils.Logging;
 using VNLib.Utils.Memory.Caching;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Sessions;
-
-#nullable enable
 
 namespace VNLib.Plugins.Sessions.Cache.Client
 {
@@ -42,24 +41,52 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     /// <summary>
     /// A client that allows access to sessions located on external servers
     /// </summary>
-    public abstract class SessionCacheClient : VnDisposeable, ICacheHolder
+    public abstract class SessionCacheClient : ICacheHolder
     {
-        public class LRUSessionStore<T> : LRUCache<string, T> where T : ISession, ICacheable
+        public class LRUSessionStore<T> : LRUCache<string, T>, ICacheHolder where T : ISession
         {
+            internal AsyncQueue<T> ExpiredSessions { get; }
+
+            ///<inheritdoc/>
             public override bool IsReadOnly => false;
+            ///<inheritdoc/>
             protected override int MaxCapacity { get; }
 
-            public LRUSessionStore(int maxCapacity) : base(StringComparer.Ordinal) => MaxCapacity = maxCapacity;
-
+            
+            public LRUSessionStore(int maxCapacity) : base(StringComparer.Ordinal)
+            {
+                MaxCapacity = maxCapacity;
+                ExpiredSessions = new (true, true);
+            }
+            
+            ///<inheritdoc/>
             protected override bool CacheMiss(string key, [NotNullWhen(true)] out T? value)
             {
                 value = default;
                 return false;
             }
+            
+            ///<inheritdoc/>
             protected override void Evicted(KeyValuePair<string, T> evicted)
             {
-                //Evice record
-                evicted.Value.Evicted();
+                //add to queue, the list lock should be held during this operatio
+                _ = ExpiredSessions.TryEnque(evicted.Value);
+            }
+
+            ///<inheritdoc/>
+            public void CacheClear()
+            {
+                foreach (KeyValuePair<string, T> value in List)
+                {
+                    Evicted(value);
+                }
+                Clear();
+            }
+
+            ///<inheritdoc/>
+            public void CacheHardClear()
+            {
+                CacheClear();
             }
         }
 
@@ -67,6 +94,9 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         protected readonly object CacheLock;
         protected readonly int MaxLoadedEntires;
 
+        /// <summary>
+        /// The client used to communicate with the cache server
+        /// </summary>
         protected FBMClient Client { get; }
 
         /// <summary>
@@ -80,11 +110,14 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             CacheLock = new();
             CacheTable = new(maxCacheItems);
             Client = client;
-            //Listen for close events
-            Client.ConnectionClosed += Client_ConnectionClosed;
         }
 
-        private void Client_ConnectionClosed(object? sender, EventArgs e) => CacheHardClear();
+        private ulong _waitingCount;
+
+        /// <summary>
+        /// The number of pending connections waiting for results from the cache server
+        /// </summary>
+        public ulong WaitingConnections => _waitingCount;
 
         /// <summary>
         /// Attempts to get a session from the cache identified by its sessionId asynchronously
@@ -96,7 +129,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <exception cref="SessionException"></exception>
         public virtual async ValueTask<RemoteSession> GetSessionAsync(IHttpEvent entity, string sessionId, CancellationToken cancellationToken)
         {
-            Check();
             try
             {
                 RemoteSession? session;
@@ -113,6 +145,10 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                     }
                     //Valid entry found in cache
                 }
+                
+                //Inc waiting count
+                Interlocked.Increment(ref _waitingCount);
+
                 try
                 {
                     //Load session-data
@@ -127,6 +163,11 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                         _ = CacheTable.Remove(sessionId);
                     }
                     throw;
+                }
+                finally
+                {
+                    //Dec waiting count
+                    Interlocked.Decrement(ref _waitingCount);
                 }
             }
             catch (SessionException)
@@ -151,6 +192,47 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <param name="sessionId">The session identifier</param>
         /// <returns>The new session for the given ID</returns>
         protected abstract RemoteSession SessionCtor(string sessionId);
+        
+        /// <summary>
+        /// Begins waiting for expired sessions to be evicted from the cache table that 
+        /// may have pending synchronization operations
+        /// </summary>
+        /// <param name="log"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task CleanupExpiredSessionsAsync(ILogProvider log, CancellationToken token)
+        {
+            //Close handler
+            void OnConnectionClosed(object? sender, EventArgs e) => CacheHardClear();
+
+            //Attach event
+            Client.ConnectionClosed += OnConnectionClosed;
+
+            while (true)
+            {
+                try
+                {
+                    //Wait for expired session and dispose it
+                    using RemoteSession session = await CacheTable.ExpiredSessions.DequeueAsync(token);
+                    
+                    //Obtain lock on session
+                    await session.WaitOneAsync(CancellationToken.None);
+
+                    log.Verbose("Removed expired session {id}", session.SessionID);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch(Exception ex)
+                {
+                    log.Error(ex);
+                }
+            }
+            
+            //remove handler
+            Client.ConnectionClosed -= OnConnectionClosed;
+        }
 
         ///<inheritdoc/>
         public void CacheClear()
@@ -163,21 +245,8 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             //Cleanup cache when disconnected
             lock (CacheLock)
             {
-                CacheTable.Clear();
-                foreach (RemoteSession session in (IEnumerable<RemoteSession>)CacheTable)
-                {
-                    session.Evicted();
-                }
-                CacheTable.Clear();
+                CacheTable.CacheHardClear();
             }
-        }
-
-        protected override void Free()
-        {
-            //Unsub from events
-            Client.ConnectionClosed -= Client_ConnectionClosed;
-            //Clear all cached sessions
-            CacheHardClear();
         }
     }
 }

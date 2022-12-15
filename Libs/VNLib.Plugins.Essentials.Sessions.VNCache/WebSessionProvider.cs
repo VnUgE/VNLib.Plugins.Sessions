@@ -71,9 +71,6 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
         
         protected override RemoteSession SessionCtor(string sessionId) => new WebSession(sessionId, Client, BackgroundUpdateTimeout, UpdateSessionId);
 
-        
-        private uint _waitingCount;
-
         public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
             //Callback to close the session when the handle is closeed
@@ -92,27 +89,15 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
                 }
 
                 //Limit max number of waiting clients
-                if (_waitingCount > MaxConnections)
+                if (WaitingConnections > MaxConnections)
                 {
                     //Set 503 for temporary unavail
                     entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);
                     return new SessionHandle(null, FileProcessArgs.VirtualSkip, null);
                 }
 
-                RemoteSession session;
-
-                //Inc waiting count
-                Interlocked.Increment(ref _waitingCount);
-                try
-                {
-                    //Recover the session
-                    session = await GetSessionAsync(entity, sessionId, cancellationToken);
-                }
-                finally
-                {
-                    //Dec on exit
-                    Interlocked.Decrement(ref _waitingCount);
-                }
+                //Get session
+                RemoteSession session = await GetSessionAsync(entity, sessionId, cancellationToken);
 
                 //If the session is new (not in cache), then overwrite the session id with a new one as user may have specified their own
                 if (session.IsNew)
@@ -131,6 +116,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
                     session.Privilages = 0;
                     session.SetLoginToken(null);
                 }
+                
                 return new SessionHandle(session, HandleClosedAsync);
             }
             catch (OperationCanceledException)

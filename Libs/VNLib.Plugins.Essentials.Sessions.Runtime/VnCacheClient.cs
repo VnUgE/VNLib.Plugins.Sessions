@@ -28,13 +28,14 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 
-using VNLib.Utils;
 using VNLib.Utils.Memory;
 using VNLib.Utils.Logging;
+using VNLib.Utils.Resources;
 using VNLib.Utils.Extensions;
 using VNLib.Data.Caching.Extensions;
 using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Hashing.IdentityUtility;
 
 namespace VNLib.Plugins.Essentials.Sessions.Runtime
 {
@@ -70,7 +71,8 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
 
             ClientHeap = heap;
         }
-
+        
+        ///<inheritdoc/>
         protected override void Free()
         {
             _client?.Dispose();
@@ -90,14 +92,20 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
             string? brokerAddress = config["broker_address"].GetString() ?? throw new KeyNotFoundException("Missing required configuration variable broker_address");
 
             //Get keys async
-            Task<string?> clientPrivTask = pbase.TryGetSecretAsync("client_private_key");
-            Task<string?> brokerPubTask = pbase.TryGetSecretAsync("broker_public_key");
+            Task<SecretResult?> clientPrivTask = pbase.TryGetSecretAsync("client_private_key");
+            Task<SecretResult?> brokerPubTask = pbase.TryGetSecretAsync("broker_public_key");
+            Task<SecretResult?> cachePubTask = pbase.TryGetSecretAsync("cache_public_key");
 
             //Wait for all tasks to complete
-            string?[] keys = await Task.WhenAll(clientPrivTask, brokerPubTask);
+            _ = await Task.WhenAll(clientPrivTask, brokerPubTask, cachePubTask);
 
-            byte[] privKey = Convert.FromBase64String(keys[0] ?? throw new KeyNotFoundException("Missing required secret client_private_key"));
-            byte[] brokerPub = Convert.FromBase64String(keys[1] ?? throw new KeyNotFoundException("Missing required secret broker_public_key"));
+            using SecretResult clientPriv = await clientPrivTask ?? throw new KeyNotFoundException("Missing required secret client_private_key");
+            using SecretResult brokerPub = await brokerPubTask ?? throw new KeyNotFoundException("Missing required secret broker_public_key");
+            using SecretResult cachePub = await cachePubTask ?? throw new KeyNotFoundException("Missing required secret cache_public_key");
+
+            ReadOnlyJsonWebKey clientCert = clientPriv.GetJsonWebKey();
+            ReadOnlyJsonWebKey brokerPubKey = brokerPub.GetJsonWebKey();
+            ReadOnlyJsonWebKey cachePubKey = cachePub.GetJsonWebKey();
 
             RetryInterval = config["retry_interval_sec"].GetTimeSpan(TimeParseType.Seconds);
 
@@ -107,16 +115,14 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
             FBMClientConfig conf = FBMDataCacheExtensions.GetDefaultConfig(ClientHeap ?? Memory.Shared, maxMessageSize, DebugLog);
 
             _client = new(conf);
-            //Add the configuration
+            
+            //Add the configuration to the client
             _client.GetCacheConfiguration()
                 .WithBroker(brokerUri)
-                .ImportVerificationKey(brokerPub)
-                .ImportSigningKey(privKey)
+                .WithVerificationKey(cachePubKey)
+                .WithSigningCertificate(clientCert)
+                .WithBrokerVerificationKey(brokerPubKey)
                 .WithTls(brokerUri.Scheme == Uri.UriSchemeHttps);
-
-            //Zero the key memory
-            Memory.InitializeBlock(privKey.AsSpan());
-            Memory.InitializeBlock(brokerPub.AsSpan());
         }
 
         /// <summary>
@@ -157,6 +163,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Runtime
                     int randomMsDelay = RandomNumberGenerator.GetInt32(1000, 2000);
                     await Task.Delay(randomMsDelay, cancellationToken);
                 }
+
                 if (servers?.Length == 0)
                 {
                     Log.Warn("No cluster nodes found, retrying");
