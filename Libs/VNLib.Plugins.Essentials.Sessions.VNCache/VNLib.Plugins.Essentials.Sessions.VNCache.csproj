@@ -14,6 +14,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,9 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.Extensions\VNLib.Data.Caching.Extensions.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
+    <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.VNCache\VNLib.Plugins.Extensions.VNCache.csproj" />
     <ProjectReference Include="..\..\..\PluginBase\VNLib.Plugins.PluginBase.csproj" />
     <ProjectReference Include="..\VNLib.Plugins.Essentials.Sessions.Runtime\VNLib.Plugins.Essentials.Sessions.Runtime.csproj" />
     <ProjectReference Include="..\VNLib.Plugins.Sessions.Cache.Client\VNLib.Plugins.Sessions.Cache.Client.csproj" />

@@ -6,6 +6,8 @@
     <RootNamespace>VNLib.Plugins.Cache.Broker</RootNamespace>
     <Authors>Vaughn Nugent</Authors>
     <Version>1.0.1.2</Version>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

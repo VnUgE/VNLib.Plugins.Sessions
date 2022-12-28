@@ -32,7 +32,6 @@ using VNLib.Net.Http;
 using VNLib.Utils.Async;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Memory.Caching;
-using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Sessions;
 
 namespace VNLib.Plugins.Sessions.Cache.Client
@@ -97,19 +96,19 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <summary>
         /// The client used to communicate with the cache server
         /// </summary>
-        protected FBMClient Client { get; }
+        protected IRemoteCacheStore Store { get; }
 
         /// <summary>
         /// Initializes a new <see cref="SessionCacheClient"/>
         /// </summary>
         /// <param name="client"></param>
         /// <param name="maxCacheItems">The maximum number of sessions to keep in memory</param>
-        protected SessionCacheClient(FBMClient client, int maxCacheItems)
+        protected SessionCacheClient(IRemoteCacheStore client, int maxCacheItems)
         {
             MaxLoadedEntires = maxCacheItems;
             CacheLock = new();
             CacheTable = new(maxCacheItems);
-            Client = client;
+            Store = client;
         }
 
         private ulong _waitingCount;
@@ -202,12 +201,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <returns></returns>
         public async Task CleanupExpiredSessionsAsync(ILogProvider log, CancellationToken token)
         {
-            //Close handler
-            void OnConnectionClosed(object? sender, EventArgs e) => CacheHardClear();
-
-            //Attach event
-            Client.ConnectionClosed += OnConnectionClosed;
-
             while (true)
             {
                 try
@@ -229,9 +222,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                     log.Error(ex);
                 }
             }
-            
-            //remove handler
-            Client.ConnectionClosed -= OnConnectionClosed;
         }
 
         ///<inheritdoc/>

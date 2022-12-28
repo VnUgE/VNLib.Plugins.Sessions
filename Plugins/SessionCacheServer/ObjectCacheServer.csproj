@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -7,7 +6,8 @@
     <Version>1.0.1.1</Version>
     <RootNamespace>VNLib.Plugins.Essentials.Sessions.Server</RootNamespace>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
-    
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <!-- Resolve nuget dll files and store them in the output dir -->
@@ -52,7 +52,12 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;$(ProjectDir)/liveplugin/$(TargetName)&quot; /E /Y /R&#xD;&#xA;start xcopy &quot;$(TargetDir)&quot; &quot;\\vaughnnugent.com\Internal\Vaughns Folder\Programming\LiveWebPlugins\SessionServerPlugins/$(TargetName)&quot; /E /Y /R" />
+   
+    <Exec Command="erase &quot;\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\VNLib\Web Plugins/$(TargetName)&quot; /q &gt; nul&#xD;&#xA;start xcopy &quot;$(TargetDir)&quot; &quot;$(ProjectDir)/liveplugin/$(TargetName)&quot; /E /Y /R&#xD;&#xA;start xcopy &quot;$(TargetDir)&quot; &quot;\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\VNLib\Web Plugins/$(TargetName)&quot; /E /Y /R" />
+  </Target>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="erase &quot;F:\Programming\Web Plugins\DevPlugins\$(TargetName)&quot; /q &gt; nul" />
   </Target>
 
 </Project>

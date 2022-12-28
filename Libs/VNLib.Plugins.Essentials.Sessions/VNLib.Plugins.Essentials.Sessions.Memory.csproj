@@ -8,6 +8,8 @@
     <Authors>Vaughn Nugent</Authors>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <!-- Resolve nuget dll files and store them in the output dir -->

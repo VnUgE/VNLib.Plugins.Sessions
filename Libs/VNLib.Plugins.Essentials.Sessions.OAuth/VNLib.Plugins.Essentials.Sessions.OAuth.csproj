@@ -13,7 +13,8 @@
     <Version>1.0.1.1</Version>
     <PackageProjectUrl>https://www.vaughnugent.com</PackageProjectUrl>
     <AnalysisLevel>latest-all</AnalysisLevel>
-    
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -34,11 +35,10 @@
     <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Plugins\src\VNLib.Plugins.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.Extensions\VNLib.Data.Caching.Extensions.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading.Sql\VNLib.Plugins.Extensions.Loading.Sql.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Validation\VNLib.Plugins.Extensions.Validation.csproj" />
+    <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.VNCache\VNLib.Plugins.Extensions.VNCache.csproj" />
     <ProjectReference Include="..\..\..\Oauth\Libs\VNLib.Plugins.Essentials.Oauth\VNLib.Plugins.Essentials.Oauth.csproj" />
     <ProjectReference Include="..\..\..\PluginBase\VNLib.Plugins.PluginBase.csproj" />
     <ProjectReference Include="..\VNLib.Plugins.Essentials.Sessions.Runtime\VNLib.Plugins.Essentials.Sessions.Runtime.csproj" />

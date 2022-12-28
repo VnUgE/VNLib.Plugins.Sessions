@@ -25,7 +25,7 @@
 using System;
 
 using VNLib.Net.Http;
-using VNLib.Net.Messaging.FBM.Client;
+using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Essentials.Sessions.VNCache
@@ -33,6 +33,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
     /// <summary>
     /// The implementation of a VNCache web based session
     /// </summary>
+    [ConfigurationName("web")]
     internal sealed class WebSessionProvider : SessionCacheClient, ISessionProvider
     {
         static readonly TimeSpan BackgroundUpdateTimeout = TimeSpan.FromSeconds(10);
@@ -47,7 +48,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
         /// <param name="maxCacheItems">The max number of items to store in cache</param>
         /// <param name="maxWaiting">The maxium number of waiting session events before 503s are sent</param>
         /// <param name="factory">The session-id factory</param>
-        public WebSessionProvider(FBMClient client, int maxCacheItems, uint maxWaiting, IWebSessionIdFactory factory) : base(client, maxCacheItems)
+        public WebSessionProvider(IRemoteCacheStore client, int maxCacheItems, uint maxWaiting, IWebSessionIdFactory factory) : base(client, maxCacheItems)
         {
             this.factory = factory;
             MaxConnections = maxWaiting;
@@ -69,7 +70,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
             return newid;
         }
         
-        protected override RemoteSession SessionCtor(string sessionId) => new WebSession(sessionId, Client, BackgroundUpdateTimeout, UpdateSessionId);
+        protected override RemoteSession SessionCtor(string sessionId) => new WebSession(sessionId, Store, BackgroundUpdateTimeout, UpdateSessionId);
 
         public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {

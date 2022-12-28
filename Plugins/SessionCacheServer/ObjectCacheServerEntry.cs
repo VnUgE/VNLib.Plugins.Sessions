@@ -287,14 +287,12 @@ namespace VNLib.Plugins.Essentials.Sessions.Server
 
         private async Task<ReadOnlyJsonWebKey> GetCachePrivate()
         {
-            using SecretResult secret = await this.TryGetSecretAsync("cache_private_key") ?? throw new KeyNotFoundException("Failed to load the cache private key");
-            return secret.GetJsonWebKey();
+            return await this.TryGetSecretAsync("cache_private_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Failed to load the cache private key");
         }
 
         private async Task<ReadOnlyJsonWebKey> GetBrokerPublic()
         {
-            using SecretResult secret = await this.TryGetSecretAsync("broker_public_key") ?? throw new KeyNotFoundException("Failed to load the broker's public key");
-            return secret.GetJsonWebKey();
+            return await this.TryGetSecretAsync("broker_public_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Failed to load the broker's public key");
         }
 
 

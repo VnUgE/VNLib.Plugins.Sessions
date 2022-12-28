@@ -30,14 +30,13 @@ using Microsoft.EntityFrameworkCore;
 using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
-using VNLib.Data.Caching;
 using VNLib.Data.Caching.Exceptions;
-using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading.Events;
+using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Essentials.Sessions.OAuth
 {
@@ -45,7 +44,8 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
     /// <summary>
     /// Provides OAuth2 session management
     /// </summary>
-    internal sealed class OAuth2SessionProvider : SessionCacheClient, ISessionProvider, ITokenManager, IIntervalScheduleable
+    [ConfigurationName("oauth2")]
+    internal sealed class OAuth2SessionProvider : SessionCacheClient, ITokenManager, IIntervalScheduleable
     {
 
         private static readonly SessionHandle NotFoundHandle = new(null, FileProcessArgs.NotFound, null);
@@ -57,7 +57,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
         private readonly TokenStore TokenStore;
         private readonly uint MaxConnections;
         
-        public OAuth2SessionProvider(FBMClient client, int maxCacheItems, uint maxConnections, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
+        public OAuth2SessionProvider(IRemoteCacheStore client, int maxCacheItems, uint maxConnections, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
             : base(client, maxCacheItems)
         {
             factory = idFactory;
@@ -66,7 +66,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
         }
 
         ///<inheritdoc/>
-        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Client, BackgroundTimeout, InvalidatateCache);
+        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Store, BackgroundTimeout, InvalidatateCache);
 
         private void InvalidatateCache(OAuth2Session session)
         {
@@ -97,7 +97,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
                 if (WaitingConnections > MaxConnections)
                 {
                     //Set 503 for temporary unavail
-                    entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);
+                    entity.CloseResponse(HttpStatusCode.ServiceUnavailable);
                     return new SessionHandle(null, FileProcessArgs.VirtualSkip, null);
                 }
 
@@ -202,7 +202,7 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
                 try
                 {
                     //Remove tokens by thier object id from cache
-                    await base.Client.DeleteObjectAsync(token.Id, cancellationToken);
+                    await base.Store.DeleteObjectAsync(token.Id, cancellationToken);
                 }
                 //Ignore if the object has already been removed
                 catch (ObjectNotFoundException)

@@ -33,9 +33,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Text.Json.Serialization;
-using System.Security.Cryptography.X509Certificates;
 
 using RestSharp;
 
@@ -110,8 +108,7 @@ namespace VNLib.Plugins.Cache.Broker.Endpoints
 
         private async Task<ReadOnlyJsonWebKey> GetClientPublic()
         {
-            using SecretResult secret = await this.GetPlugin().TryGetSecretAsync("client_public_key") ?? throw new InvalidOperationException("Client public key not found in vault");
-            return secret.GetJsonWebKey();
+            return await this.GetPlugin().TryGetSecretAsync("client_public_key").ToJsonWebKey() ?? throw new InvalidOperationException("Client public key not found in vault");
         }
 
         private async Task<ReadOnlyJsonWebKey> GetCachePublic()

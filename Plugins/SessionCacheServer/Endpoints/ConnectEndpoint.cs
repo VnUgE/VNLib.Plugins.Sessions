@@ -47,7 +47,7 @@ using VNLib.Plugins.Essentials.Extensions;
 
 namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 {
-    class ConnectEndpoint : ResourceEndpointBase
+    internal sealed class ConnectEndpoint : ResourceEndpointBase
     {
         const int MAX_RECV_BUF_SIZE = 1000 * 1024;
         const int MIN_RECV_BUF_SIZE = 8 * 1024;
@@ -194,21 +194,15 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 
         private async Task<ReadOnlyJsonWebKey> GetClientPubAsync()
         {
-            using SecretResult brokerPubKey = await Pbase.TryGetSecretAsync("client_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-            
-            return brokerPubKey.GetJsonWebKey();
+            return await Pbase.TryGetSecretAsync("client_public_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
         }
         private async Task<ReadOnlyJsonWebKey> GetCachePubAsync()
         {
-            using SecretResult cachPublic = await Pbase.TryGetSecretAsync("cache_public_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-
-            return cachPublic.GetJsonWebKey();
+            return await Pbase.TryGetSecretAsync("cache_public_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
         }
         private async Task<ReadOnlyJsonWebKey> GetCachePrivateKeyAsync()
         {
-            using SecretResult cachePrivate = await Pbase.TryGetSecretAsync("cache_private_key") ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
-
-            return cachePrivate.GetJsonWebKey();
+            return await Pbase.TryGetSecretAsync("cache_private_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Missing required secret : client_public_key");
         }
 
         private async Task ChangeWorkerAsync(CancellationToken cancellation)

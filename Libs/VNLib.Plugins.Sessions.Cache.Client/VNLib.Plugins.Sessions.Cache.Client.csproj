@@ -5,6 +5,8 @@
     <Authors>Vaughn Nugent</Authors>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
     <Version>1.0.1.1</Version>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -38,7 +40,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\VNLib\Essentials\src\VNLib.Plugins.Essentials.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib\Utils\src\VNLib.Utils.csproj" />
+    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching\VNLib.Data.Caching.csproj" />
   </ItemGroup>
 
 </Project>

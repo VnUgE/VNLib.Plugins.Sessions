@@ -37,7 +37,7 @@ using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 {
-    internal class BrokerHeartBeat : ResourceEndpointBase
+    internal sealed class BrokerHeartBeat : ResourceEndpointBase
     {
         public override string Path => "/heartbeat";
 
@@ -64,9 +64,7 @@ namespace VNLib.Plugins.Essentials.Sessions.Server.Endpoints
 
         private async Task<ReadOnlyJsonWebKey> GetBrokerPubAsync()
         {
-            using SecretResult brokerPubKey = await Pbase.TryGetSecretAsync("broker_public_key") ?? throw new KeyNotFoundException("Missing required secret : broker_public_key");
-
-            return brokerPubKey.GetJsonWebKey();
+            return await Pbase.TryGetSecretAsync("broker_public_key").ToJsonWebKey() ?? throw new KeyNotFoundException("Missing required secret : broker_public_key");
         }
 
         protected override async ValueTask<VfReturnType> GetAsync(HttpEntity entity)

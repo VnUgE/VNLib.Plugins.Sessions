@@ -30,10 +30,8 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.Threading;
 
 using VNLib.Net.Http;
-using VNLib.Data.Caching;
 using VNLib.Data.Caching.Exceptions;
 using VNLib.Utils.Extensions;
-using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Extensions;
 
@@ -47,7 +45,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     {
         protected const string CREATED_TIME_ENTRY = "__.i.ctime";
         
-        protected FBMClient Client { get; }
+        protected IRemoteCacheStore Client { get; }
         protected TimeSpan UpdateTimeout { get; }
 
         private readonly AsyncLazyInitializer Initializer;
@@ -57,7 +55,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// </summary>
         protected Dictionary<string, string>? DataStore;
 
-        protected RemoteSession(string sessionId, FBMClient client, TimeSpan backgroundTimeOut)
+        protected RemoteSession(string sessionId, IRemoteCacheStore client, TimeSpan backgroundTimeOut)
         {
             SessionID = sessionId;
             UpdateTimeout = backgroundTimeOut;

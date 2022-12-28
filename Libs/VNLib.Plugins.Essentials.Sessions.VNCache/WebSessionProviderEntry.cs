@@ -25,29 +25,26 @@
 using System.Text.Json;
 
 using VNLib.Net.Http;
-using VNLib.Utils.Memory;
 using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
-using VNLib.Plugins.Extensions.Loading;
+using VNLib.Data.Caching;
+using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Essentials.Sessions.Runtime;
-using VNLib.Data.Caching.Extensions;
+using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.VNCache;
 
 namespace VNLib.Plugins.Essentials.Sessions.VNCache
 {
     public sealed class WebSessionProviderEntry : IRuntimeSessionProvider
     {
-        const string VNCACHE_CONFIG_KEY = "vncache";
         const string WEB_SESSION_CONFIG = "web";
 
         private WebSessionProvider? _sessions;
 
-        public bool CanProcess(IHttpEvent entity)
-        {
-            //Web sessions can always be provided so long as cache is loaded
-            return _sessions != null;
-        }
+        //Web sessions can always be provided so long as cache is loaded
+        bool IRuntimeSessionProvider.CanProcess(IHttpEvent entity) => _sessions != null;
 
-        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
             return _sessions!.GetSessionAsync(entity, cancellationToken);
         }
@@ -55,77 +52,31 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
         void IRuntimeSessionProvider.Load(PluginBase plugin, ILogProvider localized)
         {
             //Try get vncache config element
-            IReadOnlyDictionary<string, JsonElement> cacheConfig = plugin.GetConfig(VNCACHE_CONFIG_KEY);
-
-            IReadOnlyDictionary<string, JsonElement> webSessionConfig = plugin.GetConfig(WEB_SESSION_CONFIG);
+            IReadOnlyDictionary<string, JsonElement> webSessionConfig = plugin.GetConfigForType<WebSessionProvider>();
 
             uint cookieSize = webSessionConfig["cookie_size"].GetUInt32();
             string cookieName = webSessionConfig["cookie_name"].GetString() ?? throw new KeyNotFoundException($"Missing required element 'cookie_name' for config '{WEB_SESSION_CONFIG}'");
             string cachePrefix = webSessionConfig["cache_prefix"].GetString() ?? throw new KeyNotFoundException($"Missing required element 'cache_prefix' for config '{WEB_SESSION_CONFIG}'");
+            int cacheLimit = (int)webSessionConfig["cache_size"].GetUInt32();
+            uint maxConnections = webSessionConfig["max_waiting_connections"].GetUInt32();
             TimeSpan validFor = webSessionConfig["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
 
             //Init id factory
             WebSessionIdFactoryImpl idFactory = new(cookieSize, cookieName, cachePrefix, validFor);
 
-            //Run client connection
-            _ = plugin.DeferTask(() => WokerDoWorkAsync(plugin, localized, idFactory, cacheConfig, webSessionConfig)); 
-        }
+            //Get shared global-cache
+            IGlobalCacheProvider globalCache = plugin.GetGlobalCache();
 
-       
-        /*
-        * Starts and monitors the VNCache connection
-        */
+            //Create cache store from global cache
+            GlobalCacheStore cacheStore = new(globalCache);
 
-        private async Task WokerDoWorkAsync(
-            PluginBase plugin,
-            ILogProvider localized,
-            WebSessionIdFactoryImpl idFactory,
-            IReadOnlyDictionary<string, JsonElement> cacheConfig,
-            IReadOnlyDictionary<string, JsonElement> webSessionConfig)
-        {
-            //Init cache client
-            using VnCacheClient cache = new(plugin.IsDebug() ? localized : null, Memory.Shared);
+            //Init provider
+            _sessions = new(cacheStore, cacheLimit, maxConnections, idFactory);
 
-            try
-            {
-                int cacheLimit = (int)webSessionConfig["cache_size"].GetUInt32();
-                uint maxConnections = webSessionConfig["max_waiting_connections"].GetUInt32();
+            //Load and run cached sessions on deferred task lib
+            _ = plugin.DeferTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
 
-                //Try loading config
-                await cache.LoadConfigAsync(plugin, cacheConfig);
-
-                //Init provider
-                _sessions = new(cache.Resource!, cacheLimit, maxConnections, idFactory);
-
-                localized.Information("Session provider loaded");
-
-                //Listen for cache table events
-                _ = plugin.DeferTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken));
-
-                //Run and wait for exit
-                await cache.RunAsync(localized, plugin.UnloadToken);
-
-            }
-            catch (OperationCanceledException)
-            { }
-            catch (KeyNotFoundException e)
-            {
-                localized.Error("Missing required configuration variable for VnCache client: {0}", e.Message);
-            }
-            catch (FBMServerNegiationException fne)
-            {
-                localized.Error("Failed to negotiate connection with cache server {reason}", fne.Message);
-            }
-            catch (Exception ex)
-            {
-                localized.Error(ex, "Cache client error occured in session provider");
-            }
-            finally
-            {
-                _sessions = null;
-            }
-
-            localized.Information("Cache client exited");
+            localized.Information("Session provider loaded");
         }
     }
 }

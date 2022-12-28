@@ -6,17 +6,22 @@
     <Nullable>enable</Nullable>
     <Authors>Vaughn Nugent</Authors>
     <Copyright>Copyright © 2022 Vaughn Nugent</Copyright>
-    <Version>1.0.1.1</Version>
+    <Version>1.0.1.2</Version>
     <SignAssembly>False</SignAssembly>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources</PackageProjectUrl>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\VNLib\Essentials\src\VNLib.Plugins.Essentials.csproj" />
     <ProjectReference Include="..\..\..\..\VNLib\Http\src\VNLib.Net.Http.csproj" />
-    <ProjectReference Include="..\..\..\DataCaching\VNLib.Data.Caching.Extensions\VNLib.Data.Caching.Extensions.csproj" />
     <ProjectReference Include="..\..\..\Extensions\VNLib.Plugins.Extensions.Loading\VNLib.Plugins.Extensions.Loading.csproj" />
     <ProjectReference Include="..\..\..\PluginBase\VNLib.Plugins.PluginBase.csproj" />
   </ItemGroup>

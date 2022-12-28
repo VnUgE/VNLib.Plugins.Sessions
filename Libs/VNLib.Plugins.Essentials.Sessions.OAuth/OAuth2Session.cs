@@ -25,7 +25,6 @@
 using System;
 
 using VNLib.Net.Http;
-using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Sessions.Cache.Client.Exceptions;
 
@@ -44,10 +43,10 @@ namespace VNLib.Plugins.Essentials.Sessions.OAuth
         /// Initalizes a new <see cref="OAuth2Session"/>
         /// </summary>
         /// <param name="sessionId">The session id (or token)</param>
-        /// <param name="client">The <see cref="FBMClient"/> used as the backing cache provider</param>
+        /// <param name="client">The <see cref="IRemoteCacheStore"/> used as the backing cache provider</param>
         /// <param name="backgroundTimeOut">The ammount of time to wait for a background operation (delete, update, get)</param>
         /// <param name="invalidCache">Called when the session has been marked as invalid and the close even hook is being executed</param>
-        public OAuth2Session(string sessionId, FBMClient client, TimeSpan backgroundTimeOut, Action<OAuth2Session> invalidCache)
+        public OAuth2Session(string sessionId, IRemoteCacheStore client, TimeSpan backgroundTimeOut, Action<OAuth2Session> invalidCache)
             : base(sessionId, client, backgroundTimeOut)
         {
             InvalidateCache = invalidCache;

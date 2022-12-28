@@ -77,10 +77,10 @@ namespace VNLib.Plugins.Essentials.Sessions.Memory
             _ = plugin.DeferTask(() => _sessions.CleanupExiredAsync(localized, plugin.UnloadToken));
          
             //Schedule garbage collector
-            _ = plugin.ScheduleInterval(this, TimeSpan.FromMinutes(1));
+            plugin.ScheduleInterval(this, TimeSpan.FromMinutes(1));
 
             //Call cleanup on exit
-            _ = plugin.UnloadToken.RegisterUnobserved(_sessions.Cleanup);
+            _ = plugin.RegisterForUnload(_sessions.Cleanup);
         }
 
         Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)

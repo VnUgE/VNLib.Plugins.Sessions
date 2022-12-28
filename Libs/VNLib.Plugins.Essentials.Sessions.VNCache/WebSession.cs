@@ -23,8 +23,6 @@
 */
 
 using VNLib.Net.Http;
-using VNLib.Data.Caching;
-using VNLib.Net.Messaging.FBM.Client;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Sessions.Cache.Client;
 using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
@@ -38,7 +36,7 @@ namespace VNLib.Plugins.Essentials.Sessions.VNCache
         protected readonly Func<IHttpEvent, string, string> UpdateId;
         private string? _oldId;
 
-        public WebSession(string sessionId, FBMClient client, TimeSpan backgroundTimeOut, Func<IHttpEvent, string, string> UpdateId)
+        public WebSession(string sessionId, IRemoteCacheStore client, TimeSpan backgroundTimeOut, Func<IHttpEvent, string, string> UpdateId)
             : base(sessionId, client, backgroundTimeOut)
         {
             this.UpdateId = UpdateId;
