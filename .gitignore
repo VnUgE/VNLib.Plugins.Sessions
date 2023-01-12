@@ -354,3 +354,9 @@ MigrationBackup/
 
 [Ll]iveplugin/
 *.licenseheader
+
+[Tt]askfile.*
+
+/.task/checksum
+
+*.sln
