@@ -83,7 +83,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         private string ComputeSessionIdFromToken(string token)
         {
             //Buffer to copy data to
-            using UnsafeMemoryHandle<char> buffer = Memory.UnsafeAlloc<char>(_bufferSize, true);
+            using UnsafeMemoryHandle<char> buffer = MemoryUtil.UnsafeAlloc<char>(_bufferSize, true);
 
             //Writer to accumulate data
             ForwardOnlyWriter<char> writer = new(buffer.Span);
@@ -100,7 +100,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         TokenAndSessionIdResult IOauthSessionIdFactory.GenerateTokensAndId()
         {
             //Alloc buffer for random data
-            using UnsafeMemoryHandle<byte> mem = Memory.UnsafeAlloc<byte>(_tokenSize, true);
+            using UnsafeMemoryHandle<byte> mem = MemoryUtil.UnsafeAlloc<byte>(_tokenSize, true);
             
             //Generate token from random cng bytes
             RandomHash.GetRandomBytes(mem);
@@ -112,7 +112,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             string sessionId = ComputeSessionIdFromToken(token);
             
             //Clear buffer
-            Memory.InitializeBlock(mem.Span);
+            MemoryUtil.InitializeBlock(mem.Span);
             
             //Return sessid result
             return new(sessionId, token, null);

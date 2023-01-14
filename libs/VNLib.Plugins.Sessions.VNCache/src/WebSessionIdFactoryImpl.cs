@@ -103,7 +103,7 @@ namespace VNLib.Plugins.Sessions.VNCache
         private string ComputeSessionIdFromCookie(string sessionId)
         {
             //Buffer to copy data to
-            using UnsafeMemoryHandle<char> buffer = Memory.UnsafeAlloc<char>(_bufferSize, true);
+            using UnsafeMemoryHandle<char> buffer = MemoryUtil.UnsafeAlloc<char>(_bufferSize, true);
 
             //Writer to accumulate data
             ForwardOnlyWriter<char> writer = new(buffer.Span);

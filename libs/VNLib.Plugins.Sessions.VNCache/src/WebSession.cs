@@ -32,8 +32,6 @@ namespace VNLib.Plugins.Sessions.VNCache
 {
     internal class WebSession : RemoteSession
     {
-        protected const ulong UPGRADE_MSK =     0b0000000000010000UL;
-
         protected readonly Func<IHttpEvent, string, string> UpdateId;
         private string? _oldId;
 
@@ -41,20 +39,6 @@ namespace VNLib.Plugins.Sessions.VNCache
             : base(sessionId, client, backgroundTimeOut)
         {
             this.UpdateId = UpdateId;
-        }
-
-        protected override void IndexerSet(string key, string value)
-        {
-            //Set value
-            base.IndexerSet(key, value);
-            switch (key)
-            {
-                //Set the upgrade flag when token data is modified
-                case LOGIN_TOKEN_ENTRY:
-                case TOKEN_ENTRY:
-                    Flags.Set(UPGRADE_MSK);
-                    break;
-            }
         }
 
         public override async Task WaitAndLoadAsync(IHttpEvent entity, CancellationToken cancellationToken)
@@ -99,7 +83,7 @@ namespace VNLib.Plugins.Sessions.VNCache
                 //write update to server
                 result = Task.Run(ProcessUpgradeAsync);
             }
-            else if (Flags.IsSet(UPGRADE_MSK | REGEN_ID_MSK))
+            else if (Flags.IsSet(REGEN_ID_MSK))
             {
                 //generate new session-id and update the record in the store
                 _oldId = SessionID;

@@ -104,9 +104,9 @@ namespace VNLib.Plugins.Sessions.Memory
             //Check for special keys
             switch (key)
             {
-                //For tokens/login hashes, we can set the upgrade flag
-                case TOKEN_ENTRY:
+                //For token/login hashes, we can set the upgrade flag
                 case LOGIN_TOKEN_ENTRY:
+                case TOKEN_ENTRY:
                     Flags.Set(REGEN_ID_MSK);
                     break;
             }
