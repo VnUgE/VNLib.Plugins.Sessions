@@ -2,20 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <Authors>Vaughn Nugent</Authors>
-    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
     <AssemblyName>VNLib.Plugins.Sessions.OAuth</AssemblyName>
     <RootNamespace>VNLib.Plugins.Sessions.OAuth</RootNamespace>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Nullable>enable</Nullable>
     <Version>1.0.1.1</Version>
-    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
-    <AnalysisLevel>latest-all</AnalysisLevel>
+    
+    <!-- Enable dynamic loading for direct loading -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Vaughn Nugent</Authors>
+    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
+    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,6 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\core\lib\Plugins.PluginBase\src\VNLib.Plugins.PluginBase.csproj" />
     <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />
@@ -36,11 +41,6 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;F:\Programming\VNLib\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
+    <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;..\..\..\..\..\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
   </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="erase &quot;F:\Programming\VNLib\devplugins\RuntimeAssets\$(TargetName)&quot; /q &gt; nul" />
-  </Target>
-
 </Project>

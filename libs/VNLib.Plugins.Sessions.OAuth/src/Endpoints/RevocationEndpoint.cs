@@ -24,6 +24,7 @@
 
 using System;
 using System.Text.Json;
+using System.Collections.Generic;
 
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Oauth;

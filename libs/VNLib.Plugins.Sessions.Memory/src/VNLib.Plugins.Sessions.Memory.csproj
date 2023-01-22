@@ -1,24 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>VNLib.Plugins.Sessions.Memory</AssemblyName>
     <RootNamespace>VNLib.Plugins.Sessions.Memory</RootNamespace>
-    <Authors>Vaughn Nugent</Authors>
-    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
-    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <!-- Resolve nuget dll files and store them in the output dir -->
-  <PropertyGroup>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <Authors>Vaughn Nugent</Authors>
+    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
+    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
+  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Deterministic>False</Deterministic>
   </PropertyGroup>
@@ -44,11 +43,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;F:\Programming\VNLib\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
-  </Target>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="erase &quot;F:\Programming\VNLib\devplugins\RuntimeAssets\$(TargetName)&quot; /q &gt; nul" />
+    <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;..\..\..\..\..\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
   </Target>
   
 </Project>
