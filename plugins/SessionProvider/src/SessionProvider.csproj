@@ -40,7 +40,7 @@
     <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading\src\VNLib.Plugins.Extensions.Loading.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Condition="'$(BuildingInsideVisualStudio)' == true" Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;..\..\..\..\..\devplugins\$(TargetName)&quot; /E /Y /R" />
   </Target>
 

@@ -40,7 +40,7 @@
     <ProjectReference Include="..\..\VNLib.Plugins.Sessions.Cache.Client\src\VNLib.Plugins.Sessions.Cache.Client.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Condition="'$(BuildingInsideVisualStudio)' == true" Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;..\..\..\..\..\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
   </Target>
 </Project>
