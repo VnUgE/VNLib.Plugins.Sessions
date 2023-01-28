@@ -78,7 +78,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             _sessions = new(cacheStore, cacheLimit, maxConnections, idFactory);
 
             //Load and run cached sessions on deferred task lib
-            _ = plugin.DeferTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
+            _ = plugin.ObserveTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
 
             localized.Information("Session provider loaded");
         }

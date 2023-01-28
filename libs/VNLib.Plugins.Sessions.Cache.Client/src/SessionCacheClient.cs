@@ -66,7 +66,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             }
             
             ///<inheritdoc/>
-            protected override void Evicted(KeyValuePair<string, T> evicted)
+            protected override void Evicted(ref KeyValuePair<string, T> evicted)
             {
                 //add to queue, the list lock should be held during this operatio
                 _ = ExpiredSessions.TryEnque(evicted.Value);
@@ -77,8 +77,11 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             {
                 foreach (KeyValuePair<string, T> value in List)
                 {
-                    Evicted(value);
+                    KeyValuePair<string, T> onStack = value;
+
+                    Evicted(ref onStack);
                 }
+
                 Clear();
             }
 

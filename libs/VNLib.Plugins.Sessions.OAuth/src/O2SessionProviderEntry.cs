@@ -110,7 +110,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             plugin.ScheduleInterval(_sessions, cleanupInterval);
 
             //Wait and cleanup expired sessions
-            _ = plugin.DeferTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
+            _ = plugin.ObserveTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
 
             localized.Information("Session provider loaded");
 

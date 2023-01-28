@@ -49,6 +49,11 @@ namespace VNLib.Plugins.Essentials.Sessions
             return Log.GetLogProvider();
         }
 
+        public bool IsEnabled(LogLevel level)
+        {
+            return Log.IsEnabled(level);
+        }
+
         public void Write(LogLevel level, string value)
         {
             Log.Write(level, $"[{LogPrefix}]: {value}");

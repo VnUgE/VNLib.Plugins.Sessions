@@ -76,7 +76,7 @@ namespace VNLib.Plugins.Sessions.Memory
             _sessions = new(config);
 
             //Begin listening for expired records
-            _ = plugin.DeferTask(() => _sessions.CleanupExiredAsync(localized, plugin.UnloadToken));
+            _ = plugin.ObserveTask(() => _sessions.CleanupExiredAsync(localized, plugin.UnloadToken));
 
             //Schedule garbage collector
             plugin.ScheduleInterval(this, TimeSpan.FromMinutes(1));
