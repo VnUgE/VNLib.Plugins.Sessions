@@ -94,8 +94,8 @@ namespace VNLib.Plugins.Sessions.VNCache
                     return SessionHandle.Empty;
                 }
 
-                //Limit max number of waiting clients
-                if (WaitingConnections > MaxConnections)
+                //Limit max number of waiting clients and make sure were connected
+                if (!IsConnected || WaitingConnections > MaxConnections)
                 {
                     //Set 503 for temporary unavail
                     entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);

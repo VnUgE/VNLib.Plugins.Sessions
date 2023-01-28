@@ -102,6 +102,12 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         protected IRemoteCacheStore Store { get; }
 
         /// <summary>
+        /// Gets a value that determines if the backing <see cref="IRemoteCacheStore"/> is connected
+        /// to a server
+        /// </summary>
+        public bool IsConnected => Store.IsConnected;
+
+        /// <summary>
         /// Initializes a new <see cref="SessionCacheClient"/>
         /// </summary>
         /// <param name="client"></param>

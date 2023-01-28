@@ -40,8 +40,8 @@ using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
-using VNLib.Plugins.Extensions.Loading.Events;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.Loading.Events;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
@@ -80,6 +80,7 @@ namespace VNLib.Plugins.Sessions.OAuth
                 _ = CacheTable.Remove(session.SessionID);
             }
         }
+       
 
         ///<inheritdoc/>
         public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
@@ -99,7 +100,7 @@ namespace VNLib.Plugins.Sessions.OAuth
                 }
 
                 //Limit max number of waiting clients
-                if (WaitingConnections > MaxConnections)
+                if (!IsConnected || WaitingConnections > MaxConnections)
                 {
                     //Set 503 for temporary unavail
                     entity.CloseResponse(HttpStatusCode.ServiceUnavailable);

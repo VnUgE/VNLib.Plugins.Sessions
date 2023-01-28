@@ -46,7 +46,7 @@ namespace VNLib.Plugins.Sessions.VNCache
         private WebSessionProvider? _sessions;
 
         //Web sessions can always be provided so long as cache is loaded
-        public bool CanProcess(IHttpEvent entity) => _sessions != null;
+        public bool CanProcess(IHttpEvent entity) => _sessions != null && _sessions.IsConnected;
 
         ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {

@@ -44,6 +44,9 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         }
 
         ///<inheritdoc/>
+        public bool IsConnected => _cache.IsConnected;
+
+        ///<inheritdoc/>
         public Task AddOrUpdateObjectAsync<T>(string objectId, string? newId, T obj, CancellationToken cancellationToken = default)
         {
             return _cache.AddOrUpdateAsync(objectId, newId, obj, cancellationToken);

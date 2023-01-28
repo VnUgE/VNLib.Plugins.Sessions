@@ -57,7 +57,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         public bool CanProcess(IHttpEvent entity)
         {
             //If authorization header is set try to process as oauth2 session
-            return _sessions != null && entity.Server.Headers.HeaderSet(System.Net.HttpRequestHeader.Authorization);
+            return _sessions != null && _sessions.IsConnected && entity.Server.Headers.HeaderSet(System.Net.HttpRequestHeader.Authorization);
         }
 
         ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)

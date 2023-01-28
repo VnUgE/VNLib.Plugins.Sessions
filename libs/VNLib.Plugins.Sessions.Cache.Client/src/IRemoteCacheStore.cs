@@ -44,5 +44,10 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         Task AddOrUpdateObjectAsync<T>(string objectId, string? newId, T obj, CancellationToken cancellationToken = default);
 
         Task DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a value that determines if the remote cache store is available
+        /// </summary>
+        bool IsConnected { get; }
     }
 }
