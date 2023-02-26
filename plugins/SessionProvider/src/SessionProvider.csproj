@@ -10,13 +10,16 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    
+    <!-- Resolve nuget dll files and store them in the output dir -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>VNLib.Plugins.Sessions.SessionProvider</PackageId>
     <Authors>Vaughn Nugent</Authors>
     <Company>Vaughn Nugent</Company>
     <Product>SessionProvider</Product>
+    <PackageId>VNLib.Plugins.Sessions.SessionProvider</PackageId>
     <Description>
       An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries
     </Description>
@@ -36,12 +39,6 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Resolve nuget dll files and store them in the output dir -->
-  <PropertyGroup>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\core\lib\Net.Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\..\core\lib\Plugins.Essentials\src\VNLib.Plugins.Essentials.csproj" />
