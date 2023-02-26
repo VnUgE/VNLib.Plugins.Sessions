@@ -2,17 +2,27 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <RootNamespace>VNLib.Plugins.Sessions</RootNamespace>
     <AssemblyName>SessionProvider</AssemblyName>
-    <PackageId>SessionProvider</PackageId>
+    <Version>1.0.3.2</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <AnalysisLevel>latest-all</AnalysisLevel>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>VNLib.Plugins.Sessions.SessionProvider</PackageId>
     <Authors>Vaughn Nugent</Authors>
+    <Company>Vaughn Nugent</Company>
     <Product>SessionProvider</Product>
+    <Description>
+      An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries
+    </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
-    <Version>1.0.3.1</Version>
-    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/plugins/SessionProvider</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

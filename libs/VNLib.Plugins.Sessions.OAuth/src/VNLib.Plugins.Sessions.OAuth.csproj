@@ -10,16 +10,22 @@
     <!-- Enable dynamic loading for direct loading -->
     <EnableDynamicLoading>true</EnableDynamicLoading>
     
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
+
   <PropertyGroup>
+    <PackageId>VNLib.Net.Http</PackageId>
     <Authors>Vaughn Nugent</Authors>
+    <Company>Vaughn Nugent</Company>
+    <Product>Essentials framework OAuth2 session provider</Product>
+    <Description>
+      Provides OAuth2 sessions and required endpoints for authentication via user applications from the VNLib.Plugins.Essentials.Oauth library
+    </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
-    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Core</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.OAuth</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

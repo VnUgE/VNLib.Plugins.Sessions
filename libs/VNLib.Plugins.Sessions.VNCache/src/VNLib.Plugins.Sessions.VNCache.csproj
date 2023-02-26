@@ -7,16 +7,21 @@
     <Nullable>enable</Nullable>
     <Version>1.0.1.1</Version>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>\\vaughnnugent.com\Internal\Folder Redirection\vman\Documents\Programming\Software\StrongNameingKey.snk</AssemblyOriginatorKeyFile>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
+    <PackageId>VNLib.Plugins.Sessions.VNCache</PackageId>
     <Authors>Vaughn Nugent</Authors>
+    <Company>Vaughn Nugent</Company>
+    <Product>VNCache backed dynamic session provider</Product>
+    <Description>
+      Provides web based sessions using a VNCache cache cluster as a backing store for distributed sessions
+    </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
-    <PackageProjectUrl>https://www.vaughnugent.com/resources/software</PackageProjectUrl>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.VNCache</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
