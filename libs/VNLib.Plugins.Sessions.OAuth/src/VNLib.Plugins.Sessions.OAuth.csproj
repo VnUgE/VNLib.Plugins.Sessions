@@ -5,18 +5,16 @@
     <AssemblyName>VNLib.Plugins.Sessions.OAuth</AssemblyName>
     <RootNamespace>VNLib.Plugins.Sessions.OAuth</RootNamespace>
     <Nullable>enable</Nullable>
-    <Version>1.0.1.1</Version>
-    
-    <!-- Enable dynamic loading for direct loading -->
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-    
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+    <!-- Enable dynamic loading for direct loading -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
 
   <PropertyGroup>
-    <PackageId>VNLib.Net.Http</PackageId>
+    <PackageId>VNLib.Plugins.Sessions.OAuth</PackageId>
     <Authors>Vaughn Nugent</Authors>
     <Company>Vaughn Nugent</Company>
     <Product>Essentials framework OAuth2 session provider</Product>
