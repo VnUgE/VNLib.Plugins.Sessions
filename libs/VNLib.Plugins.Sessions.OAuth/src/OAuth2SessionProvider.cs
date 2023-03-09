@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -28,20 +28,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Microsoft.EntityFrameworkCore;
-
 using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
 using VNLib.Data.Caching.Exceptions;
-using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Essentials;
-using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
 using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Loading.Events;
+using static VNLib.Plugins.Essentials.Oauth.OauthSessionExtensions;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
@@ -49,139 +47,145 @@ namespace VNLib.Plugins.Sessions.OAuth
     /// <summary>
     /// Provides OAuth2 session management
     /// </summary>
-    [ConfigurationName("oauth2")]
-    internal sealed class OAuth2SessionProvider : SessionCacheClient, ITokenManager, IIntervalScheduleable
-    {
+    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
+    internal sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory
+    {        
+        private static readonly SessionHandle Skip = new(null, FileProcessArgs.VirtualSkip, null);
 
-        private static readonly SessionHandle NotFoundHandle = new(null, FileProcessArgs.NotFound, null);
-        
-        private static readonly TimeSpan BackgroundTimeout = TimeSpan.FromSeconds(10);
-
-        
-        private readonly IOauthSessionIdFactory factory;
+        private readonly OAuth2SessionStore _sessions;
+        private readonly IOauthSessionIdFactory _tokenFactory;
         private readonly TokenStore TokenStore;
-        private readonly uint MaxConnections;
-        
-        public OAuth2SessionProvider(IRemoteCacheStore client, int maxCacheItems, uint maxConnections, IOauthSessionIdFactory idFactory, DbContextOptions dbCtx)
-            : base(client, maxCacheItems)
+        private readonly string _tokenTypeString;
+        private readonly uint _maxConnections;        
+
+        private uint _waitingConnections;
+
+        public bool IsConnected => _sessions.IsConnected;
+
+        public OAuth2SessionProvider(PluginBase plugin, IConfigScope config)
         {
-            factory = idFactory;
-            TokenStore = new(dbCtx);
-            MaxConnections = maxConnections;
+            _sessions = plugin.GetOrCreateSingleton<OAuth2SessionStore>();
+            _tokenFactory = plugin.GetOrCreateSingleton<OAuth2TokenFactory>();
+            TokenStore = new(plugin.GetContextOptions());
+            _tokenTypeString = $"client_credential,{_tokenFactory.TokenType}";
         }
 
-        ///<inheritdoc/>
-        protected override RemoteSession SessionCtor(string sessionId) => new OAuth2Session(sessionId, Store, BackgroundTimeout, InvalidatateCache);
+        public void SetLog(ILogProvider log) => _sessions.SetLog(log);
 
-        private void InvalidatateCache(OAuth2Session session)
+        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
-            lock (CacheLock)
+            //Limit max number of waiting clients and make sure were connected
+            if (!_sessions.IsConnected || _waitingConnections > _maxConnections)
             {
-                _ = CacheTable.Remove(session.SessionID);
+                //Set 503 for temporary unavail
+                entity.CloseResponse(HttpStatusCode.ServiceUnavailable);
+                return ValueTask.FromResult(Skip);
+            }
+
+            ValueTask<OAuth2Session?> result = _sessions.GetSessionAsync(entity, cancellationToken);
+
+            if (result.IsCompleted)
+            {
+                OAuth2Session? session = result.GetAwaiter().GetResult();
+
+                //Post process and get handle for session
+                SessionHandle handle = PostProcess(session);
+
+                return ValueTask.FromResult(handle);
+            }
+            else
+            {
+                return new(AwaitAsyncGet(result));
             }
         }
-       
 
-        ///<inheritdoc/>
-        public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        private async Task<SessionHandle> AwaitAsyncGet(ValueTask<OAuth2Session?> async)
         {
-            //Callback to close the session when the handle is closeed
-            static ValueTask HandleClosedAsync(ISession session, IHttpEvent entity)
-            {
-                return ((SessionBase)session).UpdateAndRelease(true, entity);
-            }
+            //Inct wait count while async waiting
+            _waitingConnections++;
             try
             {
-                //Get session id
-                if (!factory.TryGetSessionId(entity, out string? sessionId))
-                {
-                    //Id not allowed/found, so do not attach a session
-                    return SessionHandle.Empty;
-                }
+                //await the session
+                OAuth2Session? session = await async.ConfigureAwait(false);
 
-                //Limit max number of waiting clients
-                if (!IsConnected || WaitingConnections > MaxConnections)
-                {
-                    //Set 503 for temporary unavail
-                    entity.CloseResponse(HttpStatusCode.ServiceUnavailable);
-                    return new SessionHandle(null, FileProcessArgs.VirtualSkip, null);
-                }
-
-                //Recover the session
-                RemoteSession session = await base.GetSessionAsync(entity, sessionId, cancellationToken);
-                
-                //Session should not be new
-                if (session.IsNew)
-                {
-                    //Invalidate the session, so it is deleted
-                    session.Invalidate();
-                    await session.UpdateAndRelease(true, entity);
-                    return SessionHandle.Empty;
-                }
-                //Make sure session is still valid
-                if (session.Created.Add(factory.SessionValidFor) < DateTimeOffset.UtcNow)
-                {
-                    //Invalidate the handle
-                    session.Invalidate();
-                    //Flush changes
-                    await session.UpdateAndRelease(false, entity);
-                    //Remove the token from the db backing store
-                    await TokenStore.RevokeTokenAsync(sessionId, cancellationToken);
-                    //close entity
-                    entity.CloseResponseError(HttpStatusCode.Unauthorized, ErrorType.InvalidToken, "The token has expired");
-                    //return a completed handle
-                    return NotFoundHandle;
-                }
-                
-                return new SessionHandle(session, HandleClosedAsync);
+                //return empty session handle if the session could not be found
+                return PostProcess(session);
             }
-            //Pass session exceptions
-            catch (SessionException)
+            finally
             {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new SessionException("Exception raised while retreiving or loading OAuth2 session", ex);
+                _waitingConnections--;
             }
         }
+
+        private SessionHandle PostProcess(OAuth2Session? session)
+        {
+            if (session == null)
+            {
+                return SessionHandle.Empty;
+            }
+
+            //Make sure the session has not expired yet
+            if (session.Created.Add(_tokenFactory.SessionValidFor) < DateTimeOffset.UtcNow)
+            {
+                //Invalidate the session, so its technically valid for this request, but will be cleared on this handle close cycle
+                session.Invalidate();
+
+                //Clears important security variables
+                InitNewSession(session, null);
+            }
+
+            return new SessionHandle(session, OnSessionReleases);
+        }
+
+        private ValueTask OnSessionReleases(ISession session, IHttpEvent entity) => _sessions.ReleaseSessionAsync((OAuth2Session)session, entity);
+       
         ///<inheritdoc/>
         public async Task<IOAuth2TokenResult?> CreateAccessTokenAsync(IHttpEvent ev, UserApplication app, CancellationToken cancellation)
         {
             //Get a new session for the current connection
-            TokenAndSessionIdResult ids = factory.GenerateTokensAndId();
+            GetTokenResult ids = _tokenFactory.GenerateTokensAndId();
+
             //try to insert token into the store, may fail if max has been reached
-            if (await TokenStore.InsertTokenAsync(ids.SessionId, app.Id!, ids.RefreshToken, factory.MaxTokensPerApp, cancellation) != ERRNO.SUCCESS)
+            if (await TokenStore.InsertTokenAsync(ids.AccessToken, app.Id!, ids.RefreshToken, _tokenFactory.MaxTokensPerApp, cancellation) != ERRNO.SUCCESS)
             {
                 return null;
             }
-            //Create new session from the session id
-            RemoteSession session = SessionCtor(ids.SessionId);
-            await session.WaitAndLoadAsync(ev, cancellation);
-            try
-            {
-                //Init new session
-                factory.InitNewSession(session, app, ev);
-            }
-            finally
-            {
-                await session.UpdateAndRelease(false, ev);
-            }
+
+            //Create new session
+            OAuth2Session newSession = _sessions.CreateSession(ev, ids.AccessToken);
+
+            //Init the new session with application information
+            InitNewSession(newSession, app);
+
+            //Commit the new session
+            await _sessions.CommitSessionAsync(newSession);
+
             //Init new token result to pass to client
             return new OAuth2TokenResult()
             {
-                ExpiresSeconds = (int)factory.SessionValidFor.TotalSeconds,
-                TokenType = factory.TokenType,
+                ExpiresSeconds = (int)_tokenFactory.SessionValidFor.TotalSeconds,
+                TokenType = _tokenFactory.TokenType,
                 //Return token and refresh token
                 AccessToken = ids.AccessToken,
                 RefreshToken = ids.RefreshToken,
             };
         }
+
+        private void InitNewSession(OAuth2Session session, UserApplication? app)
+        {
+            //Store session variables
+            session[APP_ID_ENTRY] = app?.Id;
+            session[TOKEN_TYPE_ENTRY] = _tokenTypeString;
+            session[SCOPES_ENTRY] = app?.Permissions;
+            session.UserID = app?.UserId;
+        }
+
         ///<inheritdoc/>
         Task ITokenManager.RevokeTokensAsync(IReadOnlyCollection<string> tokens, CancellationToken cancellation)
         {
             return TokenStore.RevokeTokensAsync(tokens, cancellation);
         }
+
         ///<inheritdoc/>
         Task ITokenManager.RevokeTokensForAppAsync(string appId, CancellationToken cancellation)
         {
@@ -193,11 +197,11 @@ namespace VNLib.Plugins.Sessions.OAuth
          * Interval for removing expired tokens
          */
 
-        ///<inheritdoc/>
-        async Task IIntervalScheduleable.OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
+        [AsyncInterval(Minutes = 2)]
+        private async Task OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
         {
             //Calculate valid token time
-            DateTime validAfter = DateTime.UtcNow.Subtract(factory.SessionValidFor);
+            DateTime validAfter = DateTime.UtcNow.Subtract(_tokenFactory.SessionValidFor);
             //Remove tokens from db store
             IReadOnlyCollection<ActiveToken> revoked = await TokenStore.CleanupExpiredTokensAsync(validAfter, cancellationToken);
             //exception list
@@ -208,17 +212,17 @@ namespace VNLib.Plugins.Sessions.OAuth
                 try
                 {
                     //Remove tokens by thier object id from cache
-                    await base.Store.DeleteObjectAsync(token.Id, cancellationToken);
+                    await _sessions.DeleteTokenAsync(token.Id, cancellationToken);
                 }
                 //Ignore if the object has already been removed
                 catch (ObjectNotFoundException)
                 {}
                 catch (Exception ex)
                 {
-                    errors = new()
-                    {
-                        ex
-                    };
+#pragma warning disable CA1508 // Avoid dead conditional code
+                    errors ??= new();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                    errors.Add(ex);
                 }
             }
             if (errors?.Count > 0)

@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -23,27 +23,23 @@
 */
 
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 using VNLib.Net.Http;
 using VNLib.Utils.Logging;
-using VNLib.Utils.Extensions;
-using VNLib.Data.Caching;
-using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Extensions.Loading;
-using VNLib.Plugins.Extensions.VNCache;
 using VNLib.Plugins.Essentials.Sessions;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
+
     public sealed class WebSessionProviderEntry : ISessionProvider
     {
-        const string WEB_SESSION_CONFIG = "web";
+        internal const string WEB_SESSION_CONFIG = "web";
 
         private WebSessionProvider? _sessions;
+     
 
         //Web sessions can always be provided so long as cache is loaded
         public bool CanProcess(IHttpEvent entity) => _sessions != null && _sessions.IsConnected;
@@ -53,32 +49,11 @@ namespace VNLib.Plugins.Sessions.VNCache
             return _sessions!.GetSessionAsync(entity, cancellationToken);
         }
 
+
         public void Load(PluginBase plugin, ILogProvider localized)
         {
-            //Try get vncache config element
-            IReadOnlyDictionary<string, JsonElement> webSessionConfig = plugin.GetConfigForType<WebSessionProvider>();
-
-            uint cookieSize = webSessionConfig["cookie_size"].GetUInt32();
-            string cookieName = webSessionConfig["cookie_name"].GetString() ?? throw new KeyNotFoundException($"Missing required element 'cookie_name' for config '{WEB_SESSION_CONFIG}'");
-            string cachePrefix = webSessionConfig["cache_prefix"].GetString() ?? throw new KeyNotFoundException($"Missing required element 'cache_prefix' for config '{WEB_SESSION_CONFIG}'");
-            int cacheLimit = (int)webSessionConfig["cache_size"].GetUInt32();
-            uint maxConnections = webSessionConfig["max_waiting_connections"].GetUInt32();
-            TimeSpan validFor = webSessionConfig["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
-
-            //Init id factory
-            WebSessionIdFactoryImpl idFactory = new(cookieSize, cookieName, cachePrefix, validFor);
-
-            //Get shared global-cache
-            IGlobalCacheProvider globalCache = plugin.GetGlobalCache(localized);
-
-            //Create cache store from global cache
-            GlobalCacheStore cacheStore = new(globalCache);
-
-            //Init provider
-            _sessions = new(cacheStore, cacheLimit, maxConnections, idFactory);
-
-            //Load and run cached sessions on deferred task lib
-            _ = plugin.ObserveTask(() => _sessions.CleanupExpiredSessionsAsync(localized, plugin.UnloadToken), 1000);
+            //Load session provider
+            _sessions = plugin.GetOrCreateSingleton<WebSessionProvider>();
 
             localized.Information("Session provider loaded");
         }

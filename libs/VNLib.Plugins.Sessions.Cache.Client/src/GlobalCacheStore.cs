@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -30,6 +30,7 @@ using VNLib.Data.Caching;
 
 namespace VNLib.Plugins.Sessions.Cache.Client
 {
+
     /// <summary>
     /// A wrapper class to provide a <see cref="IRemoteCacheStore"/> from 
     /// a <see cref="IGlobalCacheProvider"/> client instance
@@ -37,10 +38,19 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     public sealed class GlobalCacheStore : IRemoteCacheStore
     {
         private readonly IGlobalCacheProvider _cache;
+
+        private readonly SessionDataSerialzer _serialzer;
         
+        /// <summary>
+        /// Initiailzes a new <see cref="GlobalCacheStore"/> with the backing <see cref="IGlobalCacheProvider"/>
+        /// global cache
+        /// </summary>
+        /// <param name="globalCache"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public GlobalCacheStore(IGlobalCacheProvider globalCache)
         {
             _cache = globalCache ?? throw new ArgumentNullException(nameof(globalCache));
+            _serialzer = new();
         }
 
         ///<inheritdoc/>
@@ -49,9 +59,9 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         ///<inheritdoc/>
         public Task AddOrUpdateObjectAsync<T>(string objectId, string? newId, T obj, CancellationToken cancellationToken = default)
         {
-            return _cache.AddOrUpdateAsync(objectId, newId, obj, cancellationToken);
+            return _cache.AddOrUpdateAsync(objectId, newId, obj, _serialzer, cancellationToken);
         }
-
+      
         ///<inheritdoc/>
         public Task DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default)
         {
@@ -61,7 +71,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         ///<inheritdoc/>
         public Task<T?> GetObjectAsync<T>(string objectId, CancellationToken cancellationToken = default)
         {
-            return _cache.GetAsync<T>(objectId, cancellationToken);
+            return _cache.GetAsync<T>(objectId, _serialzer, cancellationToken);
         }
     }
 }

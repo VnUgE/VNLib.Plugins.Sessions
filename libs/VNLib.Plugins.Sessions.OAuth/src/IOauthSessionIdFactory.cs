@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -23,11 +23,6 @@
 */
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-
-using VNLib.Net.Http;
-using VNLib.Plugins.Essentials.Oauth.Applications;
-using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
@@ -37,15 +32,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         /// The maxium number of tokens allowed to be created per OAuth application
         /// </summary>
         int MaxTokensPerApp { get; }
-        
-        /// <summary>
-        /// Allows for custom configuration of the newly created session and 
-        /// the <see cref="IHttpEvent"/> its attached to
-        /// </summary>
-        /// <param name="session">The newly created session</param>
-        /// <param name="app">The application associated with the session</param>
-        /// <param name="entity">The http event that generated the new session</param>
-        void InitNewSession(RemoteSession session, UserApplication app, IHttpEvent entity);
+
         /// <summary>
         /// The time a session is valid for
         /// </summary>
@@ -56,19 +43,11 @@ namespace VNLib.Plugins.Sessions.OAuth
         /// and required credential information to generate the new session
         /// </summary>
         /// <returns>The information genreated for the news ession</returns>
-        TokenAndSessionIdResult GenerateTokensAndId();
+        GetTokenResult GenerateTokensAndId();
         
         /// <summary>
         /// The type of token this session provider generates
         /// </summary>
         string TokenType { get; }
-
-        /// <summary>
-        /// Attempts to recover a session id from 
-        /// </summary>
-        /// <param name="entity">The entity to get the session-id for</param>
-        /// <param name="sessionId">The found ID for the session if accepted</param>
-        /// <returns>True if a session id was found or set for the session</returns>
-        bool TryGetSessionId(IHttpEvent entity, [NotNullWhen(true)] out string? sessionId);
     }
 }

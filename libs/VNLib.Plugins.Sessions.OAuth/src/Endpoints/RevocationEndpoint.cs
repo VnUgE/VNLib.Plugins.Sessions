@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -22,10 +22,6 @@
 * along with this program.  If not, see https://www.gnu.org/licenses/.
 */
 
-using System;
-using System.Text.Json;
-using System.Collections.Generic;
-
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Extensions.Loading;
@@ -40,7 +36,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
     internal class RevocationEndpoint : O2EndpointBase
     {
 
-        public RevocationEndpoint(PluginBase pbase, IReadOnlyDictionary<string, JsonElement> config)
+        public RevocationEndpoint(PluginBase pbase, IConfigScope config)
         {
             string? path = config["path"].GetString();
             InitPathAndLog(path, pbase.Log);

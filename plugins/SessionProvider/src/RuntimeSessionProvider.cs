@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: SessionProvider
@@ -33,7 +33,7 @@ using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Essentials.Sessions
 {
-    sealed class RuntimeSessionProvider : VnDisposeable, ISessionProvider
+    internal sealed class RuntimeSessionProvider : VnDisposeable, ISessionProvider
     {
         private readonly AssemblyLoader<ISessionProvider> _asm;
         

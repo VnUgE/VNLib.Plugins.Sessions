@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -37,7 +37,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// </summary>
         /// <typeparam name="T">The data type</typeparam>
         /// <param name="objectId">The key/id of the object to recover</param>
-        /// <param name="cancellationToken">A token to cancel the operation</param>
+        /// <param name="cancellationToken">An optional token to cancel the operation</param>
         /// <returns>A task that resolves the found object or null otherwise</returns>
         Task<T?> GetObjectAsync<T>(string objectId, CancellationToken cancellationToken = default);
 

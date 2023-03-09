@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -23,91 +23,54 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using VNLib.Net.Http;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Sessions.Cache.Client;
-using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
+
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
     internal class WebSession : RemoteSession
     {
-        protected readonly Func<IHttpEvent, string, string> UpdateId;
-        private string? _oldId;
+        public WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew)
+            : base(sessionId, sessionData, isNew)
+        {}
 
-        public WebSession(string sessionId, IRemoteCacheStore client, TimeSpan backgroundTimeOut, Func<IHttpEvent, string, string> UpdateId)
-            : base(sessionId, client, backgroundTimeOut)
+        internal void InitNewSession(IHttpEvent entity)
         {
-            this.UpdateId = UpdateId;
+            SessionType = SessionType.Web;
+            Created = DateTimeOffset.UtcNow;
+            //Set user-ip address
+            UserIP = entity.Server.GetTrustedIp();
+
+            /*
+             * We do not need to set the IsModifed flag because the above statments 
+             * should set it automatically 
+             */
+            //IsModified = true;
         }
 
-        public override async Task WaitAndLoadAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        public override IDictionary<string, string> GetSessionData()
         {
-            //Wait for the session to load
-            await base.WaitAndLoadAsync(entity, cancellationToken);
-            //If the session is new, set to web mode
-            if (IsNew)
-            {
-                SessionType = SessionType.Web;
-            }
-        }
-
-        private async Task ProcessUpgradeAsync()
-        {
-            //Setup timeout cancellation for the update, to cancel it
-            using CancellationTokenSource cts = new(UpdateTimeout);
-            await Client.AddOrUpdateObjectAsync(_oldId!, SessionID, DataStore, cts.Token);
-            _oldId = null;
-        }
-
-        protected override ValueTask<Task?> UpdateResource(bool isAsync, IHttpEvent state)
-        {
-            Task? result = null;
-            //Check flags in priority level, Invalid is highest state priority
+            //Update variables before getting data
             if (Flags.IsSet(INVALID_MSK))
             {
-                //Clear all stored values
-                DataStore!.Clear();
-                //Reset ip-address
-                UserIP = state.Server.GetTrustedIp();
-                //Update created time
-                Created = DateTimeOffset.UtcNow;
-                //Init the new session-data
-                this.InitNewSession(state.Server);
-                //Restore session type
-                SessionType = SessionType.Web;
-                //generate new session-id and update the record in the store
-                _oldId = SessionID;
-                //Update the session-id
-                SessionID = UpdateId(state, _oldId);
-                //write update to server
-                result = Task.Run(ProcessUpgradeAsync);
+                //Sessions that are invalid are destroyed and created later
             }
             else if (Flags.IsSet(REGEN_ID_MSK))
             {
-                //generate new session-id and update the record in the store
-                _oldId = SessionID;
-                //Update the session-id
-                SessionID = UpdateId(state, _oldId);
                 //Update created time
                 Created = DateTimeOffset.UtcNow;
-                //write update to server
-                result = Task.Run(ProcessUpgradeAsync);
             }
             else if (Flags.IsSet(MODIFIED_MSK))
             {
-                //Send update to server
-                result = Task.Run(ProcessUpdateAsync);
+                //Nothing needs to be done here, state will be preserved
             }
-            
-            //Clear all flags
-            Flags.ClearAll();
-            
-            return ValueTask.FromResult<Task?>(null);
+
+            return base.GetSessionData();
         }
     }
 }

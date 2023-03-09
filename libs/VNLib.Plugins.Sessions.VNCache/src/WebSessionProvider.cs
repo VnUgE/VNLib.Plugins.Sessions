@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -25,117 +25,105 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 using VNLib.Net.Http;
+using VNLib.Utils.Extensions;
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Extensions.Loading;
-using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
-    /// <summary>
-    /// The implementation of a VNCache web based session
-    /// </summary>
-    [ConfigurationName("web")]
-    internal sealed class WebSessionProvider : SessionCacheClient, ISessionProvider
+
+    [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
+    internal sealed class WebSessionProvider : ISessionProvider
     {
-        static readonly TimeSpan BackgroundUpdateTimeout = TimeSpan.FromSeconds(10);
+        private static readonly SessionHandle _vf =  new (null, FileProcessArgs.VirtualSkip, null);
 
-        private readonly IWebSessionIdFactory factory;
-        private readonly uint MaxConnections;
+        private readonly TimeSpan _validFor;
+        private readonly WebSessionStore _sessions;
+        private readonly uint _maxConnections;
 
-        /// <summary>
-        /// Initializes a new <see cref="WebSessionProvider"/> 
-        /// </summary>
-        /// <param name="client">The cache client to make cache operations against</param>
-        /// <param name="maxCacheItems">The max number of items to store in cache</param>
-        /// <param name="maxWaiting">The maxium number of waiting session events before 503s are sent</param>
-        /// <param name="factory">The session-id factory</param>
-        public WebSessionProvider(IRemoteCacheStore client, int maxCacheItems, uint maxWaiting, IWebSessionIdFactory factory) : base(client, maxCacheItems)
+        private uint _waitingConnections;
+
+        public bool IsConnected => _sessions.IsConnected;
+
+        public WebSessionProvider(PluginBase plugin, IConfigScope config)
         {
-            this.factory = factory;
-            MaxConnections = maxWaiting;
+            _validFor = config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
+            _maxConnections = config["max_waiting_connections"].GetUInt32();
+
+            //Init session provider
+            _sessions = plugin.GetOrCreateSingleton<WebSessionStore>();
         }
 
-        private string UpdateSessionId(IHttpEvent entity, string oldId)
+        private SessionHandle PostProcess(WebSession? session)
         {
-            //Generate and set a new sessionid
-            string newid = factory.GenerateSessionId(entity);
-            //Aquire lock on cache
-            lock (CacheLock)
+            if (session == null)
             {
-                //Change the cache lookup id
-                if (CacheTable.Remove(oldId, out RemoteSession? session))
-                {
-                    CacheTable.Add(newid, session);
-                }
+                return SessionHandle.Empty;
             }
-            return newid;
-        }
-        
-        protected override RemoteSession SessionCtor(string sessionId) => new WebSession(sessionId, Store, BackgroundUpdateTimeout, UpdateSessionId);
 
-        public async ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
-        {
-            //Callback to close the session when the handle is closeed
-            static ValueTask HandleClosedAsync(ISession session, IHttpEvent entity)
+            //Make sure the session has not expired yet
+            if (session.Created.Add(_validFor) < DateTimeOffset.UtcNow)
             {
-                return (session as SessionBase)!.UpdateAndRelease(true, entity);
+                //Invalidate the session, so its technically valid for this request, but will be cleared on this handle close cycle
+                session.Invalidate();
+
+                //Clear basic login status
+                session.Token = null;
+                session.UserID = null;
+                session.Privilages = 0;
+                session.SetLoginToken(null);
             }
-            
+
+            return new SessionHandle(session, OnSessionReleases);
+        }
+
+        private ValueTask OnSessionReleases(ISession session, IHttpEvent entity) => _sessions.ReleaseSessionAsync((WebSession)session, entity);
+
+        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
+        {
+            //Limit max number of waiting clients and make sure were connected
+            if (!_sessions.IsConnected || _waitingConnections > _maxConnections)
+            {
+                //Set 503 for temporary unavail
+                entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);
+                return ValueTask.FromResult(_vf);
+            }
+
+            ValueTask<WebSession?> result = _sessions.GetSessionAsync(entity, cancellationToken);
+
+            if (result.IsCompleted)
+            {
+                WebSession? session = result.GetAwaiter().GetResult();
+
+                //Post process and get handle for session
+                SessionHandle handle = PostProcess(session);
+
+                return ValueTask.FromResult(handle);
+            }
+            else
+            {
+                return new(AwaitAsyncGet(result));
+            }
+        }
+
+        private async Task<SessionHandle> AwaitAsyncGet(ValueTask<WebSession?> async)
+        {
+            //Inct wait count while async waiting
+            _waitingConnections++;
             try
             {
-                //Get session id
-                if (!factory.TryGetSessionId(entity, out string? sessionId))
-                {
-                    //Id not allowed/found, so do not attach a session
-                    return SessionHandle.Empty;
-                }
+                //await the session
+                WebSession? session = await async.ConfigureAwait(false);
 
-                //Limit max number of waiting clients and make sure were connected
-                if (!IsConnected || WaitingConnections > MaxConnections)
-                {
-                    //Set 503 for temporary unavail
-                    entity.CloseResponse(System.Net.HttpStatusCode.ServiceUnavailable);
-                    return new SessionHandle(null, FileProcessArgs.VirtualSkip, null);
-                }
-
-                //Get session
-                RemoteSession session = await GetSessionAsync(entity, sessionId, cancellationToken);
-
-                //If the session is new (not in cache), then overwrite the session id with a new one as user may have specified their own
-                if (session.IsNew)
-                {
-                    session.RegenID();
-                }
-
-                //Make sure the session has not expired yet
-                if (session.Created.Add(factory.ValidFor) < DateTimeOffset.UtcNow)
-                {
-                    //Invalidate the session, so its technically valid for this request, but will be cleared on this handle close cycle
-                    session.Invalidate();
-                    //Clear basic login status
-                    session.Token = null;
-                    session.UserID = null;
-                    session.Privilages = 0;
-                    session.SetLoginToken(null);
-                }
-                
-                return new SessionHandle(session, HandleClosedAsync);
+                //return empty session handle if the session could not be found
+                return PostProcess(session);
             }
-            catch (OperationCanceledException)
+            finally
             {
-                throw;
-            }
-            catch (SessionException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new SessionException("Exception raised while retreiving or loading Web session", ex);
+                _waitingConnections--;
             }
         }
     }

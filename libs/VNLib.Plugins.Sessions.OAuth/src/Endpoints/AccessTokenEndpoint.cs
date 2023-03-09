@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -25,7 +25,6 @@
 using System;
 using System.Net;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 using VNLib.Utils.Memory;
@@ -42,17 +41,16 @@ using VNLib.Plugins.Extensions.Validation;
 
 namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 {
-    delegate Task<IOAuth2TokenResult?> CreateTokenImpl(HttpEntity ev, UserApplication application, CancellationToken cancellation = default);
 
     /// <summary>
     /// Grants authorization to OAuth2 clients to protected resources
     /// with access tokens
     /// </summary>
+    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
     internal sealed class AccessTokenEndpoint : ResourceEndpointBase
     {
-        private readonly CreateTokenImpl CreateToken;
+        private readonly IApplicationTokenFactory TokenFactory;
         private readonly ApplicationStore Applications;
-
         private readonly Task<ReadOnlyJsonWebKey?> JWTVerificationKey;
 
         //override protection settings to allow most connections to authenticate
@@ -63,11 +61,17 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             DisableVerifySessionCors = true
         };
 
-        public AccessTokenEndpoint(string path, PluginBase pbase, CreateTokenImpl tokenStore)
+        public AccessTokenEndpoint(PluginBase pbase, IConfigScope config)
         {
+            string? path = config["token_path"].GetString();;
+
             InitPathAndLog(path, pbase.Log);
-            CreateToken = tokenStore;
+
+            //Get the session provider, as its a token factory
+            TokenFactory = pbase.GetOrCreateSingleton<OAuth2SessionProvider>();
+
             Applications = new(pbase.GetContextOptions(), pbase.GetPasswords());
+
             //Try to get the application token key for verifying signed application JWTs
             JWTVerificationKey = pbase.TryGetSecretAsync("application_token_key").ToJsonWebKey();
         }
@@ -172,7 +176,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
                 return VfReturnType.VirtualSkip;
             }
 
-            IOAuth2TokenResult? result = await CreateToken(entity, app, entity.EventCancellation);
+            IOAuth2TokenResult? result = await TokenFactory.CreateAccessTokenAsync(entity, app, entity.EventCancellation);
             
             if (result == null)
             {

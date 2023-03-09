@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -23,41 +23,33 @@
 */
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using VNLib.Net.Http;
 using VNLib.Plugins.Essentials.Sessions;
+using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Sessions.Cache.Client;
-using VNLib.Plugins.Sessions.Cache.Client.Exceptions;
-
 using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
+
     /// <summary>
     /// The implementation of the OAuth2 session container for HTTP sessions
     /// </summary>
     internal sealed class OAuth2Session : RemoteSession
     {
-        private readonly Action<OAuth2Session> InvalidateCache;
+        public OAuth2Session(string sessionId, IDictionary<string, string> data, bool isNew)
+            : base(sessionId, data, isNew)
+        {}
 
-        /// <summary>
-        /// Initalizes a new <see cref="OAuth2Session"/>
-        /// </summary>
-        /// <param name="sessionId">The session id (or token)</param>
-        /// <param name="client">The <see cref="IRemoteCacheStore"/> used as the backing cache provider</param>
-        /// <param name="backgroundTimeOut">The ammount of time to wait for a background operation (delete, update, get)</param>
-        /// <param name="invalidCache">Called when the session has been marked as invalid and the close even hook is being executed</param>
-        public OAuth2Session(string sessionId, IRemoteCacheStore client, TimeSpan backgroundTimeOut, Action<OAuth2Session> invalidCache)
-            : base(sessionId, client, backgroundTimeOut)
+        public void InitNewSession(IHttpEvent entity)
         {
-            InvalidateCache = invalidCache;
-            IsInvalid = false;
+            SessionType = SessionType.Web;
+            Created = DateTimeOffset.UtcNow;
+            //Set user-ip address
+            UserIP = entity.Server.GetTrustedIp();
         }
-
-        public bool IsInvalid { get; private set; }
-
 
         ///<inheritdoc/>
         ///<exception cref="NotSupportedException"></exception>
@@ -78,57 +70,6 @@ namespace VNLib.Plugins.Sessions.OAuth
                     throw new InvalidOperationException("Token entry may not be changed!");
             }
             base.IndexerSet(key, value);
-        }
-        ///<inheritdoc/>
-        ///<exception cref="SessionStatusException"></exception>
-        public override async Task WaitAndLoadAsync(IHttpEvent entity, CancellationToken token = default)
-        {
-            //Wait to enter lock
-            await base.WaitAndLoadAsync(entity, token);
-            if (IsInvalid)
-            {
-                //Release lock
-                MainLock.Release();
-                throw new SessionStatusException("The session has been invalidated");
-            }
-            //Set session type
-            if (IsNew)
-            {
-                SessionType = SessionType.OAuth2;
-            }
-        }
-        ///<inheritdoc/>
-        protected override async ValueTask<Task?> UpdateResource(bool isAsync, IHttpEvent state)
-        {
-            Task? result = null;
-            //Invalid flag is set, so exit
-            if (IsInvalid)
-            {
-                result = Task.CompletedTask;
-            }
-            //Check flags in priority level, Invalid is highest state priority
-            else if (Flags.IsSet(INVALID_MSK))
-            {
-                //Clear all stored values
-                DataStore!.Clear();
-                //Delete the entity syncronously
-                await ProcessDeleteAsync();
-                //Set invalid flag
-                IsInvalid = true;
-                //Invlidate cache
-                InvalidateCache(this);
-                result = Task.CompletedTask;
-            }
-            else if (Flags.IsSet(MODIFIED_MSK))
-            {
-                //Send update to server
-                result = Task.Run(ProcessUpdateAsync);
-            }
-            
-            //Clear all flags
-            Flags.ClearAll();
-            
-            return result;
         }
     }
 }

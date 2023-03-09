@@ -1,12 +1,12 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
-* File: TokenAndSessionIdResult.cs 
+* File: GetTokenResult.cs 
 *
-* TokenAndSessionIdResult.cs is part of VNLib.Plugins.Essentials.Sessions.OAuth which is part of the larger 
-* VNLib collection of libraries and utilities.
+* GetTokenResult.cs is part of VNLib.Plugins.Essentials.Sessions.OAuth which is 
+* part of the larger VNLib collection of libraries and utilities.
 *
 * VNLib.Plugins.Essentials.Sessions.OAuth is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Affero General Public License as 
@@ -25,17 +25,12 @@
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
-    public readonly struct TokenAndSessionIdResult
-    {
-        public readonly string SessionId;
-        public readonly string AccessToken;
-        public readonly string? RefreshToken;
 
-        public TokenAndSessionIdResult(string sessionId, string token, string? refreshToken)
-        {
-            SessionId = sessionId;
-            AccessToken = token;
-            RefreshToken = refreshToken;
-        }
-    }
+    /// <summary>
+    /// The result of generating a new access token
+    /// </summary>
+    /// <param name="AccessToken">The new access token</param>
+    /// <param name="RefreshToken">The optional refresh token</param>
+    public readonly record struct GetTokenResult(string AccessToken, string? RefreshToken)
+    { }
 }
