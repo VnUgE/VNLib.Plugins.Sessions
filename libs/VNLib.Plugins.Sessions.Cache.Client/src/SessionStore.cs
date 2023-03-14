@@ -249,7 +249,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                  * and the session will be recovered from cache on load
                  */
 
-                if(sessionData != null)
+                if(newId != null)
                 {
                     session.Destroy(null);
                 }
