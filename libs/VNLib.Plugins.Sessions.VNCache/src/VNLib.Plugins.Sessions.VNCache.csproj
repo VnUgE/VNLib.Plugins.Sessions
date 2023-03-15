@@ -5,7 +5,6 @@
     <RootNamespace>VNLib.Plugins.Sessions.VNCache</RootNamespace>
     <AssemblyName>VNLib.Plugins.Sessions.VNCache</AssemblyName>
     <Nullable>enable</Nullable>
-    <Version>1.0.1.1</Version>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
