@@ -56,7 +56,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         private readonly IOauthSessionIdFactory _tokenFactory;
         private readonly TokenStore TokenStore;
         private readonly string _tokenTypeString;
-        private readonly uint _maxConnections;        
+        private readonly uint _maxConnections;
 
         private uint _waitingConnections;
 
