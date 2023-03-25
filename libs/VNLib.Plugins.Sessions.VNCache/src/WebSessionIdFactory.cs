@@ -35,7 +35,7 @@ using VNLib.Plugins.Sessions.Cache.Client;
 namespace VNLib.Plugins.Sessions.VNCache
 {
     /// <summary>
-    /// <see cref="IWebSessionIdFactory"/> implementation, using 
+    /// <see cref="ISessionIdFactory"/> implementation, using 
     /// http cookies as session id storage
     /// </summary>
     [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
@@ -77,13 +77,24 @@ namespace VNLib.Plugins.Sessions.VNCache
         public string RegenerateId(IHttpEvent entity)
         {
             //Random hex hash
-            string cookie = RandomHash.GetRandomBase32(_cookieSize);
+            string sessionId = RandomHash.GetRandomBase32(_cookieSize);
+
+            //Create new cookie
+            HttpCookie cookie = new(SessionCookieName, sessionId)
+            {
+                ValidFor = ValidFor,
+                Secure = true,
+                HttpOnly = true,
+                Domain = null,
+                Path = "/",
+                SameSite = CookieSameSite.Lax
+            };
 
             //Set the session id cookie
-            entity.Server.SetCookie(SessionCookieName, cookie, ValidFor, secure: true, httpOnly: true);
+            entity.Server.SetCookie(cookie);
 
             //return session-id value from cookie value
-            return cookie;
+            return sessionId;
         }
 
         public string? TryGetSessionId(IHttpEvent entity)

@@ -48,7 +48,7 @@ namespace VNLib.Plugins.Sessions.OAuth
     /// Provides OAuth2 session management
     /// </summary>
     [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
-    internal sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory
+    internal sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory, IIntervalScheduleable
     {        
         private static readonly SessionHandle Skip = new(null, FileProcessArgs.VirtualSkip, null);
 
@@ -68,6 +68,9 @@ namespace VNLib.Plugins.Sessions.OAuth
             _tokenFactory = plugin.GetOrCreateSingleton<OAuth2TokenFactory>();
             TokenStore = new(plugin.GetContextOptions());
             _tokenTypeString = $"client_credential,{_tokenFactory.TokenType}";
+
+            //Schedule interval
+            plugin.ScheduleInterval(this, TimeSpan.FromMinutes(2));
         }
 
         public void SetLog(ILogProvider log) => _sessions.SetLog(log);
@@ -196,9 +199,8 @@ namespace VNLib.Plugins.Sessions.OAuth
         /*
          * Interval for removing expired tokens
          */
-
-        [AsyncInterval(Minutes = 2)]
-        private async Task OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
+       
+        public async Task OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
         {
             //Calculate valid token time
             DateTime validAfter = DateTime.UtcNow.Subtract(_tokenFactory.SessionValidFor);

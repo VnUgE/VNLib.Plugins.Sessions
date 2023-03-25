@@ -54,11 +54,11 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
         private readonly Task<ReadOnlyJsonWebKey?> JWTVerificationKey;
 
         //override protection settings to allow most connections to authenticate
+        ///<inheritdoc/>
         protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
         {
             DisableBrowsersOnly = true,
-            DisableSessionsRequired = true,
-            DisableVerifySessionCors = true
+            DisableSessionsRequired = true
         };
 
         public AccessTokenEndpoint(PluginBase pbase, IConfigScope config)
@@ -120,8 +120,8 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
                     }
 
                     //Convert the clientid and secret to lowercase
-                    clientId = clientId.ToLower();
-                    secret = secret.ToLower();
+                    clientId = clientId.ToLower(null);
+                    secret = secret.ToLower(null);
 
                     //Convert secret to private string that is unreferrenced
                     using PrivateString secretPv = new(secret, false);
