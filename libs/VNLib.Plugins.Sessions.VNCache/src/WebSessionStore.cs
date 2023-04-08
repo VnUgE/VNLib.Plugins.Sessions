@@ -40,6 +40,8 @@ namespace VNLib.Plugins.Sessions.VNCache
     [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
     internal sealed class WebSessionStore : SessionStore<WebSession>
     {
+        const int MAX_SESSION_BUFFER_SIZE = 16 * 1024;
+
         private ILogProvider? baseLog;
 
         protected override ISessionIdFactory IdFactory { get; }
@@ -68,7 +70,7 @@ namespace VNLib.Plugins.Sessions.VNCache
                 .GetPrefixedCache(cachePrefix, HashAlg.SHA256);
 
             //Create cache store from global cache
-            Cache = new GlobalCacheStore(cache);
+            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE);
 
             //Default log to plugin log
             baseLog = pbase.Log;

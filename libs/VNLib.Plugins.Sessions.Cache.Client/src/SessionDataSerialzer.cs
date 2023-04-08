@@ -42,6 +42,13 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     {
         const string KV_DELIMITER = "\0\0";
 
+        readonly int CharBufferSize;
+
+        public SessionDataSerialzer(int charBufferSize)
+        {
+            CharBufferSize = charBufferSize;
+        }
+
         object? ICacheObjectDeserialzer.Deserialze(Type type, ReadOnlySpan<byte> buffer)
         {
             if (!type.IsAssignableTo(typeof(IDictionary<string, string>)))
@@ -59,7 +66,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             Encoding.UTF8.GetChars(buffer, charBuffer.Span);
 
             //Alloc new dict to write strings to
-            Dictionary<string, string> output = new();
+            Dictionary<string, string> output = new(StringComparer.OrdinalIgnoreCase);
 
             //Reader to track position of char buffer
             ForwardOnlyReader<char> reader = new(charBuffer.Span[0..charCount]);
@@ -80,7 +87,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 ReadOnlySpan<char> key = reader.Window[0..sep];
 
                 //Advance reader to next sequence
-                reader.Advance(sep + 2);
+                reader.Advance(sep + KV_DELIMITER.Length);
 
                 //Find next sepearator to recover the value
                 sep = GetNextToken(ref reader);
@@ -113,7 +120,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             }
          
             //Alloc char buffer, sessions should be under 16k 
-            using UnsafeMemoryHandle<char> charBuffer = MemoryUtil.UnsafeAllocNearestPage<char>(16 * 1024);
+            using UnsafeMemoryHandle<char> charBuffer = MemoryUtil.UnsafeAllocNearestPage<char>(CharBufferSize);
 
             using Dictionary<string, string>.Enumerator e = dict.GetEnumerator();
 

@@ -70,7 +70,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             //Get the session provider, as its a token factory
             TokenFactory = pbase.GetOrCreateSingleton<OAuth2SessionProvider>();
 
-            Applications = new(pbase.GetContextOptions(), pbase.GetPasswords());
+            Applications = new(pbase.GetContextOptions(), pbase.GetOrCreateSingleton<ManagedPasswordHashing>());
 
             //Try to get the application token key for verifying signed application JWTs
             JWTVerificationKey = pbase.TryGetSecretAsync("application_token_key").ToJsonWebKey();

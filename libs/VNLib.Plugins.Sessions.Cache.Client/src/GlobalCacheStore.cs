@@ -45,12 +45,13 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// Initiailzes a new <see cref="GlobalCacheStore"/> with the backing <see cref="IGlobalCacheProvider"/>
         /// global cache
         /// </summary>
-        /// <param name="globalCache"></param>
+        /// <param name="globalCache">The backing cache store</param>
+        /// <param name="bufferSize">The size of the buffer used to serialize session objects</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public GlobalCacheStore(IGlobalCacheProvider globalCache)
+        public GlobalCacheStore(IGlobalCacheProvider globalCache, int bufferSize)
         {
             _cache = globalCache ?? throw new ArgumentNullException(nameof(globalCache));
-            _serialzer = new();
+            _serialzer = new(bufferSize);
         }
 
         ///<inheritdoc/>

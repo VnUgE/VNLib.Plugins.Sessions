@@ -40,6 +40,8 @@ namespace VNLib.Plugins.Sessions.OAuth
     [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
     internal sealed class OAuth2SessionStore : SessionStore<OAuth2Session>
     {
+        const int MAX_SESSION_BUFFER_SIZE = 16 * 1024;
+
         private ILogProvider _log;
 
         protected override ISessionIdFactory IdFactory { get; }
@@ -58,7 +60,7 @@ namespace VNLib.Plugins.Sessions.OAuth
                 .GetPrefixedCache(o2Conf.CachePrefix, HashAlg.SHA256);
 
             //Create remote cache
-            Cache = new GlobalCacheStore(cache);
+            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE);
 
             IdFactory = plugin.GetOrCreateSingleton<OAuth2TokenFactory>();
 
