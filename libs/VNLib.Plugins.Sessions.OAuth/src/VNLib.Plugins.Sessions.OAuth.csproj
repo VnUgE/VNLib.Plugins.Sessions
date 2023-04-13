@@ -35,7 +35,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\core\lib\Plugins.PluginBase\src\VNLib.Plugins.PluginBase.csproj" />
     <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />
     <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading.Sql\src\VNLib.Plugins.Extensions.Loading.Sql.csproj" />
     <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading\src\VNLib.Plugins.Extensions.Loading.csproj" />

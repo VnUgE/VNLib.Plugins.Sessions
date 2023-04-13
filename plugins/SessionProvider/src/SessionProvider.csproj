@@ -41,7 +41,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\core\lib\Net.Http\src\VNLib.Net.Http.csproj" />
     <ProjectReference Include="..\..\..\..\..\core\lib\Plugins.Essentials\src\VNLib.Plugins.Essentials.csproj" />
-    <ProjectReference Include="..\..\..\..\..\core\lib\Plugins.PluginBase\src\VNLib.Plugins.PluginBase.csproj" />
     <ProjectReference Include="..\..\..\..\..\core\lib\Utils\src\VNLib.Utils.csproj" />
     <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading\src\VNLib.Plugins.Extensions.Loading.csproj" />
   </ItemGroup>
