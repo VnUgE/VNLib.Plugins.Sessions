@@ -47,11 +47,12 @@ namespace VNLib.Plugins.Essentials.Sessions
         ///<inheritdoc/>
         public override string PluginName => "Essentials.Sessions";
 
-        private SessionProvider? _provider;
+        private SessionProvider _provider = new();
 
         /*
          * Declare a service configuration method to 
-         * expose the session provider
+         * expose the session provider, the service container
+         * will dispose the provider instance
          */
 
         [ServiceConfigurator]
@@ -153,6 +154,9 @@ namespace VNLib.Plugins.Essentials.Sessions
             {
                 ProviderArray = loaded;
             }
+
+            public SessionProvider()
+            { }
 
             ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
             {
