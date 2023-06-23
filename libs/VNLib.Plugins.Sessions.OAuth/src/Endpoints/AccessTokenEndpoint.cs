@@ -51,7 +51,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
     {
         private readonly IApplicationTokenFactory TokenFactory;
         private readonly ApplicationStore Applications;
-        private readonly Task<ReadOnlyJsonWebKey?> JWTVerificationKey;
+        private readonly IAsyncLazy<ReadOnlyJsonWebKey?> JWTVerificationKey;
 
         //override protection settings to allow most connections to authenticate
         ///<inheritdoc/>
@@ -73,7 +73,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             Applications = new(pbase.GetContextOptions(), pbase.GetOrCreateSingleton<ManagedPasswordHashing>());
 
             //Try to get the application token key for verifying signed application JWTs
-            JWTVerificationKey = pbase.TryGetSecretAsync("application_token_key").ToJsonWebKey();
+            JWTVerificationKey = pbase.TryGetSecretAsync("application_token_key").ToJsonWebKey().AsLazy();
         }
        
 
@@ -140,7 +140,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 
         private UserApplication? GetApplicationFromJwt(string jwtData)
         {
-            ReadOnlyJsonWebKey? verificationKey = JWTVerificationKey.GetAwaiter().GetResult();
+            ReadOnlyJsonWebKey? verificationKey = JWTVerificationKey.Value;
 
             //Not enabled
             if (verificationKey == null)

@@ -89,6 +89,7 @@ namespace VNLib.Plugins.Sessions.OAuth
 
             if (result.IsCompleted)
             {
+                //Safe to get result synchronously
                 OAuth2Session? session = result.GetAwaiter().GetResult();
 
                 //Post process and get handle for session
