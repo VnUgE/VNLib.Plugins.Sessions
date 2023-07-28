@@ -99,7 +99,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 }
 
                 //Get waiter before leaving lock
-                token = wait.GetWaiter();
+                wait.GetWaiter(out token);
             }
 
             return token.EnterWaitAsync(cancellation);
@@ -107,8 +107,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
 
         ///<inheritdoc/>
         public override void Release(TSession moniker)
-        {           
-            
+        {            
             WaitReleaseToken releaser;
 
             lock (StoreLock)
@@ -133,6 +132,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                     releaser = default;
                 }
             }
+
             //Release sem outside of lock
             releaser.Release();
         }

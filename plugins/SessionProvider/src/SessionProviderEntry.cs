@@ -89,12 +89,12 @@ namespace VNLib.Plugins.Essentials.Sessions
                     try
                     {
                         //Create localized log
-                        LocalizedLogProvider log = new(Log, $"{Path.GetFileName(asm)}");
+                        ILogProvider scopded = Log.CreateScope(Path.GetFileName(asm));
 
                         RuntimeSessionProvider p = new(prov);
 
                         //Call load method
-                        p.Load(this, log);
+                        p.Load(this, scopded);
 
                         //Add to list
                         providers.Add(p);
@@ -148,6 +148,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
         private sealed class SessionProvider : VnDisposeable, ISessionProvider, IDisposable
         {
+            //Default to an empty array for default support even if no runtime providers are loaded
             private RuntimeSessionProvider[] ProviderArray = Array.Empty<RuntimeSessionProvider>();
 
             public SessionProvider(RuntimeSessionProvider[] loaded)
