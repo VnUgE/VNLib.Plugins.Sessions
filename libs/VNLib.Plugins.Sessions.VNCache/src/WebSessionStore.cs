@@ -97,28 +97,8 @@ namespace VNLib.Plugins.Sessions.VNCache
                 //Run delete/cleanup
                 Task delete = DeleteSessionAsync(session);
 
-                //Regenid and create new session
-                string newId = IdFactory.RegenerateId(entity);
-
-                //Get new session empty session for the connection
-                WebSession newSession = SessionFactory.GetNewSession(entity, newId, null);
-
-                //Reset security information for new session
-                newSession.InitNewSession(entity.Server);
-
-                IDictionary<string, string> data = newSession.GetSessionData();
-
-                //commit session to cache
-                Task add = Cache.AddOrUpdateObjectAsync(newId, null, data);
-
-                /*
-                 * Call complete on session for good practice, this SHOULD be 
-                 * called after the update has been awaited though.
-                 * 
-                 * We also do not need to use the mutal exclusion mechanism because
-                 * no other connections should have this session's id yet.
-                 */
-                newSession.SessionUpdateComplete();
+                //Create new session for the same connection
+                Task add = CreateNewSession(entity);
            
                 //Await the invalidation async
                 return new(AwaitInvalidate(delete, add));
@@ -127,6 +107,34 @@ namespace VNLib.Plugins.Sessions.VNCache
             {
                 return base.ReleaseSessionAsync(session, entity);
             }
+        }
+
+        private Task CreateNewSession(IHttpEvent entity)
+        {
+            //Regenid and create new session
+            string newId = IdFactory.RegenerateId(entity);
+
+            //Get new session empty session for the connection
+            WebSession newSession = SessionFactory.GetNewSession(entity, newId, null);
+
+            //Reset security information for new session
+            newSession.InitNewSession(entity.Server);
+
+            IDictionary<string, string> data = newSession.GetSessionData();
+
+            //commit session to cache
+            Task add = Cache.AddOrUpdateObjectAsync(newId, null, data);
+
+            /*
+            * Call complete on session for good practice, this SHOULD be 
+            * called after the update has been awaited though.
+            * 
+            * We also do not need to use the mutual exclusion mechanism because
+            * no other connections should have this session's id yet.
+            */
+            newSession.SessionUpdateComplete();
+
+            return add;
         }
 
         private static async Task AwaitInvalidate(Task delete, Task addNew)

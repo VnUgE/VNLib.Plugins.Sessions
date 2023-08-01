@@ -352,11 +352,4 @@ MigrationBackup/
 # exclude all json files as blanket for config
 *.json
 
-[Ll]iveplugin/
 *.licenseheader
-
-[Tt]askfile.*
-
-/.task/checksum
-
-*.sln

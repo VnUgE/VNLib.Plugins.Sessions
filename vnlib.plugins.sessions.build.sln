@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{05915194-54D2-41A1-B66C-A4F9D65C5189}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{415CDD00-84E8-4BF2-B70F-C65AD7858D97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{73CEF8CD-1A5A-4025-A817-DE03805C6FA8}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.onedev-buildspec.yml = .onedev-buildspec.yml
+		GitVersion.yml = GitVersion.yml
+		LICENSE.txt = LICENSE.txt
+		Module.Taskfile.yaml = Module.Taskfile.yaml
+		README.md = README.md
+		Taskfile.yaml = Taskfile.yaml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionProvider", "plugins\SessionProvider\src\SessionProvider.csproj", "{0ED23A9F-0D59-4754-97E0-87E313D4DEB8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VNLib.Plugins.Sessions.Cache.Client", "libs\VNLib.Plugins.Sessions.Cache.Client\src\VNLib.Plugins.Sessions.Cache.Client.csproj", "{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VNLib.Plugins.Sessions.OAuth", "libs\VNLib.Plugins.Sessions.OAuth\src\VNLib.Plugins.Sessions.OAuth.csproj", "{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VNLib.Plugins.Sessions.VNCache", "libs\VNLib.Plugins.Sessions.VNCache\src\VNLib.Plugins.Sessions.VNCache.csproj", "{4001BB94-F4C0-417B-981B-F21673387E83}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0ED23A9F-0D59-4754-97E0-87E313D4DEB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ED23A9F-0D59-4754-97E0-87E313D4DEB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ED23A9F-0D59-4754-97E0-87E313D4DEB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ED23A9F-0D59-4754-97E0-87E313D4DEB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4001BB94-F4C0-417B-981B-F21673387E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4001BB94-F4C0-417B-981B-F21673387E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4001BB94-F4C0-417B-981B-F21673387E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4001BB94-F4C0-417B-981B-F21673387E83}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0ED23A9F-0D59-4754-97E0-87E313D4DEB8} = {415CDD00-84E8-4BF2-B70F-C65AD7858D97}
+		{5FB9331A-EF5A-4BD5-94AD-2C2952DFF350} = {05915194-54D2-41A1-B66C-A4F9D65C5189}
+		{E8EE87A0-5A0F-4BE0-B30B-DD8CDD1FF616} = {05915194-54D2-41A1-B66C-A4F9D65C5189}
+		{4001BB94-F4C0-417B-981B-F21673387E83} = {05915194-54D2-41A1-B66C-A4F9D65C5189}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E06E15E-06C0-4681-8563-EAFB6D4F9D16}
+	EndGlobalSection
+EndGlobal
