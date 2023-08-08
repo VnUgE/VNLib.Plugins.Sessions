@@ -106,7 +106,7 @@ namespace VNLib.Plugins.Sessions.OAuth
         private async Task<SessionHandle> AwaitAsyncGet(ValueTask<OAuth2Session?> async)
         {
             //Inct wait count while async waiting
-            _waitingConnections++;
+            Interlocked.Increment(ref _waitingConnections);
             try
             {
                 //await the session
@@ -117,7 +117,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             }
             finally
             {
-                _waitingConnections--;
+                Interlocked.Decrement(ref _waitingConnections);
             }
         }
 

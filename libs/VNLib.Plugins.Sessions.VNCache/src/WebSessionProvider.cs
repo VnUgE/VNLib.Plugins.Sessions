@@ -112,7 +112,7 @@ namespace VNLib.Plugins.Sessions.VNCache
         private async Task<SessionHandle> AwaitAsyncGet(ValueTask<WebSession?> async)
         {
             //Inct wait count while async waiting
-            _waitingConnections++;
+            Interlocked.Increment(ref _waitingConnections);
             try
             {
                 //await the session
@@ -123,7 +123,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             }
             finally
             {
-                _waitingConnections--;
+                Interlocked.Decrement(ref _waitingConnections);
             }
         }
     }
