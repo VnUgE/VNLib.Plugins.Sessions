@@ -19,19 +19,11 @@
     <Company>Vaughn Nugent</Company>
     <Product>Essentials framework OAuth2 session provider</Product>
     <Description>
-      Provides OAuth2 sessions and required endpoints for authentication via user applications from the VNLib.Plugins.Essentials.Oauth library
+      Provides OAuth2 sessions and required endpoints for authentication via user applications from the VNLib.Plugins.Essentials.Oauth library. This library is designed to be loaded dynamically at runtime by the SessionProvider plugin.
     </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
-    <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Core</PackageProjectUrl>
+    <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.OAuth</RepositoryUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Deterministic>False</Deterministic>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Deterministic>False</Deterministic>
   </PropertyGroup>
   
   <ItemGroup>
@@ -46,4 +38,5 @@
   <Target Condition="'$(BuildingInsideVisualStudio)' == true" Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="start xcopy &quot;$(TargetDir)&quot; &quot;..\..\..\..\..\devplugins\RuntimeAssets\$(TargetName)&quot; /E /Y /R" />
   </Target>
+  
 </Project>

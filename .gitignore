@@ -350,6 +350,6 @@ MigrationBackup/
 .ionide/
 
 # exclude all json files as blanket for config
-*.json
+SessionProvider.json
 
 *.licenseheader

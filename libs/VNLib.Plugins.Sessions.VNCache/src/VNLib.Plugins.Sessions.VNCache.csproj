@@ -16,16 +16,12 @@
     <Company>Vaughn Nugent</Company>
     <Product>VNCache backed dynamic session provider</Product>
     <Description>
-      Provides web based sessions using a VNCache cache cluster as a backing store for distributed sessions
+      Provides web based sessions using a VNCache cache cluster as a backing store for distributed sessions. This library is designed to be loaded dynamically at runtime by the SessionProvider plugin.
     </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.VNCache</RepositoryUrl>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="Endpoints\" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />

@@ -45,7 +45,7 @@ namespace VNLib.Plugins.Sessions.OAuth
 
         public void InitNewSession(IHttpEvent entity)
         {
-            SessionType = SessionType.Web;
+            SessionType = SessionType.OAuth2;
             Created = DateTimeOffset.UtcNow;
             //Set user-ip address
             UserIP = entity.Server.GetTrustedIp();

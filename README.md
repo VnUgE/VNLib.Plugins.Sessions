@@ -1,17 +1,18 @@
 # VNLib.Plugins.Sessions 
+*A collection of helper libraries for the developing session providers, runtime session providers implementations such as OAuth2 or Web sessions with VNCache clusters, and client session libraries.*   
 
-This folder contains helper libraries for the developing session providers, plugins for managing distributed object caching, and client runtime implementations.   
-
-Each library or plugin library should contain a readme.md file for setup/installation or usage.
+See the documentation or child project readme files for more information.  
 
 ## Builds
-Debug build w/ symbols & xml docs, release builds, NuGet packages, and individually packaged source code are available on my website (link below). All tar-gzip (.tgz) files will have an associated .sha256 appended checksum of the desired download file.
+Debug build w/ symbols & xml docs, release builds, NuGet packages, and individually packaged source code are available on my website (link below).  
 
 ## Docs and Guides
 Documentation, specifications, and setup guides are available on my website.  
 
-[Docs and Articles](https://www.vaughnnugent.com/resources/software/articles?tags=docs,_vnlib.plugins.sessions)  
-[Builds and Source](https://www.vaughnnugent.com/resources/software/modules/VNLib.Core)  
+[Home Page](https://www.vaughnnugent.com) - Website home page  
+[Documentation](https://www.vaughnnugent.com/resources/software/articles?tags=docs,_vnlib.plugins.sessions) - Docs and articles for this module  
+[Builds and Source](https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions) - Per-project build artifacts  
+[Links for Nuget Feeds](https://www.vaughnnugent.com/resources/software/modules) - Get my NuGet feed links  
 
-## License 
-Licenses may vary depending on the project. Each project will contain a license file and applicable licensing information in the project's readme.  
+## License  
+The software in this repository is licensed under the GNU Affero General Public License (or any later version). See the LICENSE files for more information.  

@@ -17,19 +17,11 @@
     <Company>Vaughn Nugent</Company>
     <Product>Cache backed session client library</Product>
     <Description>
-      Base library for implementing cache backed HTTP sessions. 
+      Boilerplate and abstractions library for implementing cache backed HTTP sessions.
     </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.Cache.Client</RepositoryUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Deterministic>False</Deterministic>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Deterministic>False</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>

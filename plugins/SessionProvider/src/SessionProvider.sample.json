@@ -1,0 +1,94 @@
+{
+  "debug": false,
+
+  //Provider assemblies to load
+  "provider_assemblies": [
+    //Priority list of session handling assemblies, OAuth loaded first because web sessions will aways try to be used
+    //"VNLib.Plugins.Sessions.OAuth.dll",
+    //"VNLib.Plugins.Sessions.VNCache.dll"
+  ],
+
+  //Web session provider, valid format for VNCache and also memory sessions
+  "web": {
+    //Cache system key prefix
+    "cache_prefix": "websessions",
+    //The session cookie name
+    "cookie_name": "VNSession",
+    //Size in bytes for generated session ids
+    "cookie_size": 40,
+    //time (in seconds) a session is valid for
+    "valid_for_sec": 3600,
+    //The maxium number of connections waiting for the cache server responses
+    "max_waiting_connections": 100
+  },
+
+  //If the OAuth provider is enabled, you may enable the optional revocation endpoint
+  "o2_revocation_endpoint": {
+    "path": "/oauth/revoke"
+  },
+
+  //If the OAuth provider is enabled, this is required the configuration object
+  "oauth2": {
+    //Cache system key prefix
+    "cache_prefix": "oauth2sessions",
+
+    //Token url path
+    "token_path": "/oauth/token",
+
+    //Max number of items in the LRU cache
+    "cache_size": 1000,
+    //Size in bytes of generated random access tokens
+    "access_token_size": 40,
+    //Maxium number of live tokens allowed per applicaion
+    "max_tokens_per_app": 10,
+    //access token life-time in seconds
+    "token_valid_for_sec": 3600,
+    //garbage (token revocation) collection interval in seconds
+    "gc_interval_sec": 120
+    /*
+    When access tokens are revoked via the applications plugin api, they are simply marked in the db
+    as timed-out (their creation time is set to 0) to cause the first GC to delete the session from cache.
+    This means that there can be a delay (maxium of GC interval) between the time the token is revoked and 
+    the time it is removed from cache (so the session is still valid until GC'd). This is used to cross
+    the plugin barier
+    */
+  },
+
+  
+  //Enable vncache as the providers above rely on the object caching server
+  "vncache": {
+
+    //Setting this value to true will cause the cache store to load a memory-only instance, without vncache remote backing
+    "memory_only": true,
+
+    //Max size (in bytes) of allowed data to be stored in each user's session object
+    "max_object_size": 8128,
+
+    //Request timeout
+    "request_timeout_sec": 10,
+
+    //Time delay between cluster node discovery
+    "discovery_interval_Sec": 120,
+
+    //Initial nodes to discover from
+    "initial_nodes": [],
+
+    //force tls for all connections
+    "use_tls": true,
+
+    //enable memory cache (optional but encouraged for performance)
+    "memory_cache": {
+      "buckets": 20,
+      "bucket_size": 5000,
+      "max_age_sec": 600,
+      "refresh_interval_sec": 60
+    }
+  },
+
+  "secrets": {
+    //Cache secrets, we need our private key and the cache public key to verify messages (they must be JWK)
+    "client_private_key": "",
+    "cache_public_key": ""
+  }
+
+}

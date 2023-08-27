@@ -20,7 +20,8 @@
     <Product>SessionProvider</Product>
     <PackageId>VNLib.Plugins.Sessions.SessionProvider</PackageId>
     <Description>
-      An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries
+      An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries such 
+      as VNLib.Plugins.Sessions.VNCache, and OAuth2 sessions from VNLib.Plugins.Sessions.OAuth.
     </Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
