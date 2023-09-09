@@ -43,31 +43,32 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     /// <typeparam name="TSession"></typeparam>
     public abstract class SessionStore<TSession> : ISessionStore<TSession> where TSession: IRemoteSession
     {
-#nullable disable
-
-        /*
-         * Default imple for serializer
-         */
+     
+        /// <summary>
+        /// Used to serialize access to session instances. Unless overridden, uses a <see cref="SessionSerializer{TSession}"/>
+        /// implementation.
+        /// </summary>
         protected virtual ISessionSerialzer<TSession> Serializer { get; } = new SessionSerializer<TSession>(100);
 
         /// <summary>
         /// The <see cref="ISessionIdFactory"/> that provides session ids for connections
         /// </summary>
         protected abstract ISessionIdFactory IdFactory { get; }
+
         /// <summary>
         /// The backing cache store
         /// </summary>
         protected abstract IRemoteCacheStore Cache { get;  }
+
         /// <summary>
         /// The session factory, produces sessions from their initial data and session-id
         /// </summary>
         protected abstract ISessionFactory<TSession> SessionFactory { get; }
+
         /// <summary>
         /// The log provider for writing background update exceptions to
         /// </summary>
         protected abstract ILogProvider Log { get; }
-
-#nullable enable
 
         ///<inheritdoc/>
         public virtual async ValueTask<TSession?> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
@@ -209,6 +210,28 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 //Update data and id
                 _ = UpdateSessionAndIdAsync(session, newId);
             }
+            else if(status.HasFlag(SessionStatus.Detach))
+            {
+                /*
+                 * Special case. We are regenerating the session id, but we are not updating the session.
+                 * This will cause the client's session id to detach from the current session.
+                 * 
+                 * All other updates will be persisted to the cache. 
+                 * 
+                 * The id should require regeneration on the user's next request then attach a new session.
+                 * 
+                 * The session is still valid, however the current connection should effectivly be 'detatched' 
+                 * from it.
+                 */
+
+                if (!IdFactory.RegenerationSupported)
+                {
+                    throw new SessionException("Session id regeneration is not supported by this store");
+                }
+
+                _ = IdFactory.RegenerateId(entity);
+                _ = UpdateSessionAndIdAsync(session, null);
+            }
             else if (status.HasFlag(SessionStatus.UpdateOnly))
             {
                 //Just run update
@@ -242,7 +265,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client
 
                 //Update the session's data async
                 await Cache.AddOrUpdateObjectAsync(session.SessionID, newId, sessionData);
-
 
                 /*
                  * If the session id changes, the old sesion can be invalidated
@@ -280,30 +302,27 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <returns>A task that completes when the session is destroyed</returns>
         protected virtual async Task DeleteSessionAsync(TSession session)
         {
+            Exception? cause = null;
+
             try
-            {              
+            { 
                 //Update the session's data async
                 await Cache.DeleteObjectAsync(session.SessionID);
-
-                //Destroy the session
-                session.Destroy(null);
             }
             catch(ObjectNotFoundException)
             {
                 //ingore onfe, if the session does not exist in cache
-
-                //Destroy the session
-                session.Destroy(null);
             }
             catch (Exception ex)
             {
                 Log.Error("Exception raised during session delete, ID {id}\n{ex}", session.SessionID, ex);
-
-                //Destroy the session with an error
-                session.Destroy(ex);
+                cause = ex;
             }
             finally
             {
+                //Always destroy the session
+                session.Destroy(cause);
+
                 //Release the session now that delete has been set
                 Serializer.Release(session);
             }

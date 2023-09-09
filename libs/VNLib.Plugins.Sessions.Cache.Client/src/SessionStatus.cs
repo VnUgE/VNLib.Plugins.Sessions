@@ -48,6 +48,10 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <summary>
         /// The session has been modified and requires an ID change
         /// </summary>
-        RegenId = 4
+        RegenId = 4,
+        /// <summary>
+        /// The session should be detached from the current context
+        /// </summary>
+        Detach = 8,
     }
 }
