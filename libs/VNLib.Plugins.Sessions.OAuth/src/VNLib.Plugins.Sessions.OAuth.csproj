@@ -18,13 +18,29 @@
     <Authors>Vaughn Nugent</Authors>
     <Company>Vaughn Nugent</Company>
     <Product>Essentials framework OAuth2 session provider</Product>
-    <Description>
-      Provides OAuth2 sessions and required endpoints for authentication via user applications from the VNLib.Plugins.Essentials.Oauth library. This library is designed to be loaded dynamically at runtime by the SessionProvider plugin.
-    </Description>
+    <Description>Provides OAuth2 sessions and required endpoints for authentication via user applications from the VNLib.Plugins.Essentials.Oauth library. This library is designed to be loaded dynamically at runtime by the SessionProvider plugin.</Description>
     <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.OAuth</RepositoryUrl>
   </PropertyGroup>
+
+
+  <PropertyGroup>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />

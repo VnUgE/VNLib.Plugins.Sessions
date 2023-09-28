@@ -55,13 +55,13 @@ namespace VNLib.Plugins.Sessions.Cache.Client
          */
 
         private readonly Dictionary<string, WaitEntry> _waitTable;
-     
+
 
         /// <summary>
         /// Initializes a new <see cref="SessionSerializer{TSession}"/>
         /// </summary>
         /// <param name="poolCapacity">The maximum number of wait entry instances to hold in memory cache</param>
-        public SessionSerializer(int poolCapacity):base(poolCapacity, 0, null)
+        public SessionSerializer(int poolCapacity) : base(poolCapacity, 0, null)
         {
             //Session-ids are security senstive, we must use ordinal(binary) string comparison
             _waitTable = new Dictionary<string, WaitEntry>(poolCapacity, StringComparer.Ordinal);
@@ -86,23 +86,48 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             cancellation.ThrowIfCancellationRequested();
 
             WaitEnterToken token;
+            WaitEntry? wait;
 
-            lock (StoreLock)
+            if (cancellation.CanBeCanceled)
             {
-                //See if the entry already exists, otherwise get a new wait entry
-                if (!_waitTable.TryGetValue(moniker.SessionID, out WaitEntry? wait))
+                lock (StoreLock)
                 {
-                    GetWaitEntry(ref wait, moniker);
+                    //See if the entry already exists, otherwise get a new wait entry
+                    if (!_waitTable.TryGetValue(moniker.SessionID, out wait))
+                    {
+                        GetWaitEntry(ref wait, moniker);
 
-                    //Add entry to store
-                    _waitTable[moniker.SessionID] = wait;
+                        //Add entry to store
+                        _waitTable[moniker.SessionID] = wait;
+                    }
+
+                    //Get waiter before leaving lock
+                    wait.ScheduleWait(cancellation, out token);
                 }
 
-                //Get waiter before leaving lock
-                wait.GetWaiter(out token);
+                //Enter wait and setup cancellation continuation
+                return EnterCancellableWait(in token, wait);
             }
+            else
+            {
+                lock (StoreLock)
+                {
+                    //See if the entry already exists, otherwise get a new wait entry
+                    if (!WaitTable.TryGetValue(moniker, out wait))
+                    {
+                        GetWaitEntry(ref wait, moniker);
 
-            return token.EnterWaitAsync(cancellation);
+                        //Add entry to store
+                        WaitTable[moniker] = wait;
+                    }
+
+                    //Get waiter before leaving lock
+                    wait.ScheduleWait(out token);
+                }
+
+                //Enter the waiter without any cancellation support
+                return token.EnterWaitAsync();
+            }
         }
 
         ///<inheritdoc/>
@@ -110,31 +135,32 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         {            
             WaitReleaseToken releaser;
 
-            lock (StoreLock)
+            do
             {
-                WaitEntry entry = _waitTable[moniker.SessionID];
-                
-                //Call release while holding store lock
-                if(entry.Release(out releaser) == 0)
+                lock (StoreLock)
                 {
-                    //No more waiters
-                    _waitTable.Remove(moniker.SessionID);
-                    
-                    /*
-                     * We must release the semaphore before returning to pool, 
-                     * its safe because there are no more waiters
-                     */
-                    releaser.Release();
+                    WaitEntry entry = _waitTable[moniker.SessionID];
 
-                    ReturnEntry(entry);
+                    //Call release while holding store lock
+                    if (entry.ExitWait(out releaser) == 0)
+                    {
+                        //No more waiters
+                        _waitTable.Remove(moniker.SessionID);
 
-                    //already released
-                    releaser = default;
+                        /*
+                         * We must release the semaphore before returning to pool, 
+                         * its safe because there are no more waiters
+                         */
+                        releaser.Release();
+
+                        ReturnEntry(entry);
+
+                        //already released
+                        releaser = default;
+                    }
                 }
-            }
-
-            //Release sem outside of lock
-            releaser.Release();
+            //See base class for why we need to loop
+            } while (!releaser.Release());
         }
 
         ///<inheritdoc/>
