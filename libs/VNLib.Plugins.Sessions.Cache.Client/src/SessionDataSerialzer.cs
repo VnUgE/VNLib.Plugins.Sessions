@@ -49,21 +49,21 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             CharBufferSize = charBufferSize;
         }
 
-        object? ICacheObjectDeserialzer.Deserialze(Type type, ReadOnlySpan<byte> buffer)
+        T? ICacheObjectDeserialzer.Deserialze<T>(ReadOnlySpan<byte> objectData) where T : default
         {
-            if (!type.IsAssignableTo(typeof(IDictionary<string, string>)))
+            if (!typeof(T).IsAssignableTo(typeof(IDictionary<string, string>)))
             {
                 throw new NotSupportedException("This deserialzer only supports IDictionary<string,string>");
             }
 
             //Get char count from bin buffer
-            int charCount = Encoding.UTF8.GetCharCount(buffer);
+            int charCount = Encoding.UTF8.GetCharCount(objectData);
 
             //Alloc decode buffer
             using UnsafeMemoryHandle<char> charBuffer = MemoryUtil.UnsafeAllocNearestPage<char>(charCount, true);
 
             //decode chars
-            Encoding.UTF8.GetChars(buffer, charBuffer.Span);
+            Encoding.UTF8.GetChars(objectData, charBuffer.Span);
 
             //Alloc new dict to write strings to
             Dictionary<string, string> output = new(StringComparer.OrdinalIgnoreCase);
@@ -107,7 +107,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 reader.Advance(sep + 2);
             }
 
-            return output;
+            return (T?)(output as object);
         }
 
         private static int GetNextToken(ref ForwardOnlyReader<char> reader) => reader.Window.IndexOf(KV_DELIMITER);
