@@ -57,7 +57,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
         ///<inheritdoc/>
         protected override ProtectionSettings EndpointProtectionSettings { get; } = new()
         {
-            DisableBrowsersOnly = true,
             DisableSessionsRequired = true
         };
 

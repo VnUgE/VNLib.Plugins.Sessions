@@ -27,7 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using VNLib.Net.Http;
-using VNLib.Utils.Extensions;
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Extensions.Loading;
@@ -39,8 +38,7 @@ namespace VNLib.Plugins.Sessions.VNCache
     internal sealed class WebSessionProvider : ISessionProvider
     {
         private static readonly SessionHandle _vf =  new (null, FileProcessArgs.VirtualSkip, null);
-
-        private readonly TimeSpan _validFor;
+       
         private readonly WebSessionStore _sessions;
         private readonly uint _maxConnections;
 
@@ -50,7 +48,6 @@ namespace VNLib.Plugins.Sessions.VNCache
 
         public WebSessionProvider(PluginBase plugin, IConfigScope config)
         {
-            _validFor = config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
             _maxConnections = config["max_waiting_connections"].GetUInt32();
 
             //Init session provider
@@ -59,25 +56,7 @@ namespace VNLib.Plugins.Sessions.VNCache
 
         private SessionHandle PostProcess(WebSession? session)
         {
-            if (session == null)
-            {
-                return SessionHandle.Empty;
-            }
-
-            //Make sure the session has not expired yet
-            if (session.Created.Add(_validFor) < DateTimeOffset.UtcNow)
-            {
-                //Invalidate the session, so its technically valid for this request, but will be cleared on this handle close cycle
-                session.Invalidate();
-
-                //Clear basic login status
-                session.Token = null;
-                session.UserID = null;
-                session.Privilages = 0;
-                session.SetLoginToken(null);
-            }
-
-            return new SessionHandle(session, OnSessionReleases);
+            return session == null ? SessionHandle.Empty : new SessionHandle(session, OnSessionReleases);
         }
 
         private ValueTask OnSessionReleases(ISession session, IHttpEvent entity) => _sessions.ReleaseSessionAsync((WebSession)session, entity);

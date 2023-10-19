@@ -59,7 +59,7 @@ namespace VNLib.Plugins.Essentials.Sessions
         public void ConfigureServices(IServiceContainer services)
         {
             //publish the service
-            services.AddService(typeof(ISessionProvider), _provider);
+            services.AddService<ISessionProvider>(_provider);
         }
        
 

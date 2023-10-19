@@ -29,7 +29,6 @@ using VNLib.Net.Http;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Extensions;
 using VNLib.Plugins.Sessions.Cache.Client;
-using static VNLib.Plugins.Essentials.Sessions.ISessionExtensions;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
@@ -66,7 +65,6 @@ namespace VNLib.Plugins.Sessions.OAuth
             switch (key)
             {
                 case TOKEN_ENTRY:
-                case LOGIN_TOKEN_ENTRY:
                     throw new InvalidOperationException("Token entry may not be changed!");
             }
             base.IndexerSet(key, value);
