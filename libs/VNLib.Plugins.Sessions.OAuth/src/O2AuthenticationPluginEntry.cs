@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2023 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -23,9 +23,13 @@
 */
 
 using System;
-using System.Collections.Generic;
+
+using System.ComponentModel.Design;
 
 using VNLib.Utils.Logging;
+using VNLib.Plugins.Attributes;
+using VNLib.Plugins.Essentials.Sessions;
+using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
@@ -33,19 +37,20 @@ namespace VNLib.Plugins.Sessions.OAuth
     {
         public override string PluginName => "Essentials.Oauth.Authentication";
 
-        private readonly O2SessionProviderEntry SessionProvider = new();
+        private OAuth2SessionProvider? SessionProvider;
+
+
+        [ServiceConfigurator]
+        public void OnServicesLoading(IServiceContainer services)
+        {
+            //Expose the OAuth2 session provider as a service singleton
+            services.AddService<ISessionProvider>(SessionProvider!);
+        }
 
         protected override void OnLoad()
         {
-            try
-            {
-                //Load the session provider, that will only load the endpoints
-                SessionProvider.Load(this, Log);
-            }
-            catch(KeyNotFoundException kne)
-            {
-                Log.Error("Missing required configuration keys {err}", kne.Message);
-            }
+            SessionProvider = this.GetOrCreateSingleton<OAuth2SessionProvider>();
+            Log.Information("Plugin loaded");
         }
 
         protected override void OnUnLoad()

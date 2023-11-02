@@ -41,9 +41,24 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <returns>A task that resolves the found object or null otherwise</returns>
         Task<T?> GetObjectAsync<T>(string objectId, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Adds or updates an object in the cache provider by session id and optionally it's new id
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="objectId">The session id to add or update</param>
+        /// <param name="newId">The uniqe id of the item to update</param>
+        /// <param name="obj"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task AddOrUpdateObjectAsync<T>(string objectId, string? newId, T obj, CancellationToken cancellationToken = default);
 
-        Task DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Deletes an object from the cache provider by session id
+        /// </summary>
+        /// <param name="objectId">The id of the item to delete</param>
+        /// <param name="cancellationToken">A token to cancel the operation</param>
+        /// <returns>A value that indicates if the item was found and deleted</returns>
+        Task<bool> DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a value that determines if the remote cache store is available

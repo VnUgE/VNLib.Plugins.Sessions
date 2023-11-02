@@ -38,13 +38,14 @@ namespace VNLib.Plugins.Sessions.VNCache
     /// <see cref="ISessionIdFactory"/> implementation, using 
     /// http cookies as session id storage
     /// </summary>
-    [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
+    [ConfigurationName(WebSessionProvider.WEB_SESSION_CONFIG)]
     internal sealed class WebSessionIdFactory : ISessionIdFactory
     {
         public TimeSpan ValidFor { get; }
 
         ///<inheritdoc/>
         public bool RegenerationSupported { get; } = true;
+
         ///<inheritdoc/>
         public bool RegenIdOnEmptyEntry { get; } = true;
        
@@ -65,13 +66,14 @@ namespace VNLib.Plugins.Sessions.VNCache
             _cookieSize = (int)cookieSize;
         }
 
-        public WebSessionIdFactory(PluginBase pbase, IConfigScope config)
-        {
-            _cookieSize = (int)config["cookie_size"].GetUInt32();
-            SessionCookieName = config["cookie_name"].GetString() 
-                ?? throw new KeyNotFoundException($"Missing required element 'cookie_name' for config '{WebSessionProviderEntry.WEB_SESSION_CONFIG}'");           
-            ValidFor = config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds);
-        }
+        //Create instance from config
+        public WebSessionIdFactory(PluginBase plugin, IConfigScope config):
+            this(
+                config["cookie_size"].GetUInt32(),
+                config.GetRequiredProperty("cookie_name", p => p.GetString()!),
+                config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds)
+            )
+        { }
 
 
         public string RegenerateId(IHttpEvent entity)
@@ -91,17 +93,13 @@ namespace VNLib.Plugins.Sessions.VNCache
             };
 
             //Set the session id cookie
-            entity.Server.SetCookie(cookie);
+            entity.Server.SetCookie(in cookie);
 
             //return session-id value from cookie value
             return sessionId;
         }
 
-        public string? TryGetSessionId(IHttpEvent entity)
-        {
-            //Get session cookie
-            return entity.Server.RequestCookies.GetValueOrDefault(SessionCookieName);
-        }
+        public string? TryGetSessionId(IHttpEvent entity) => entity.Server.RequestCookies.GetValueOrDefault(SessionCookieName);
 
         public bool CanService(IHttpEvent entity)
         {

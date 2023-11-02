@@ -5,8 +5,8 @@
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
 * File: OAuth2SessionProvider.cs 
 *
-* OAuth2SessionProvider.cs is part of VNLib.Plugins.Essentials.Sessions.OAuth which is part of the larger 
-* VNLib collection of libraries and utilities.
+* OAuth2SessionProvider.cs is part of VNLib.Plugins.Essentials.Sessions.OAuth 
+* which is part of the larger VNLib collection of libraries and utilities.
 *
 * VNLib.Plugins.Essentials.Sessions.OAuth is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Affero General Public License as 
@@ -31,7 +31,6 @@ using System.Collections.Generic;
 using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
-using VNLib.Data.Caching.Exceptions;
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Essentials.Oauth.Tokens;
@@ -39,6 +38,8 @@ using VNLib.Plugins.Essentials.Oauth.Applications;
 using VNLib.Plugins.Extensions.Loading;
 using VNLib.Plugins.Extensions.Loading.Sql;
 using VNLib.Plugins.Extensions.Loading.Events;
+using VNLib.Plugins.Extensions.Loading.Routing;
+using VNLib.Plugins.Sessions.OAuth.Endpoints;
 using static VNLib.Plugins.Essentials.Oauth.OauthSessionExtensions;
 
 namespace VNLib.Plugins.Sessions.OAuth
@@ -47,9 +48,12 @@ namespace VNLib.Plugins.Sessions.OAuth
     /// <summary>
     /// Provides OAuth2 session management
     /// </summary>
-    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
-    internal sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory, IIntervalScheduleable
-    {        
+    [ExternService]
+    [ConfigurationName(OAUTH2_CONFIG_KEY)]
+    public sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory, IIntervalScheduleable
+    {
+        public const string OAUTH2_CONFIG_KEY = "oauth2";
+
         private static readonly SessionHandle Skip = new(null, FileProcessArgs.VirtualSkip, null);
 
         private readonly OAuth2SessionStore _sessions;
@@ -60,8 +64,6 @@ namespace VNLib.Plugins.Sessions.OAuth
 
         private uint _waitingConnections;
 
-        public bool IsConnected => _sessions.IsConnected;
-
         public OAuth2SessionProvider(PluginBase plugin, IConfigScope config)
         {
             _sessions = plugin.GetOrCreateSingleton<OAuth2SessionStore>();
@@ -71,9 +73,40 @@ namespace VNLib.Plugins.Sessions.OAuth
 
             //Schedule interval
             plugin.ScheduleInterval(this, TimeSpan.FromMinutes(2));
+
+            IConfigScope o2Config = plugin.GetConfig(OAUTH2_CONFIG_KEY);
+
+            /*
+             * Route built-in oauth2 endpoints 
+             */
+            if (o2Config.ContainsKey("token_path"))
+            {
+                /*
+                 * Access token endpoint requires this instance as a token manager
+                 * which would cause a circular dependency, so it needs to be routed
+                 * manually
+                 */
+                AccessTokenEndpoint tokenEndpoint = new(plugin, o2Config, this);
+                //Create token endpoint
+                plugin.Route(tokenEndpoint);
+            }
+
+            //Optional revocation endpoint
+            if (plugin.HasConfigForType<RevocationEndpoint>())
+            {
+                //Route revocation endpoint
+                plugin.Route<RevocationEndpoint>();
+            }
         }
 
-        public void SetLog(ILogProvider log) => _sessions.SetLog(log);
+        /*
+         * Called when 
+         */
+        public bool CanProcess(IHttpEvent entity)
+        {
+            //If authorization header is set try to process as oauth2 session
+            return _sessions.IsConnected && entity.Server.Headers.HeaderSet(HttpRequestHeader.Authorization);
+        }
 
         public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
@@ -217,9 +250,6 @@ namespace VNLib.Plugins.Sessions.OAuth
                     //Remove tokens by thier object id from cache
                     await _sessions.DeleteTokenAsync(token.Id, cancellationToken);
                 }
-                //Ignore if the object has already been removed
-                catch (ObjectNotFoundException)
-                {}
                 catch (Exception ex)
                 {
 #pragma warning disable CA1508 // Avoid dead conditional code

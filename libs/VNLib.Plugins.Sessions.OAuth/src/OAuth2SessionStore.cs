@@ -34,19 +34,25 @@ using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Extensions.VNCache;
 using VNLib.Plugins.Extensions.Loading;
 
-
 namespace VNLib.Plugins.Sessions.OAuth
 {
-    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
+    [ConfigurationName(OAuth2SessionProvider.OAUTH2_CONFIG_KEY)]
     internal sealed class OAuth2SessionStore : SessionStore<OAuth2Session>
     {
         const int MAX_SESSION_BUFFER_SIZE = 16 * 1024;
 
         private ILogProvider _log;
 
+        ///<inheritdoc/>
         protected override ISessionIdFactory IdFactory { get; }
+
+        ///<inheritdoc/>
         protected override IRemoteCacheStore Cache { get; }
+
+        ///<inheritdoc/>
         protected override ISessionFactory<OAuth2Session> SessionFactory { get; }
+
+        ///<inheritdoc/>
         protected override ILogProvider Log => _log;
 
         public bool IsConnected => Cache.IsConnected;
@@ -56,11 +62,16 @@ namespace VNLib.Plugins.Sessions.OAuth
             OAuth2SessionConfig o2Conf = config.DeserialzeAndValidate<OAuth2SessionConfig>();
 
             //Get global cache
-            IGlobalCacheProvider cache = plugin.GetOrCreateSingleton<VnGlobalCache>()
+            IGlobalCacheProvider? cache = plugin.GetDefaultGlobalCache()?
                 .GetPrefixedCache(o2Conf.CachePrefix, HashAlg.SHA256);
 
-            //Create remote cache
-            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE);
+            _ = cache ?? throw new MissingDependencyException("A global cache provider is required to store OAuth2 sessions. Please configure a cache provider");
+
+            //Get debug log if enabled
+            ILogProvider? sessDebugLog = plugin.HostArgs.HasArgument("--debug-sessions") ? plugin.Log.CreateScope("OAuth2-Sessions") : null;
+
+            //Create cache store from global cache
+            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE, sessDebugLog);
 
             IdFactory = plugin.GetOrCreateSingleton<OAuth2TokenFactory>();
 
@@ -69,12 +80,6 @@ namespace VNLib.Plugins.Sessions.OAuth
             //Default to plugin cache
             _log = plugin.Log;
         }
-
-        public void SetLog(ILogProvider log)
-        {
-            _log = log;
-        }
-
 
         public Task DeleteTokenAsync(string token, CancellationToken cancellation)
         {

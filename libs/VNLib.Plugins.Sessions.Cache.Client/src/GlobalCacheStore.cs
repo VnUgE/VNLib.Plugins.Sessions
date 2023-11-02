@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using VNLib.Data.Caching;
+using VNLib.Utils.Logging;
 
 namespace VNLib.Plugins.Sessions.Cache.Client
 {
@@ -40,18 +41,19 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         private readonly IGlobalCacheProvider _cache;
 
         private readonly SessionDataSerialzer _serialzer;
-        
+
         /// <summary>
         /// Initiailzes a new <see cref="GlobalCacheStore"/> with the backing <see cref="IGlobalCacheProvider"/>
         /// global cache
         /// </summary>
         /// <param name="globalCache">The backing cache store</param>
         /// <param name="bufferSize">The size of the buffer used to serialize session objects</param>
+        /// <param name="debugLog">An optional log provider for writing serializing events to</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public GlobalCacheStore(IGlobalCacheProvider globalCache, int bufferSize)
+        public GlobalCacheStore(IGlobalCacheProvider globalCache, int bufferSize, ILogProvider? debugLog)
         {
             _cache = globalCache ?? throw new ArgumentNullException(nameof(globalCache));
-            _serialzer = new(bufferSize);
+            _serialzer = new(bufferSize, debugLog);
         }
 
         ///<inheritdoc/>
@@ -64,7 +66,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         }
       
         ///<inheritdoc/>
-        public Task DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default)
+        public Task<bool> DeleteObjectAsync(string objectId, CancellationToken cancellationToken = default)
         {
             return _cache.DeleteAsync(objectId, cancellationToken);
         }

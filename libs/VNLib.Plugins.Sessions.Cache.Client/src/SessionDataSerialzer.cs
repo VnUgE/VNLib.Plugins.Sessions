@@ -25,9 +25,11 @@
 using System;
 using System.Text;
 using System.Buffers;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 using VNLib.Utils.Memory;
+using VNLib.Utils.Logging;
 using VNLib.Utils.Extensions;
 using VNLib.Data.Caching;
 
@@ -38,18 +40,48 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     /// Very basic session data serializer memory optimized for key-value
     /// string pairs
     /// </summary>
-    internal sealed class SessionDataSerialzer : ICacheObjectSerialzer, ICacheObjectDeserialzer
+    internal sealed class SessionDataSerialzer : ICacheObjectSerializer, ICacheObjectDeserializer
     {
         const string KV_DELIMITER = "\0\0";
 
         readonly int CharBufferSize;
+        readonly ILogProvider? _debugLog;
 
-        public SessionDataSerialzer(int charBufferSize)
+        public SessionDataSerialzer(int charBufferSize, ILogProvider? debugLog)
         {
             CharBufferSize = charBufferSize;
+            _debugLog = debugLog;
+            debugLog?.Warn("Sensitive session logging is enabled. This will leak session data!");
         }
 
-        T? ICacheObjectDeserialzer.Deserialze<T>(ReadOnlySpan<byte> objectData) where T : default
+        [Conditional("DEBUG")]
+        private void DebugSessionItems(IDictionary<string, string> sessionData, bool serializing)
+        {
+            if (_debugLog is null)
+            {
+                return;
+            }
+
+            StringBuilder sdBuilder = new();
+            foreach (KeyValuePair<string, string> item in sessionData)
+            {
+                sdBuilder.Append(item.Key);
+                sdBuilder.Append('=');
+                sdBuilder.Append(item.Value);
+                sdBuilder.Append(", ");
+            }
+
+            if (serializing)
+            {
+                _debugLog.Debug("Serialzing session data: {sd} ", sdBuilder);
+            }
+            else
+            {
+                _debugLog.Debug("Deserialzing session data: {sd} ", sdBuilder);
+            }
+        }
+
+        T? ICacheObjectDeserializer.Deserialize<T>(ReadOnlySpan<byte> objectData) where T : default
         {
             if (!typeof(T).IsAssignableTo(typeof(IDictionary<string, string>)))
             {
@@ -107,18 +139,23 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 reader.Advance(sep + 2);
             }
 
+            DebugSessionItems(output, false);
+
             return (T?)(output as object);
         }
 
         private static int GetNextToken(ref ForwardOnlyReader<char> reader) => reader.Window.IndexOf(KV_DELIMITER);
 
-        void ICacheObjectSerialzer.Serialize<T>(T obj, IBufferWriter<byte> finiteWriter)
+        void ICacheObjectSerializer.Serialize<T>(T obj, IBufferWriter<byte> finiteWriter)
         {
             if(obj is not Dictionary<string, string> dict)
             {
                 throw new NotSupportedException("Data type is not supported by this serializer");
             }
-         
+
+            //Write debug info
+            DebugSessionItems(dict, true);
+
             //Alloc char buffer, sessions should be under 16k 
             using UnsafeMemoryHandle<char> charBuffer = MemoryUtil.UnsafeAllocNearestPage<char>(CharBufferSize);
 

@@ -46,7 +46,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
     /// Grants authorization to OAuth2 clients to protected resources
     /// with access tokens
     /// </summary>
-    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
     internal sealed class AccessTokenEndpoint : ResourceEndpointBase
     {
         private readonly IApplicationTokenFactory TokenFactory;
@@ -60,14 +59,13 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             DisableSessionsRequired = true
         };
 
-        public AccessTokenEndpoint(PluginBase pbase, IConfigScope config)
+        public AccessTokenEndpoint(PluginBase pbase, IConfigScope config, IApplicationTokenFactory tokenFactory)
         {
             string? path = config["token_path"].GetString();;
 
             InitPathAndLog(path, pbase.Log);
 
-            //Get the session provider, as its a token factory
-            TokenFactory = pbase.GetOrCreateSingleton<OAuth2SessionProvider>();
+            TokenFactory = tokenFactory;
 
             Applications = new(pbase.GetContextOptions(), pbase.GetOrCreateSingleton<ManagedPasswordHashing>());
 

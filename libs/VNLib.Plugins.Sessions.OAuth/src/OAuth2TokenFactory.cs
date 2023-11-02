@@ -33,7 +33,7 @@ using VNLib.Plugins.Essentials.Extensions;
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
-    [ConfigurationName(O2SessionProviderEntry.OAUTH2_CONFIG_KEY)]
+    [ConfigurationName(OAuth2SessionProvider.OAUTH2_CONFIG_KEY)]
     internal sealed class OAuth2TokenFactory : ISessionIdFactory, IOauthSessionIdFactory
     {
         private readonly OAuth2SessionConfig _config;

@@ -26,58 +26,28 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using VNLib.Utils;
-using VNLib.Utils.Logging;
 using VNLib.Net.Http;
-using VNLib.Plugins.Extensions.Loading;
+using VNLib.Utils.Resources;
 
 namespace VNLib.Plugins.Essentials.Sessions
 {
-    internal sealed class RuntimeSessionProvider : VnDisposeable, ISessionProvider
+    internal sealed class RuntimeSessionProvider : ISessionProvider
     {
-        private readonly AssemblyLoader<ISessionProvider> _asm;
-        
-        private Func<IHttpEvent, bool> _canProcessMethod;
-        private Action<PluginBase, ILogProvider> _loadMethod;
-        private ISessionProvider _ref;
+        private readonly Func<IHttpEvent, bool> _canProcessMethod;
+        private readonly ISessionProvider _ref;
 
-        public RuntimeSessionProvider(AssemblyLoader<ISessionProvider> asm)
+        public RuntimeSessionProvider(ISessionProvider externProvider)
         {
-            _asm = asm;
+            _ref = externProvider;
 
-            //Store ref to the resource to avoid loads
-            _ref = asm.Resource;
-
-            //Get load method
-            _loadMethod = asm.TryGetMethod<Action<PluginBase, ILogProvider>>("Load")
-                ?? throw new MissingMethodException("Provider is missing required Load method");
-
-            //Load canprocess method
-            _canProcessMethod = asm.TryGetMethod<Func<IHttpEvent, bool>>("CanProcess")
-                ?? throw new MissingMethodException("Provider is missing required CanProcess method");
+            //Load canprocess method dynamically
+            _canProcessMethod = ManagedLibrary.GetMethod<Func<IHttpEvent, bool>>(externProvider, "CanProcess");
         }
 
-        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
-        {
-            return _ref.GetSessionAsync(entity, cancellationToken);
-        }
+        ///<inheritdoc/>
+        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken) => _ref.GetSessionAsync(entity, cancellationToken);
 
-        public bool CanProcess(IHttpEvent ev)
-        {
-            return _canProcessMethod(ev);
-        }
-
-        public void Load(PluginBase pbase, ILogProvider localized)
-        {
-            _loadMethod(pbase, localized);
-        }
-
-        protected override void Free()
-        {
-            _asm.Dispose();
-            _canProcessMethod = null!;
-            _loadMethod = null!;
-            _ref = null!;
-        }
+        ///<inheritdoc/>
+        public bool CanProcess(IHttpEvent ev) => _canProcessMethod(ev);
     }
 }

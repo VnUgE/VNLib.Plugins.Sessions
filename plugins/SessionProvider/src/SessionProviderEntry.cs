@@ -23,7 +23,6 @@
 */
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +32,6 @@ using System.ComponentModel.Design;
 using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
-using VNLib.Utils.Extensions;
 using VNLib.Plugins.Attributes;
 using VNLib.Plugins.Extensions.Loading;
 
@@ -67,65 +65,46 @@ namespace VNLib.Plugins.Essentials.Sessions
         {
             List<RuntimeSessionProvider> providers = new();
 
-            try
-            {
-                Log.Verbose("Loading all specified session providers");
+            Log.Verbose("Loading all specified session providers");
 
-                //Get all provider names
-                IEnumerable<string> providerAssemblyNames = PluginConfig.GetProperty("provider_assemblies")
+            //Get all provider names
+            IEnumerable<string> providerAssemblyNames = PluginConfig.GetProperty("provider_assemblies")
                                                 .EnumerateArray()
                                                 .Where(s => s.GetString() != null)
                                                 .Select(s => s.GetString()!);
 
-                
-               
-                foreach(string asm in providerAssemblyNames)
-                {
-                    Log.Verbose("Loading {dll} session provider", asm);
-    
-                    //Attempt to load provider
-                    AssemblyLoader<ISessionProvider> prov =  this.LoadAssembly<ISessionProvider>(asm);
 
-                    try
-                    {
-                        //Create localized log
-                        ILogProvider scopded = Log.CreateScope(Path.GetFileName(asm));
-
-                        RuntimeSessionProvider p = new(prov);
-
-                        //Call load method
-                        p.Load(this, scopded);
-
-                        //Add to list
-                        providers.Add(p);
-                    }
-                    catch
-                    {
-                        prov.Dispose();
-                        throw;
-                    }
-                }
-
-                if(providers.Count > 0)
-                {
-                    //Create array for searching for providers
-                    _provider = new(providers.ToArray());
-
-                    Log.Information("Loaded {count} session providers", providers.Count);
-                }
-                else
-                {
-                    Log.Information("No session providers loaded");
-                }
-
-                Log.Information("Plugin loaded");
-            }
-            catch
+            foreach (string asm in providerAssemblyNames)
             {
-                //Dispose providers
-                providers.ForEach(static s => s.Dispose());
-                throw;
+                Log.Verbose("Loading {dll} session provider", asm);
+
+                try
+                {
+                    //Attempt to load provider
+                    ISessionProvider prov =  this.CreateServiceExternal<ISessionProvider>(asm);
+
+                    //Add to list
+                    providers.Add(new(prov));
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Failed to load session provider {dll}:\n{error}", asm, ex);
+                }
             }
+
+            if (providers.Count > 0)
+            {
+                //Create array for searching for providers
+                _provider = new(providers.ToArray());
+
+                Log.Information("Loaded {count} session providers", providers.Count);
+            }
+            else
+            {
+                Log.Information("No session providers loaded");
+            }
+
+            Log.Information("Plugin loaded");
         }
       
         protected override void OnUnLoad()
@@ -173,16 +152,13 @@ namespace VNLib.Plugins.Essentials.Sessions
                 }
 
                 //Return empty session
-                return new ValueTask<SessionHandle>(SessionHandle.Empty);
+                return new (SessionHandle.Empty);
             }
 
             protected override void Free()
             {
                 //Remove current providers so we can dispose them 
-                RuntimeSessionProvider[] current = Interlocked.Exchange(ref ProviderArray, Array.Empty<RuntimeSessionProvider>());
-
-                //Cleanup assemblies
-                current.TryForeach(static p => p.Dispose());
+                ProviderArray = Array.Empty<RuntimeSessionProvider>();
             }
         }
     }

@@ -37,7 +37,7 @@ using VNLib.Plugins.Essentials.Sessions;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
-    [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
+    [ConfigurationName(WebSessionProvider.WEB_SESSION_CONFIG)]
     internal sealed class WebSessionStore : SessionStore<WebSession>
     {
         const int MAX_SESSION_BUFFER_SIZE = 16 * 1024;
@@ -49,10 +49,10 @@ namespace VNLib.Plugins.Sessions.VNCache
         protected override ISessionFactory<WebSession> SessionFactory { get; }
         protected override ILogProvider Log => baseLog!;
 
-        public WebSessionStore(PluginBase pbase, IConfigScope config)
+        public WebSessionStore(PluginBase plugin, IConfigScope config)
         {
             //Get id factory
-            IdFactory = pbase.GetOrCreateSingleton<WebSessionIdFactory>();
+            IdFactory = plugin.GetOrCreateSingleton<WebSessionIdFactory>();
 
             //Session factory
             SessionFactory = new WebSessionFactory();
@@ -62,24 +62,24 @@ namespace VNLib.Plugins.Sessions.VNCache
              * the config
              */
 
-            string cachePrefix = config["cache_prefix"].GetString() 
-                ?? throw new KeyNotFoundException($"Missing required element 'cache_prefix' for config '{WebSessionProviderEntry.WEB_SESSION_CONFIG}'");
+            string cachePrefix = config.GetRequiredProperty("cache_prefix", p => p.GetString()!);               
 
             //Create a simple prefix cache provider
-            IGlobalCacheProvider cache = pbase.GetOrCreateSingleton<VnGlobalCache>()
+            IGlobalCacheProvider? cache = plugin.GetDefaultGlobalCache()? 
                 .GetPrefixedCache(cachePrefix, HashAlg.SHA256);
 
+            _ = cache ?? throw new MissingDependencyException("A global cache provider is required to store VNCache sessions. Please configure a cache provider");
+
+            //Get debug log if enabled
+            ILogProvider? sessDebugLog = plugin.HostArgs.HasArgument("--debug-sessions") ? plugin.Log.CreateScope("VNCache-Sessions") : null;
+
             //Create cache store from global cache
-            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE);
+            Cache = new GlobalCacheStore(cache, MAX_SESSION_BUFFER_SIZE, sessDebugLog);
 
             //Default log to plugin log
-            baseLog = pbase.Log;
+            baseLog = plugin.Log.CreateScope(WebSessionProvider.LOGGER_SCOPE);
         }
 
-        public void InitLog(ILogProvider log) 
-        {
-            baseLog = log;
-        }
 
         /// <summary>
         /// A value that indicates if the remote cache client is connected

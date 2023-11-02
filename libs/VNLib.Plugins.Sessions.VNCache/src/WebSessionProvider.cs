@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using VNLib.Net.Http;
+using VNLib.Utils.Logging;
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Extensions.Loading;
@@ -34,17 +35,20 @@ using VNLib.Plugins.Extensions.Loading;
 namespace VNLib.Plugins.Sessions.VNCache
 {
 
-    [ConfigurationName(WebSessionProviderEntry.WEB_SESSION_CONFIG)]
-    internal sealed class WebSessionProvider : ISessionProvider
+    [ExternService]
+    [ConfigurationName(WEB_SESSION_CONFIG)]
+    public sealed class WebSessionProvider : ISessionProvider
     {
+        internal const string WEB_SESSION_CONFIG = "web";
+        internal const string LOGGER_SCOPE = "WEB-SESSIONS";
+
         private static readonly SessionHandle _vf =  new (null, FileProcessArgs.VirtualSkip, null);
        
         private readonly WebSessionStore _sessions;
         private readonly uint _maxConnections;
 
         private uint _waitingConnections;
-
-        public bool IsConnected => _sessions.IsConnected;
+    
 
         public WebSessionProvider(PluginBase plugin, IConfigScope config)
         {
@@ -52,15 +56,20 @@ namespace VNLib.Plugins.Sessions.VNCache
 
             //Init session provider
             _sessions = plugin.GetOrCreateSingleton<WebSessionStore>();
+
+            ILogProvider logger = plugin.Log.CreateScope("WEB-SESSIONS");
+
+            logger.Information("Session provider loaded");
         }
 
-        private SessionHandle PostProcess(WebSession? session)
-        {
-            return session == null ? SessionHandle.Empty : new SessionHandle(session, OnSessionReleases);
-        }
+        /*
+         * This is a dynamic method captured by the session loader to determine if the 
+         * current session provider can process the incoming request.
+         */
+        public bool CanProcess(IHttpEvent entity) => _sessions.IsConnected;
 
-        private ValueTask OnSessionReleases(ISession session, IHttpEvent entity) => _sessions.ReleaseSessionAsync((WebSession)session, entity);
 
+        ///<inheritdoc/>
         public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
             //Limit max number of waiting clients and make sure were connected
@@ -87,6 +96,10 @@ namespace VNLib.Plugins.Sessions.VNCache
                 return new(AwaitAsyncGet(result));
             }
         }
+
+        private SessionHandle PostProcess(WebSession? session) => session == null ? SessionHandle.Empty : new (session, OnSessionReleases);
+
+        private ValueTask OnSessionReleases(ISession session, IHttpEvent entity) => _sessions.ReleaseSessionAsync((WebSession)session, entity);
 
         private async Task<SessionHandle> AwaitAsyncGet(ValueTask<WebSession?> async)
         {

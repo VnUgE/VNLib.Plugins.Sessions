@@ -29,7 +29,6 @@ using System.Collections.Generic;
 
 using VNLib.Net.Http;
 using VNLib.Utils.Logging;
-using VNLib.Data.Caching.Exceptions;
 using VNLib.Plugins.Essentials.Sessions;
 using VNLib.Plugins.Sessions.Cache.Client.Exceptions;
 
@@ -58,7 +57,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
         /// <summary>
         /// The backing cache store
         /// </summary>
-        protected abstract IRemoteCacheStore Cache { get;  }
+        protected abstract IRemoteCacheStore Cache { get; }
 
         /// <summary>
         /// The session factory, produces sessions from their initial data and session-id
@@ -307,11 +306,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             try
             { 
                 //Update the session's data async
-                await Cache.DeleteObjectAsync(session.SessionID);
-            }
-            catch(ObjectNotFoundException)
-            {
-                //ingore onfe, if the session does not exist in cache
+                _ = await Cache.DeleteObjectAsync(session.SessionID);
             }
             catch (Exception ex)
             {

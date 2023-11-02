@@ -46,8 +46,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
         {
             //Revoke the access token, by invalidating it
             entity.Session.Invalidate();
-            entity.CloseResponse(System.Net.HttpStatusCode.OK);
-            return VfReturnType.VirtualSkip;
+            return VirtualOk(entity);
         }
     }
 }
