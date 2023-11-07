@@ -48,7 +48,7 @@ namespace VNLib.Plugins.Sessions.OAuth
     /// <summary>
     /// Provides OAuth2 session management
     /// </summary>
-    [ExternService]
+    [ServiceExport]
     [ConfigurationName(OAUTH2_CONFIG_KEY)]
     public sealed class OAuth2SessionProvider : ISessionProvider, ITokenManager, IApplicationTokenFactory, IIntervalScheduleable
     {

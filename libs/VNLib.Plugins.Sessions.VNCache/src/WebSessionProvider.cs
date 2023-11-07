@@ -35,7 +35,7 @@ using VNLib.Plugins.Extensions.Loading;
 namespace VNLib.Plugins.Sessions.VNCache
 {
 
-    [ExternService]
+    [ServiceExport]
     [ConfigurationName(WEB_SESSION_CONFIG)]
     public sealed class WebSessionProvider : ISessionProvider
     {
