@@ -23,7 +23,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 using VNLib.Hashing;
 using VNLib.Net.Http;
@@ -41,17 +40,14 @@ namespace VNLib.Plugins.Sessions.VNCache
     [ConfigurationName(WebSessionProvider.WEB_SESSION_CONFIG)]
     internal sealed class WebSessionIdFactory : ISessionIdFactory
     {
-        public TimeSpan ValidFor { get; }
-
         ///<inheritdoc/>
         public bool RegenerationSupported { get; } = true;
 
         ///<inheritdoc/>
         public bool RegenIdOnEmptyEntry { get; } = true;
-       
-
-        private readonly string SessionCookieName;
+      
         private readonly int _cookieSize;
+        private readonly SingleCookieController _cookieController;
 
         /// <summary>
         /// Initialzies a new web session Id factory
@@ -61,15 +57,23 @@ namespace VNLib.Plugins.Sessions.VNCache
         /// <param name="validFor">The time the session cookie is valid for</param>
         public WebSessionIdFactory(uint cookieSize, string sessionCookieName, TimeSpan validFor)
         {
-            ValidFor = validFor;
-            SessionCookieName = sessionCookieName;
             _cookieSize = (int)cookieSize;
+
+            //Create cookie controller
+            _cookieController = new (sessionCookieName, validFor)
+            {
+                Domain = null,
+                Path = "/",
+                SameSite = CookieSameSite.Lax,
+                Secure = true,
+                HttpOnly = true
+            };
         }
 
         //Create instance from config
         public WebSessionIdFactory(PluginBase plugin, IConfigScope config):
             this(
-                config["cookie_size"].GetUInt32(),
+                config.GetRequiredProperty("cookie_size", p => p.GetUInt32()),
                 config.GetRequiredProperty("cookie_name", p => p.GetString()!),
                 config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds)
             )
@@ -81,29 +85,18 @@ namespace VNLib.Plugins.Sessions.VNCache
             //Random hex hash
             string sessionId = RandomHash.GetRandomBase32(_cookieSize);
 
-            //Create new cookie
-            HttpCookie cookie = new(SessionCookieName, sessionId)
-            {
-                ValidFor = ValidFor,
-                Secure = true,
-                HttpOnly = true,
-                Domain = null,
-                Path = "/",
-                SameSite = CookieSameSite.Lax
-            };
-
-            //Set the session id cookie
-            entity.Server.SetCookie(in cookie);
+            //Set cookie
+            _cookieController.SetCookie(entity, sessionId);
 
             //return session-id value from cookie value
             return sessionId;
         }
 
-        public string? TryGetSessionId(IHttpEvent entity) => entity.Server.RequestCookies.GetValueOrDefault(SessionCookieName);
+        public string? TryGetSessionId(IHttpEvent entity) => _cookieController.GetCookie(entity);
 
         public bool CanService(IHttpEvent entity)
         {
-            return entity.Server.RequestCookies.ContainsKey(SessionCookieName) || entity.Server.IsBrowser();
+            return entity.Server.RequestCookies.ContainsKey(_cookieController.Name) || entity.Server.UserAgent != null;
         }
     }
 }
