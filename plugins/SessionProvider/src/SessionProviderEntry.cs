@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: SessionProvider
@@ -27,12 +27,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 
 using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
-using VNLib.Plugins.Attributes;
 using VNLib.Plugins.Extensions.Loading;
 
 namespace VNLib.Plugins.Essentials.Sessions
@@ -44,21 +42,6 @@ namespace VNLib.Plugins.Essentials.Sessions
     {       
         ///<inheritdoc/>
         public override string PluginName => "Essentials.Sessions";
-
-        private SessionProvider _provider = new();
-
-        /*
-         * Declare a service configuration method to 
-         * expose the session provider, the service container
-         * will dispose the provider instance
-         */
-
-        [ServiceConfigurator]
-        public void ConfigureServices(IServiceContainer services)
-        {
-            //publish the service
-            services.AddService<ISessionProvider>(_provider);
-        }
        
 
         protected override void OnLoad()
@@ -95,9 +78,12 @@ namespace VNLib.Plugins.Essentials.Sessions
             if (providers.Count > 0)
             {
                 //Create array for searching for providers
-                _provider = new(providers.ToArray());
+                SessionProvider provider = new(providers.ToArray());
 
                 Log.Information("Loaded {count} session providers", providers.Count);
+
+                //Export the session provider as it's interface type 
+                this.ExportService<ISessionProvider>(provider);
             }
             else
             {
