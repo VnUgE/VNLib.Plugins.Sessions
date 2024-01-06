@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -23,7 +23,7 @@
 */
 
 using System;
-using System.Runtime.Serialization;
+
 
 using VNLib.Net.Messaging.FBM;
 
@@ -43,9 +43,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client.Exceptions
         { }
         ///<inheritdoc/>
         public MessageTooLargeException(string message, Exception innerException) : base(message, innerException)
-        { }
-        ///<inheritdoc/>
-        protected MessageTooLargeException(SerializationInfo info, StreamingContext context) : base(info, context)
         { }
     }
 }

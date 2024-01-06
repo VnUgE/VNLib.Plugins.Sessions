@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2022 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -23,7 +23,7 @@
 */
 
 using System;
-using System.Runtime.Serialization;
+
 
 namespace VNLib.Plugins.Sessions.Cache.Client.Exceptions
 {
@@ -34,8 +34,6 @@ namespace VNLib.Plugins.Sessions.Cache.Client.Exceptions
         public SessionUpdateFailedException(string message) : base(message)
         { }
         public SessionUpdateFailedException(string message, Exception innerException) : base(message, innerException)
-        { }
-        protected SessionUpdateFailedException(SerializationInfo info, StreamingContext context) : base(info, context)
         { }
     }
 }

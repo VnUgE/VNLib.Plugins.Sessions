@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>VNLib.Plugins.Sessions</RootNamespace>
     <AssemblyName>SessionProvider</AssemblyName>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -19,11 +19,8 @@
     <Company>Vaughn Nugent</Company>
     <Product>SessionProvider</Product>
     <PackageId>VNLib.Plugins.Sessions.SessionProvider</PackageId>
-    <Description>
-      An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries such 
-      as VNLib.Plugins.Sessions.VNCache, and OAuth2 sessions from VNLib.Plugins.Sessions.OAuth.
-    </Description>
-    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
+    <Description> An Essentials framework plugin that provides HTTP sessions by dynamically loading configurable session provider libraries such as VNLib.Plugins.Sessions.VNCache, and OAuth2 sessions from VNLib.Plugins.Sessions.OAuth.</Description>
+    <Copyright>Copyright © 2024 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/plugins/SessionProvider</RepositoryUrl>
   </PropertyGroup>

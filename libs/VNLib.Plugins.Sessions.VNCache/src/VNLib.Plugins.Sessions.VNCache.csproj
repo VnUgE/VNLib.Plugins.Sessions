@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>VNLib.Plugins.Sessions.VNCache</RootNamespace>
     <AssemblyName>VNLib.Plugins.Sessions.VNCache</AssemblyName>
     <Nullable>enable</Nullable>
@@ -16,7 +16,7 @@
     <Company>Vaughn Nugent</Company>
     <Product>VNCache backed dynamic session provider</Product>
     <Description>Provides web based sessions using a VNCache cache cluster as a backing store for distributed sessions. This library is designed to be loaded dynamically at runtime by the SessionProvider plugin.</Description>
-    <Copyright>Copyright © 2023 Vaughn Nugent</Copyright>
+    <Copyright>Copyright © 2024 Vaughn Nugent</Copyright>
     <PackageProjectUrl>https://www.vaughnnugent.com/resources/software/modules/VNLib.Plugins.Sessions</PackageProjectUrl>
     <RepositoryUrl>https://github.com/VnUgE/VNLib.Plugins.Sessions/tree/master/libs/VNLib.Plugins.Sessions.VNCache</RepositoryUrl>
   </PropertyGroup>
