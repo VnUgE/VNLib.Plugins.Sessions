@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -44,9 +44,16 @@ namespace VNLib.Plugins.Sessions.VNCache
 
         private ILogProvider? baseLog;
 
+        ///<inheritdoc/>
         protected override ISessionIdFactory IdFactory { get; }
+
+        ///<inheritdoc/>
         protected override IRemoteCacheStore Cache { get; }
+
+        ///<inheritdoc/>
         protected override ISessionFactory<WebSession> SessionFactory { get; }
+
+        ///<inheritdoc/>
         protected override ILogProvider Log => baseLog!;
 
         public WebSessionStore(PluginBase plugin, IConfigScope config)
@@ -86,6 +93,7 @@ namespace VNLib.Plugins.Sessions.VNCache
         /// </summary>
         public bool IsConnected => Cache.IsConnected;
 
+        ///<inheritdoc/>
         public override ValueTask ReleaseSessionAsync(WebSession session, IHttpEvent entity)
         {
             //Get status flags first

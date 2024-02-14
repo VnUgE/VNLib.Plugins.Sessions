@@ -42,8 +42,8 @@ namespace VNLib.Plugins.Essentials.Sessions
     {       
         ///<inheritdoc/>
         public override string PluginName => "Essentials.Sessions";
-       
 
+        ///<inheritdoc/>
         protected override void OnLoad()
         {
             List<RuntimeSessionProvider> providers = new();
@@ -64,9 +64,8 @@ namespace VNLib.Plugins.Essentials.Sessions
                 try
                 {
                     //Attempt to load provider
-                    ISessionProvider prov =  this.CreateServiceExternal<ISessionProvider>(asm);
-
-                    //Add to list
+                    ISessionProvider prov = this.CreateServiceExternal<ISessionProvider>(asm);
+                 
                     providers.Add(new(prov));
                 }
                 catch (Exception ex)
@@ -111,18 +110,10 @@ namespace VNLib.Plugins.Essentials.Sessions
          * service container if its delcared as disposable. 
          */
 
-        private sealed class SessionProvider : VnDisposeable, ISessionProvider, IDisposable
+        private sealed class SessionProvider(RuntimeSessionProvider[] loaded) : VnDisposeable, ISessionProvider
         {
             //Default to an empty array for default support even if no runtime providers are loaded
-            private RuntimeSessionProvider[] ProviderArray = Array.Empty<RuntimeSessionProvider>();
-
-            public SessionProvider(RuntimeSessionProvider[] loaded)
-            {
-                ProviderArray = loaded;
-            }
-
-            public SessionProvider()
-            { }
+            private RuntimeSessionProvider[] ProviderArray = loaded;         
 
             ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
             {
@@ -144,7 +135,7 @@ namespace VNLib.Plugins.Essentials.Sessions
             protected override void Free()
             {
                 //Remove current providers so we can dispose them 
-                ProviderArray = Array.Empty<RuntimeSessionProvider>();
+                ProviderArray = [];
             }
         }
     }

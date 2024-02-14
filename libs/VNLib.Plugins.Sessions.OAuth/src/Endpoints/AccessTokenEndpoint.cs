@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -24,11 +24,9 @@
 
 using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 using VNLib.Utils.Memory;
-using VNLib.Hashing.IdentityUtility;
 using VNLib.Plugins.Essentials;
 using VNLib.Plugins.Essentials.Oauth;
 using VNLib.Plugins.Essentials.Endpoints;
@@ -50,7 +48,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
     {
         private readonly IApplicationTokenFactory TokenFactory;
         private readonly ApplicationStore Applications;
-        private readonly IAsyncLazy<ReadOnlyJsonWebKey?> JWTVerificationKey;
 
         //override protection settings to allow most connections to authenticate
         ///<inheritdoc/>
@@ -68,9 +65,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             TokenFactory = tokenFactory;
 
             Applications = new(pbase.GetContextOptions(), pbase.GetOrCreateSingleton<ManagedPasswordHashing>());
-
-            //Try to get the application token key for verifying signed application JWTs
-            JWTVerificationKey = pbase.TryGetSecretAsync("application_token_key").ToJsonWebKey().AsLazy();
         }
        
 
@@ -80,19 +74,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             if (entity.RequestArgs.IsArgumentSet("grant_type", "refresh_token"))
             {
                 //process a refresh token
-            }
-
-            //See if we have an application authorized with JWT
-            else if (entity.RequestArgs.IsArgumentSet("grant_type", "application"))
-            {
-                if(entity.RequestArgs.TryGetNonEmptyValue("token", out string? appJwt))
-                {
-                    //Try to get and verify the app
-                    UserApplication? app = GetApplicationFromJwt(appJwt);
-                    
-                    //generate token
-                    return await GenerateTokenAsync(entity, app);
-                }
             }
 
             //Check for grant_type parameter from the request body
@@ -121,10 +102,10 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
                     secret = secret.ToLower(null);
 
                     //Convert secret to private string that is unreferrenced
-                    using PrivateString secretPv = new(secret, false);
+                    using PrivateString secretPv = PrivateString.ToPrivateString(secret, false)!;
                     
                     //Get the application from apps store
-                    UserApplication? app = await Applications.VerifyAppAsync(clientId, secretPv);
+                    UserApplication? app = await Applications.VerifyAppAsync(clientId, secretPv, entity.EventCancellation);
                     
                     return await GenerateTokenAsync(entity, app);
                 }
@@ -134,35 +115,6 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             //Default to bad request
             return VfReturnType.VirtualSkip;
         }
-
-        private UserApplication? GetApplicationFromJwt(string jwtData)
-        {
-            ReadOnlyJsonWebKey? verificationKey = JWTVerificationKey.Value;
-
-            //Not enabled
-            if (verificationKey == null)
-            {
-                return null;
-            }
-
-            //Parse application token
-            using JsonWebToken jwt = JsonWebToken.Parse(jwtData);
-
-            //verify the application jwt 
-            if (!jwt.VerifyFromJwk(verificationKey))
-            {
-                return null;
-            }
-
-            using JsonDocument doc = jwt.GetPayload();
-
-            //Get expiration time
-            DateTimeOffset exp = doc.RootElement.GetProperty("exp").GetDateTimeOffset();
-
-            //Check if token is expired
-            return exp < DateTimeOffset.UtcNow ? null : UserApplication.FromJwtDoc(doc.RootElement);
-        }
-
 
         private async Task<VfReturnType> GenerateTokenAsync(HttpEntity entity, UserApplication? app)
         {
