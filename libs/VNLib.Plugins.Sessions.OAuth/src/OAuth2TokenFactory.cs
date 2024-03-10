@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -23,26 +23,21 @@
 */
 
 using System;
+using System.Net;
+using System.Diagnostics.CodeAnalysis;
 
 using VNLib.Hashing;
 using VNLib.Net.Http;
 using VNLib.Plugins.Sessions.Cache.Client;
 using VNLib.Plugins.Extensions.Loading;
-using VNLib.Plugins.Essentials.Extensions;
-
 
 namespace VNLib.Plugins.Sessions.OAuth
 {
     [ConfigurationName(OAuth2SessionProvider.OAUTH2_CONFIG_KEY)]
-    internal sealed class OAuth2TokenFactory : ISessionIdFactory, IOauthSessionIdFactory
+    internal sealed class OAuth2TokenFactory(PluginBase plugin, IConfigScope config) 
+        : ISessionIdFactory, IOauthSessionIdFactory
     {
-        private readonly OAuth2SessionConfig _config;
-
-        public OAuth2TokenFactory(PluginBase plugin, IConfigScope config)
-        {
-            //Get the oauth2 config
-            _config = config.DeserialzeAndValidate<OAuth2SessionConfig>();
-        }
+        private readonly OAuth2SessionConfig _config = config.DeserialzeAndValidate<OAuth2SessionConfig>();
 
         /*
          * ID Regeneration is always false as OAuth2 sessions 
@@ -68,13 +63,10 @@ namespace VNLib.Plugins.Sessions.OAuth
         TimeSpan IOauthSessionIdFactory.SessionValidFor => TimeSpan.FromSeconds(_config.TokenLifeTimeSeconds);
 
         ///<inheritdoc/>
-        string IOauthSessionIdFactory.TokenType => "Bearer";
+        string IOauthSessionIdFactory.TokenType => _config.TokenType;
 
         ///<inheritdoc/>
-        bool ISessionIdFactory.CanService(IHttpEvent entity)
-        {
-            return entity.Server.HasAuthorization(out _);
-        }
+        bool ISessionIdFactory.CanService(IHttpEvent entity) => HasBearerToken(entity.Server, out _);
 
         ///<inheritdoc/>
         public GetTokenResult GenerateTokensAndId()
@@ -93,7 +85,32 @@ namespace VNLib.Plugins.Sessions.OAuth
 
         string? ISessionIdFactory.TryGetSessionId(IHttpEvent entity)
         {
-            return entity.Server.HasAuthorization(out string? token) ? token : null;
+            return HasBearerToken(entity.Server, out string ? token) ? token : null;
+        }
+
+        /// <summary>
+        /// Gets the bearer token from an authorization header
+        /// </summary>
+        /// <param name="ci"></param>
+        /// <param name="token">The token stored in the user's authorization header</param>
+        /// <returns>True if the authorization header was set, has a Bearer token value</returns>
+        private bool HasBearerToken(IConnectionInfo ci, [NotNullWhen(true)] out string? token)
+        {
+            //Get auth header value
+            string? authorization = ci.Headers[HttpRequestHeader.Authorization];
+
+            //Check if its set
+            if (!string.IsNullOrWhiteSpace(authorization))
+            {
+                int bearerIndex = authorization.IndexOf(_config.TokenType, StringComparison.OrdinalIgnoreCase);
+
+                //Calc token offset, get token, and trim any whitespace
+                token = authorization.AsSpan(bearerIndex + _config.TokenType.Length).Trim().ToString();
+                return true;
+            }
+
+            token = null;
+            return false;
         }
     }
 }

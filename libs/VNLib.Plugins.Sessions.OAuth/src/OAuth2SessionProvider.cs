@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -74,19 +74,17 @@ namespace VNLib.Plugins.Sessions.OAuth
             //Schedule interval
             plugin.ScheduleInterval(this, TimeSpan.FromMinutes(2));
 
-            IConfigScope o2Config = plugin.GetConfig(OAUTH2_CONFIG_KEY);
-
             /*
              * Route built-in oauth2 endpoints 
              */
-            if (o2Config.ContainsKey("token_path"))
+            if (config.ContainsKey("token_path"))
             {
                 /*
                  * Access token endpoint requires this instance as a token manager
                  * which would cause a circular dependency, so it needs to be routed
                  * manually
                  */
-                AccessTokenEndpoint tokenEndpoint = new(plugin, o2Config, this);
+                AccessTokenEndpoint tokenEndpoint = new(plugin, config, this);
                 //Create token endpoint
                 plugin.Route(tokenEndpoint);
             }
@@ -100,7 +98,8 @@ namespace VNLib.Plugins.Sessions.OAuth
         }
 
         /*
-         * Called when 
+         * Called in SessionProvider.dll to check if the current request can be processed
+         * as an oauth2 session
          */
         public bool CanProcess(IHttpEvent entity)
         {
@@ -108,6 +107,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             return _sessions.IsConnected && entity.Server.Headers.HeaderSet(HttpRequestHeader.Authorization);
         }
 
+        ///<inheritdoc/>
         public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
         {
             //Limit max number of waiting clients and make sure were connected
@@ -156,7 +156,7 @@ namespace VNLib.Plugins.Sessions.OAuth
 
         private SessionHandle PostProcess(OAuth2Session? session)
         {
-            if (session == null)
+            if (session is null)
             {
                 return SessionHandle.Empty;
             }
@@ -252,9 +252,7 @@ namespace VNLib.Plugins.Sessions.OAuth
                 }
                 catch (Exception ex)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                    errors ??= new();
-#pragma warning restore CA1508 // Avoid dead conditional code
+                    errors ??= [];
                     errors.Add(ex);
                 }
             }

@@ -58,7 +58,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 
         public AccessTokenEndpoint(PluginBase pbase, IConfigScope config, IApplicationTokenFactory tokenFactory)
         {
-            string? path = config["token_path"].GetString();;
+            string? path = config.GetRequiredProperty("token_path", p => p.GetString()!);
 
             InitPathAndLog(path, pbase.Log);
 
@@ -111,14 +111,14 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
                 }
             }
 
-            entity.CloseResponseError(HttpStatusCode.BadRequest, ErrorType.InvalidClient, "Invalid grant type");
             //Default to bad request
+            entity.CloseResponseError(HttpStatusCode.BadRequest, ErrorType.InvalidClient, "Invalid grant type");
             return VfReturnType.VirtualSkip;
         }
 
         private async Task<VfReturnType> GenerateTokenAsync(HttpEntity entity, UserApplication? app)
         {
-            if (app == null)
+            if (app is null)
             {
                 //App was not found or the credentials do not match
                 entity.CloseResponseError(HttpStatusCode.UnprocessableEntity, ErrorType.InvalidClient, "The credentials are invalid or do not exist");
@@ -127,9 +127,9 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 
             IOAuth2TokenResult? result = await TokenFactory.CreateAccessTokenAsync(entity, app, entity.EventCancellation);
             
-            if (result == null)
+            if (result is null)
             {
-                entity.CloseResponseError(HttpStatusCode.TooManyRequests, ErrorType.TemporarilyUnabavailable, "You have reached the maximum number of valid tokens for this application");
+                entity.CloseResponseError(HttpStatusCode.TooManyRequests, ErrorType.TemporarilyUnavailable, "You have reached the maximum number of valid tokens for this application");
                 return VfReturnType.VirtualSkip;
             }
             

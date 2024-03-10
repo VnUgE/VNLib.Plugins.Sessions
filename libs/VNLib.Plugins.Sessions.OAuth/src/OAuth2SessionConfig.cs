@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -43,6 +43,9 @@ namespace VNLib.Plugins.Sessions.OAuth
 
         [JsonPropertyName("cache_prefix")]
         public string CachePrefix { get; set; } = "oauth2";
+
+        [JsonPropertyName("access_token_type")]
+        public string TokenType { get; set; } = "Bearer";
 
         public void Validate()
         {

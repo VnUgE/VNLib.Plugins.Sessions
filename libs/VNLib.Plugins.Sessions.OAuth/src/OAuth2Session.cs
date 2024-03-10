@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -36,12 +36,9 @@ namespace VNLib.Plugins.Sessions.OAuth
     /// <summary>
     /// The implementation of the OAuth2 session container for HTTP sessions
     /// </summary>
-    internal sealed class OAuth2Session : RemoteSession
+    internal sealed class OAuth2Session(string sessionId, IDictionary<string, string> data, bool isNew) 
+        : RemoteSession(sessionId, data, isNew)
     {
-        public OAuth2Session(string sessionId, IDictionary<string, string> data, bool isNew)
-            : base(sessionId, data, isNew)
-        {}
-
         public void InitNewSession(IHttpEvent entity)
         {
             SessionType = SessionType.OAuth2;

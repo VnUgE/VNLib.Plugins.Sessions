@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.OAuth
@@ -38,7 +38,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 
         public RevocationEndpoint(PluginBase pbase, IConfigScope config)
         {
-            string? path = config["path"].GetString();
+            string? path = config.GetRequiredProperty("path", p => p.GetString()!);
             InitPathAndLog(path, pbase.Log);
         }
 
