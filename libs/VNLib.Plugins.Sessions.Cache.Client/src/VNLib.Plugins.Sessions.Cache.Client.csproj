@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Data.Caching\lib\VNLib.Data.Caching\src\VNLib.Data.Caching.csproj" />
   </ItemGroup>
 
 </Project>

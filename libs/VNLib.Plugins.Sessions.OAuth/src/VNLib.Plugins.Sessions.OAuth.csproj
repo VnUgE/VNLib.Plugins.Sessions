@@ -43,11 +43,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\DataCaching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />
-    <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading.Sql\src\VNLib.Plugins.Extensions.Loading.Sql.csproj" />
-    <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Loading\src\VNLib.Plugins.Extensions.Loading.csproj" />
-    <ProjectReference Include="..\..\..\..\Extensions\lib\VNLib.Plugins.Extensions.Validation\src\VNLib.Plugins.Extensions.Validation.csproj" />
-    <ProjectReference Include="..\..\..\..\Oauth\Libs\VNLib.Plugins.Essentials.Oauth\src\VNLib.Plugins.Essentials.Oauth.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Data.Caching\lib\VNLib.Plugins.Extensions.VNCache\src\VNLib.Plugins.Extensions.VNCache.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Plugins.Extensions\lib\VNLib.Plugins.Extensions.Loading.Sql\src\VNLib.Plugins.Extensions.Loading.Sql.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Plugins.Extensions\lib\VNLib.Plugins.Extensions.Loading\src\VNLib.Plugins.Extensions.Loading.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Plugins.Extensions\lib\VNLib.Plugins.Extensions.Validation\src\VNLib.Plugins.Extensions.Validation.csproj" />
+    <ProjectReference Include="..\..\..\..\VNLib.Plugins.Essentials.Oauth\Libs\VNLib.Plugins.Essentials.Oauth\src\VNLib.Plugins.Essentials.Oauth.csproj" />
     <ProjectReference Include="..\..\VNLib.Plugins.Sessions.Cache.Client\src\VNLib.Plugins.Sessions.Cache.Client.csproj" />
   </ItemGroup>
 
