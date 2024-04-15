@@ -104,9 +104,13 @@ namespace VNLib.Plugins.Sessions.OAuth
             {
                 int bearerIndex = authorization.IndexOf(_config.TokenType, StringComparison.OrdinalIgnoreCase);
 
-                //Calc token offset, get token, and trim any whitespace
-                token = authorization.AsSpan(bearerIndex + _config.TokenType.Length).Trim().ToString();
-                return true;
+                //Check if the token type is present
+                if (bearerIndex >= 0)
+                {
+                    //Calc token offset, get token, and trim any whitespace
+                    token = authorization.AsSpan(bearerIndex + _config.TokenType.Length).Trim().ToString();
+                    return true;
+                }
             }
 
             token = null;
