@@ -112,6 +112,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             status |= Flags.IsSet(INVALID_MSK) ? SessionStatus.Delete : SessionStatus.None;
             status |= Flags.IsSet(REGEN_ID_MSK) ? SessionStatus.RegenId : SessionStatus.None;
             status |= Flags.IsSet(MODIFIED_MSK) ? SessionStatus.UpdateOnly: SessionStatus.None;
+            status |= Flags.IsSet(DETACHED_MSK) ? SessionStatus.Detach: SessionStatus.None;
             
             return status;
         }
