@@ -33,12 +33,9 @@ using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
-    internal class WebSession : RemoteSession
+    internal class WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew) 
+        : RemoteSession(sessionId, sessionData, isNew)
     {
-        public WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew)
-            : base(sessionId, sessionData, isNew)
-        {}
-
         internal void InitNewSession(IHttpEvent entity)
         {
             SessionType = SessionType.Web;
