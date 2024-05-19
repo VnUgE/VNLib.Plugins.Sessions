@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -181,10 +181,10 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 }
 
                 //Add key/value elements
-                writer.Append(element.Key);
-                writer.Append(KV_DELIMITER);
+                writer.AppendSmall(element.Key);
+                writer.AppendSmall(KV_DELIMITER);
                 writer.Append(element.Value);
-                writer.Append(KV_DELIMITER);               
+                writer.AppendSmall(KV_DELIMITER);               
             }
 
             //encode remaining data
