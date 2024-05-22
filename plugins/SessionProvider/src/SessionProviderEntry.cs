@@ -32,6 +32,7 @@ using VNLib.Net.Http;
 using VNLib.Utils;
 using VNLib.Utils.Logging;
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.Loading.Routing;
 
 namespace VNLib.Plugins.Essentials.Sessions
 {
@@ -46,7 +47,7 @@ namespace VNLib.Plugins.Essentials.Sessions
         ///<inheritdoc/>
         protected override void OnLoad()
         {
-            List<RuntimeSessionProvider> providers = new();
+            List<RuntimeSessionProvider> providers = [];
 
             Log.Verbose("Loading all specified session providers");
 
@@ -89,6 +90,17 @@ namespace VNLib.Plugins.Essentials.Sessions
                 Log.Information("No session providers loaded");
             }
 
+            //See if web sessions are loaded
+            if (this.HasConfigForType<WebSessionSecMiddleware>())
+            {
+                this.ExportMiddleware(
+                     //Init web session sec middlware
+                     this.GetOrCreateSingleton<WebSessionSecMiddleware>()
+                );
+
+                Log.Debug("Web session security middleware initialized");
+            }
+
             Log.Information("Plugin loaded");
         }
       
@@ -129,7 +141,7 @@ namespace VNLib.Plugins.Essentials.Sessions
                 }
 
                 //Return empty session
-                return new (SessionHandle.Empty);
+                return ValueTask.FromResult(SessionHandle.Empty);
             }
 
             protected override void Free()
