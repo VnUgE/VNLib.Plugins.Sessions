@@ -22,10 +22,10 @@
 * along with this program.  If not, see https://www.gnu.org/licenses/.
 */
 
-using System;
 using System.Text.Json.Serialization;
 
 using VNLib.Plugins.Extensions.Loading;
+using VNLib.Plugins.Extensions.Loading.Configuration;
 
 
 namespace VNLib.Plugins.Sessions.OAuth
@@ -47,27 +47,12 @@ namespace VNLib.Plugins.Sessions.OAuth
         [JsonPropertyName("access_token_type")]
         public string TokenType { get; set; } = "Bearer";
 
-        public void Validate()
+        public void OnValidate()
         {
-            if (MaxTokensPerApp < 1)
-            {
-                throw new ArgumentOutOfRangeException("max_tokens_per_app", "You must configure at least 1 Oatuh2 access token per application, or disable this plugin");
-            }
-
-            if (AccessTokenSize < 16)
-            {
-                throw new ArgumentOutOfRangeException("access_token_size", "You must configure an access token size of at least 16 bytes in length");
-            }
-
-            if (TokenLifeTimeSeconds < 1)
-            {
-                throw new ArgumentOutOfRangeException("token_valid_for_sec", "You must configure an access token lifetime");
-            }
-
-            if (string.IsNullOrWhiteSpace(CachePrefix))
-            {
-                throw new ArgumentException("You must specify a cache prefix", "cache_prefix");
-            }
+            Validate.Range(MaxTokensPerApp, 1, int.MaxValue);
+            Validate.Range(AccessTokenSize, 16, int.MaxValue);
+            Validate.Range(TokenLifeTimeSeconds, 1, int.MaxValue);
+            Validate.NotNull(CachePrefix, "You must specify a cache prefix");
         }
     }
 }
