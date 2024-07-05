@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -33,7 +33,7 @@ using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
-    internal class WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew) 
+    internal sealed class WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew) 
         : RemoteSession(sessionId, sessionData, isNew)
     {
         internal void InitNewSession(IHttpEvent entity)
