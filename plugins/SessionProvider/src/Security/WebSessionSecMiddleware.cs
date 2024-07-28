@@ -48,7 +48,6 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             if (session.IsSet)
             {
-
                 /*
                 * Check if the session was established over a secure connection, 
                 * and if the current connection is insecure, redirect them to a 
@@ -72,25 +71,6 @@ namespace VNLib.Plugins.Essentials.Sessions
                 //If session is not new, then verify it matches stored credentials
                 if (!session.IsNew && session.SessionType == SessionType.Web)
                 {
-                    /*
-                     * When sessions are created for connections that come from a different 
-                     * origin, their origin is stored for later. 
-                     * 
-                     * If the session was created from a different origin or the current connection
-                     * is cross origin, then the origin must match the stored origin.
-                     */
-
-                    if (_secConfig.EnforceStrictCors)
-                    {
-                        if ((entity.Server.CrossOrigin || session.CrossOrigin)
-                            && !session.CrossOriginMatch
-                            && entity.Server.Origin != null)
-                        {
-                            _log.Debug("Denied connection from {0} due to cross-origin session mismatch.", entity.TrustedRemoteIp);
-                            return ValueTask.FromResult(FileProcessArgs.Deny);
-                        }
-                    }
-
                     if (_secConfig.EnfoceStrictTlsProtocol)
                     {
                         //Try to prevent security downgrade attacks
@@ -105,11 +85,9 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             return ValueTask.FromResult(FileProcessArgs.Continue);
         }
-
+      
         sealed class SecConfig
         {
-            [JsonPropertyName("strict_cors")]
-            public bool EnforceStrictCors { get; set; } = true;
 
             [JsonPropertyName("strict_tls_protocol")]
             public bool EnfoceStrictTlsProtocol { get; set; } = true;

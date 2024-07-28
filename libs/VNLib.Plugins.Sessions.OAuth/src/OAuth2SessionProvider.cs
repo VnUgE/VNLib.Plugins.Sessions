@@ -71,6 +71,8 @@ namespace VNLib.Plugins.Sessions.OAuth
             TokenStore = new(plugin.GetContextOptions());
             _tokenTypeString = $"client_credential,{_tokenFactory.TokenType}";
 
+            _maxConnections = config.GetValueOrDefault("max_connections", p => p.GetUInt32(), 1000u);
+
             //Schedule interval
             plugin.ScheduleInterval(this, TimeSpan.FromMinutes(2));
 
@@ -168,7 +170,7 @@ namespace VNLib.Plugins.Sessions.OAuth
                 session.Invalidate();
 
                 //Clears important security variables
-                InitNewSession(session, null);
+                InitNewSession(session, app: null);
             }
 
             return new SessionHandle(session, OnSessionReleases);
@@ -198,7 +200,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             await _sessions.CommitSessionAsync(newSession);
 
             //Init new token result to pass to client
-            return new OAuth2TokenResult()
+            return new OAuth2TokenResult
             {
                 ExpiresSeconds = (int)_tokenFactory.SessionValidFor.TotalSeconds,
                 TokenType = _tokenFactory.TokenType,
