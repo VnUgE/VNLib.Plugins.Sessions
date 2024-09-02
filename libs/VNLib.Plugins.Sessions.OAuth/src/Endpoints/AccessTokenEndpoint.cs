@@ -56,15 +56,19 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             DisableSessionsRequired = true
         };
 
-        public AccessTokenEndpoint(PluginBase pbase, IConfigScope config, IApplicationTokenFactory tokenFactory)
+        public AccessTokenEndpoint(PluginBase plugin, IConfigScope config, IApplicationTokenFactory tokenFactory)
         {
-            string? path = config.GetRequiredProperty("token_path", p => p.GetString()!);
-
-            InitPathAndLog(path, pbase.Log);
+            InitPathAndLog(
+                path: config.GetRequiredProperty<string>("token_path"), 
+                log: plugin.Log.CreateScope("Token Endpoint")
+            );
 
             TokenFactory = tokenFactory;
 
-            Applications = new(pbase.GetContextOptions(), pbase.GetOrCreateSingleton<ManagedPasswordHashing>());
+            Applications = new(
+                plugin.GetContextOptions(), 
+                plugin.GetOrCreateSingleton<ManagedPasswordHashing>()
+            );
         }
        
 
@@ -121,7 +125,12 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             if (app is null)
             {
                 //App was not found or the credentials do not match
-                entity.CloseResponseError(HttpStatusCode.UnprocessableEntity, ErrorType.InvalidClient, "The credentials are invalid or do not exist");
+                entity.CloseResponseError(
+                    HttpStatusCode.UnprocessableEntity, 
+                    ErrorType.InvalidClient, 
+                    description: "The credentials are invalid or do not exist"
+                );
+                
                 return VfReturnType.VirtualSkip;
             }
 
@@ -129,19 +138,24 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             
             if (result is null)
             {
-                entity.CloseResponseError(HttpStatusCode.TooManyRequests, ErrorType.TemporarilyUnavailable, "You have reached the maximum number of valid tokens for this application");
+                entity.CloseResponseError(
+                    HttpStatusCode.TooManyRequests, 
+                    ErrorType.TemporarilyUnavailable, 
+                    description: "You have reached the maximum number of valid tokens for this application"
+                );
+
                 return VfReturnType.VirtualSkip;
             }
             
             //Create the new response message
             OauthTokenResponseMessage tokenMessage = new()
             {
-                AccessToken = result.AccessToken,
-                IdToken = result.IdentityToken,
-                //set expired as seconds in int form
-                Expires = result.ExpiresSeconds,
-                RefreshToken = result.RefreshToken,
-                TokenType = result.TokenType
+                 //set expired as seconds in int form
+                Expires         = result.ExpiresSeconds,
+                AccessToken     = result.AccessToken,
+                IdToken         = result.IdentityToken,
+                RefreshToken    = result.RefreshToken,
+                TokenType       = result.TokenType
             };
             
             //Respond with the token message
