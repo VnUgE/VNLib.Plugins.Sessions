@@ -36,25 +36,20 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     /// A wrapper class to provide a <see cref="IRemoteCacheStore"/> from 
     /// a <see cref="IGlobalCacheProvider"/> client instance
     /// </summary>
-    public sealed class GlobalCacheStore : IRemoteCacheStore
+    /// <remarks>
+    /// Initiailzes a new <see cref="GlobalCacheStore"/> with the backing <see cref="IGlobalCacheProvider"/>
+    /// global cache
+    /// </remarks>
+    /// <param name="globalCache">The backing cache store</param>
+    /// <param name="bufferSize">The size of the buffer used to serialize session objects</param>
+    /// <param name="debugLog">An optional log provider for writing serializing events to</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public sealed class GlobalCacheStore(IGlobalCacheProvider globalCache, int bufferSize, ILogProvider? debugLog) 
+        : IRemoteCacheStore
     {
-        private readonly IGlobalCacheProvider _cache;
+        private readonly IGlobalCacheProvider _cache = globalCache ?? throw new ArgumentNullException(nameof(globalCache));
 
-        private readonly SessionDataSerialzer _serialzer;
-
-        /// <summary>
-        /// Initiailzes a new <see cref="GlobalCacheStore"/> with the backing <see cref="IGlobalCacheProvider"/>
-        /// global cache
-        /// </summary>
-        /// <param name="globalCache">The backing cache store</param>
-        /// <param name="bufferSize">The size of the buffer used to serialize session objects</param>
-        /// <param name="debugLog">An optional log provider for writing serializing events to</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public GlobalCacheStore(IGlobalCacheProvider globalCache, int bufferSize, ILogProvider? debugLog)
-        {
-            _cache = globalCache ?? throw new ArgumentNullException(nameof(globalCache));
-            _serialzer = new(bufferSize, debugLog);
-        }
+        private readonly SessionDataSerialzer _serialzer = new(bufferSize, debugLog);
 
         ///<inheritdoc/>
         public bool IsConnected => _cache.IsConnected;
