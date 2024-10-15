@@ -77,8 +77,11 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             if (providers.Count > 0)
             {
-                //Create array for searching for providers
-                SessionProvider provider = new(providers.ToArray());
+                
+                //Service container will dispose when the plugin lifecycle has complted
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                SessionProvider provider = new([.. providers]);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
                 Log.Information("Loaded {count} session providers", providers.Count);
 
@@ -93,10 +96,9 @@ namespace VNLib.Plugins.Essentials.Sessions
             //See if web sessions are loaded
             if (this.HasConfigForType<WebSessionSecMiddleware>())
             {
-                this.ExportMiddleware(
-                     //Init web session sec middlware
-                     this.GetOrCreateSingleton<WebSessionSecMiddleware>()
-                );
+                //Init web session sec middlware
+                this.Middleware()
+                    .Add(this.GetOrCreateSingleton<WebSessionSecMiddleware>());
 
                 Log.Debug("Web session security middleware initialized");
             }
