@@ -21,27 +21,14 @@ jobs:
 - name: Unit Testing
   steps:
   - !CommandStep
-    name: Clone VNLib.Core into core
+    name: Clone local deps
     runInContainer: false
     interpreter: !DefaultInterpreter
       commands: |
         git clone @server_url@/VNLib.Core core --branch master
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Caching
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
         git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Extensions into extensions
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
         git clone @server_url@/VNLib.Plugins.Extensions VNLib.Plugins.Extensions --branch master
+        git clone @server_url@/VNLib.Plugins.Essentials.Oauth VNLib.Plugins.Essentials.Oauth --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CheckoutStep
@@ -70,27 +57,14 @@ jobs:
 - name: Staging build
   steps:
   - !CommandStep
-    name: Clone VNLib.Core into core
+    name: Clone local deps
     runInContainer: false
     interpreter: !DefaultInterpreter
       commands: |
         git clone @server_url@/VNLib.Core core --branch master
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Extensions into extensions
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
-        git clone @server_url@/VNLib.Plugins.Extensions VNLib.Plugins.Extensions --branch master
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Caching
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
         git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
+        git clone @server_url@/VNLib.Plugins.Extensions VNLib.Plugins.Extensions --branch master
+        git clone @server_url@/VNLib.Plugins.Essentials.Oauth VNLib.Plugins.Essentials.Oauth --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CheckoutStep
@@ -121,19 +95,14 @@ jobs:
 - name: Publish master
   steps:
   - !CommandStep
-    name: Clone VNLib.Core into core
+    name: Clone local deps
     runInContainer: false
     interpreter: !DefaultInterpreter
       commands: |
         git clone @server_url@/VNLib.Core core --branch master
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Extensions into extensions
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
+        git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
         git clone @server_url@/VNLib.Plugins.Extensions VNLib.Plugins.Extensions --branch master
+        git clone @server_url@/VNLib.Plugins.Essentials.Oauth VNLib.Plugins.Essentials.Oauth --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CheckoutStep
@@ -162,14 +131,6 @@ jobs:
       value: '@secret:ftp_username@'
     - name: FTP_PASSWORD
       value: '@secret:ftp_password@'
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: Clone Caching
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
-        git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
