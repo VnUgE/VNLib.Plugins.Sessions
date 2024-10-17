@@ -75,7 +75,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             this(
                 config.GetRequiredProperty("cookie_size", p => p.GetUInt32()),
                 config.GetRequiredProperty("cookie_name", p => p.GetString()!),
-                config["valid_for_sec"].GetTimeSpan(TimeParseType.Seconds)
+                config.GetRequiredProperty("valid_for_sec", p => p.GetTimeSpan(TimeParseType.Seconds))
             )
         { }
 
