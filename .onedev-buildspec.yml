@@ -29,6 +29,14 @@ jobs:
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CommandStep
+    name: Clone Caching
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands: |
+        git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
     name: Clone Extensions into extensions
     runInContainer: false
     interpreter: !DefaultInterpreter
@@ -75,6 +83,14 @@ jobs:
     interpreter: !DefaultInterpreter
       commands: |
         git clone @server_url@/VNLib.Plugins.Extensions VNLib.Plugins.Extensions --branch master
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: Clone Caching
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands: |
+        git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CheckoutStep
@@ -146,6 +162,14 @@ jobs:
       value: '@secret:ftp_username@'
     - name: FTP_PASSWORD
       value: '@secret:ftp_password@'
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: Clone Caching
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands: |
+        git clone @server_url@/VNLib.Data.Caching VNLib.Data.Caching --branch master
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
