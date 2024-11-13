@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: SessionProvider
@@ -31,21 +31,14 @@ using VNLib.Utils.Resources;
 
 namespace VNLib.Plugins.Essentials.Sessions
 {
-    internal sealed class RuntimeSessionProvider : ISessionProvider
+    internal sealed class RuntimeSessionProvider(ISessionProvider externProvider) : ISessionProvider
     {
-        private readonly Func<IHttpEvent, bool> _canProcessMethod;
-        private readonly ISessionProvider _ref;
-
-        public RuntimeSessionProvider(ISessionProvider externProvider)
-        {
-            _ref = externProvider;
-
-            //Load canprocess method dynamically
-            _canProcessMethod = ManagedLibrary.GetMethod<Func<IHttpEvent, bool>>(externProvider, "CanProcess");
-        }
+        private readonly Func<IHttpEvent, bool> _canProcessMethod = ManagedLibrary.GetMethod<Func<IHttpEvent, bool>>(externProvider, "CanProcess");
+        private readonly ISessionProvider _ref = externProvider;
 
         ///<inheritdoc/>
-        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken) => _ref.GetSessionAsync(entity, cancellationToken);
+        public ValueTask<SessionHandle> GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken) => 
+            _ref.GetSessionAsync(entity, cancellationToken);
 
         ///<inheritdoc/>
         public bool CanProcess(IHttpEvent ev) => _canProcessMethod(ev);
