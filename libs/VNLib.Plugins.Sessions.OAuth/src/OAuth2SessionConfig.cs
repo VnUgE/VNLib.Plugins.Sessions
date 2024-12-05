@@ -53,6 +53,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             Validate.Range(AccessTokenSize, 16, int.MaxValue);
             Validate.Range(TokenLifeTimeSeconds, 1, int.MaxValue);
             Validate.NotNull(CachePrefix, "You must specify a cache prefix");
+            Validate.NotNull(TokenType, "You must specify an access token type");
         }
     }
 }

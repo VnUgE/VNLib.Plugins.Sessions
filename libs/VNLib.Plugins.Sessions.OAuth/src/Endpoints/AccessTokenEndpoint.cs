@@ -59,18 +59,18 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
         public AccessTokenEndpoint(PluginBase plugin, IConfigScope config, IApplicationTokenFactory tokenFactory)
         {
             InitPathAndLog(
-                path: config.GetRequiredProperty<string>("token_path"), 
+                path: config.GetRequiredProperty<string>("token_path"),
                 log: plugin.Log.CreateScope("Token Endpoint")
             );
 
             TokenFactory = tokenFactory;
 
             Applications = new(
-                plugin.GetContextOptions(), 
+                plugin.GetContextOptions(),
                 plugin.GetOrCreateSingleton<ManagedPasswordHashing>()
             );
         }
-       
+
 
         protected override async ValueTask<VfReturnType> PostAsync(HttpEntity entity)
         {
@@ -107,10 +107,10 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
 
                     //Convert secret to private string that is unreferrenced
                     using PrivateString secretPv = PrivateString.ToPrivateString(secret, false)!;
-                    
+
                     //Get the application from apps store
                     UserApplication? app = await Applications.VerifyAppAsync(clientId, secretPv, entity.EventCancellation);
-                    
+
                     return await GenerateTokenAsync(entity, app);
                 }
             }
@@ -126,27 +126,27 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
             {
                 //App was not found or the credentials do not match
                 entity.CloseResponseError(
-                    HttpStatusCode.UnprocessableEntity, 
-                    ErrorType.InvalidClient, 
+                    HttpStatusCode.UnprocessableEntity,
+                    ErrorType.InvalidClient,
                     description: "The credentials are invalid or do not exist"
                 );
-                
+
                 return VfReturnType.VirtualSkip;
             }
 
             IOAuth2TokenResult? result = await TokenFactory.CreateAccessTokenAsync(entity, app, entity.EventCancellation);
-            
+
             if (result is null)
             {
                 entity.CloseResponseError(
-                    HttpStatusCode.TooManyRequests, 
-                    ErrorType.TemporarilyUnavailable, 
+                    HttpStatusCode.TooManyRequests,
+                    ErrorType.TemporarilyUnavailable,
                     description: "You have reached the maximum number of valid tokens for this application"
                 );
 
                 return VfReturnType.VirtualSkip;
             }
-            
+
             //Create the new response message
             OauthTokenResponseMessage tokenMessage = new()
             {
@@ -157,7 +157,7 @@ namespace VNLib.Plugins.Sessions.OAuth.Endpoints
                 RefreshToken    = result.RefreshToken,
                 TokenType       = result.TokenType
             };
-            
+
             //Respond with the token message
             entity.CloseResponseJson(HttpStatusCode.OK, tokenMessage);
             return VfReturnType.VirtualSkip;

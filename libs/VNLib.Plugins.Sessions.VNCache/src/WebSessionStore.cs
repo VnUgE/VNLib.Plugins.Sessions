@@ -72,8 +72,9 @@ namespace VNLib.Plugins.Sessions.VNCache
             string cachePrefix = config.GetRequiredProperty("cache_prefix", p => p.GetString()!);               
 
             //Create a simple prefix cache provider
-            IGlobalCacheProvider? cache = plugin.GetDefaultGlobalCache()? 
-                .GetPrefixedCache(cachePrefix, HashAlg.SHA256);
+            IGlobalCacheProvider? cache = plugin
+                .GetDefaultGlobalCache()
+                ?.GetPrefixedCache(cachePrefix, HashAlg.SHA256);
 
             _ = cache ?? throw new MissingDependencyException("A global cache provider is required to store VNCache sessions. Please configure a cache provider");
 
@@ -100,14 +101,14 @@ namespace VNLib.Plugins.Sessions.VNCache
             SessionStatus status = session.GetStatus();
 
             //If status is delete, we need to invalidate the session, and copy its security information
-            if(status.HasFlag(SessionStatus.Delete))
+            if (status.HasFlag(SessionStatus.Delete))
             {
                 //Run delete/cleanup
                 Task delete = DeleteSessionAsync(session);
 
                 //Create new session for the same connection
                 Task add = CreateNewSession(entity);
-           
+
                 //Await the invalidation async
                 return new(AwaitInvalidate(delete, add));
             }
@@ -123,7 +124,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             string newId = IdFactory.RegenerateId(entity);
 
             //Get new session empty session for the connection
-            WebSession newSession = SessionFactory.GetNewSession(entity, newId, null);
+            WebSession? newSession = SessionFactory.GetNewSession(entity, newId, sessionData: null);
 
             //Reset security information for new session
             newSession.InitNewSession(entity.Server);
@@ -159,7 +160,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             {
                 throw;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new SessionException("An exception occured during session invalidation", ex);
             }

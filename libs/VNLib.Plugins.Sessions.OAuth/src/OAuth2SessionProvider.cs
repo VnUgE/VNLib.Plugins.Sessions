@@ -71,7 +71,7 @@ namespace VNLib.Plugins.Sessions.OAuth
             TokenStore = new(plugin.GetContextOptions());
             _tokenTypeString = $"client_credential,{_tokenFactory.TokenType}";
 
-            _maxConnections = config.GetValueOrDefault("max_connections", p => p.GetUInt32(), 1000u);
+            _maxConnections = config.GetValueOrDefault("max_connections", 1000u);
 
             //Schedule interval
             plugin.ScheduleInterval(this, TimeSpan.FromMinutes(2));
@@ -94,7 +94,6 @@ namespace VNLib.Plugins.Sessions.OAuth
             //Optional revocation endpoint
             if (plugin.HasConfigForType<RevocationEndpoint>())
             {
-                //Route revocation endpoint
                 plugin.Route<RevocationEndpoint>();
             }
         }
@@ -202,11 +201,11 @@ namespace VNLib.Plugins.Sessions.OAuth
             //Init new token result to pass to client
             return new OAuth2TokenResult
             {
-                ExpiresSeconds = (int)_tokenFactory.SessionValidFor.TotalSeconds,
-                TokenType = _tokenFactory.TokenType,
+                ExpiresSeconds  = (int)_tokenFactory.SessionValidFor.TotalSeconds,
+                TokenType       = _tokenFactory.TokenType,
                 //Return token and refresh token
-                AccessToken = ids.AccessToken,
-                RefreshToken = ids.RefreshToken,
+                AccessToken     = ids.AccessToken,
+                RefreshToken    = ids.RefreshToken,
             };
         }
 
@@ -235,14 +234,15 @@ namespace VNLib.Plugins.Sessions.OAuth
         /*
          * Interval for removing expired tokens
          */
-       
+
         public async Task OnIntervalAsync(ILogProvider log, CancellationToken cancellationToken)
         {
             //Calculate valid token time
             DateTime validAfter = DateTime.UtcNow.Subtract(_tokenFactory.SessionValidFor);
+
             //Remove tokens from db store
             IReadOnlyCollection<ActiveToken> revoked = await TokenStore.CleanupExpiredTokensAsync(validAfter, cancellationToken);
-            //exception list
+
             List<Exception>? errors = null;
             //Remove all sessions from the store
             foreach (ActiveToken token in revoked)
