@@ -1,0 +1,36 @@
+{
+  "debug": true,
+
+  //Provider assemblies to load
+  "provider_assemblies": [
+    //Priority list of session handling assemblies, OAuth loaded first because web sessions will aways try to be used
+    "VNLib.Plugins.Sessions.OAuth.dll",
+    "VNLib.Plugins.Sessions.VNCache.dll"
+  ],
+
+  //Web session provider, valid format for VNCache and also memory sessions
+  "web": {
+    "cache_prefix": "test-web-session",
+    "cookie_name": "VNSession",
+    "cookie_size": 40,
+    "valid_for_sec": 3600,
+    "max_waiting_connections": 100,
+    "strict_tls_protocol": true
+  },
+
+  //If the OAuth provider is enabled, you may enable the optional revocation endpoint
+  "o2_revocation_endpoint": {
+    "path": "/oauth/revoke"
+  },
+
+  //If the OAuth provider is enabled, this is required the configuration object
+  "oauth2": {
+    "cache_prefix": "oauth2sessions",
+    "token_path": "/oauth/token",
+    "cache_size": 1000,
+    "access_token_size": 40,
+    "max_tokens_per_app": 10,
+    "token_valid_for_sec": 3600,
+    "gc_interval_sec": 120
+  }
+}

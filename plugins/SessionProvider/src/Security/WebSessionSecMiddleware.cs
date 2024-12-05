@@ -85,7 +85,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             return ValueTask.FromResult(FileProcessArgs.Continue);
         }
-      
+
         sealed class SecConfig
         {
 

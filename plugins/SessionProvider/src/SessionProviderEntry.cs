@@ -40,7 +40,7 @@ namespace VNLib.Plugins.Essentials.Sessions
     /// The implementation type for dynamic loading of unified session providers 
     /// </summary>
     public sealed class SessionProviderEntry : PluginBase
-    {       
+    {
         ///<inheritdoc/>
         public override string PluginName => "Essentials.Sessions";
 
@@ -52,11 +52,10 @@ namespace VNLib.Plugins.Essentials.Sessions
             Log.Verbose("Loading all specified session providers");
 
             //Get all provider names
-            IEnumerable<string> providerAssemblyNames = PluginConfig.GetProperty("provider_assemblies")
-                                                .EnumerateArray()
-                                                .Where(s => s.GetString() != null)
-                                                .Select(s => s.GetString()!);
-
+            string[] providerAssemblyNames = this.GetConfig("provider_assemblies")
+                .Deserialze<string[]>()
+                .Where(s => s != null)
+                .ToArray();
 
             foreach (string asm in providerAssemblyNames)
             {
@@ -66,7 +65,7 @@ namespace VNLib.Plugins.Essentials.Sessions
                 {
                     //Attempt to load provider
                     ISessionProvider prov = this.CreateServiceExternal<ISessionProvider>(asm);
-                 
+
                     providers.Add(new(prov));
                 }
                 catch (Exception ex)
@@ -77,7 +76,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             if (providers.Count > 0)
             {
-                
+
                 //Service container will dispose when the plugin lifecycle has complted
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 SessionProvider provider = new([.. providers]);
@@ -105,7 +104,7 @@ namespace VNLib.Plugins.Essentials.Sessions
 
             Log.Information("Plugin loaded");
         }
-      
+
         protected override void OnUnLoad()
         {
             Log.Information("Plugin unloaded");
@@ -127,18 +126,22 @@ namespace VNLib.Plugins.Essentials.Sessions
         private sealed class SessionProvider(RuntimeSessionProvider[] loaded) : VnDisposeable, ISessionProvider
         {
             //Default to an empty array for default support even if no runtime providers are loaded
-            private RuntimeSessionProvider[] ProviderArray = loaded;         
+            private RuntimeSessionProvider[] ProviderArray = loaded;
 
             ValueTask<SessionHandle> ISessionProvider.GetSessionAsync(IHttpEvent entity, CancellationToken cancellationToken)
             {
+                RuntimeSessionProvider p;
+
                 //Loop through providers
                 for (int i = 0; i < ProviderArray.Length; i++)
                 {
+                    p = ProviderArray[i];
+
                     //Check if provider can process the entity
-                    if (ProviderArray[i].CanProcess(entity))
+                    if (p.CanProcess(entity))
                     {
                         //Get session
-                        return ProviderArray[i].GetSessionAsync(entity, cancellationToken);
+                        return p.GetSessionAsync(entity, cancellationToken);
                     }
                 }
 

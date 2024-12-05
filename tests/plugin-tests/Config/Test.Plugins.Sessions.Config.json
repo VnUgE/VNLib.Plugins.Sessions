@@ -1,0 +1,40 @@
+{
+  //Minimum configuration for testing
+
+  "plugins": {
+    "enabled": true,
+    "hot_reload": false,
+    "reload_delay_sec": 2,
+    "paths": [],
+    "assets": "." //Use output directory as assets directory since projects are referenced
+  },
+
+  "sql": {
+    //Use sqlite provider for testing
+    "provider": "VNLib.Plugins.Extensions.Sql.SQLite.dll",
+    "connection_string": "Data Source=plugins-essentials-test.db;"
+  },
+
+  //Enable vncache as the providers above rely on the object caching server
+  "cache": {
+
+    "assembly_name": "VNLib.Data.Caching.Providers.VNCache.dll",
+
+    //Use remote only caching for testing
+    "memory_only": true,
+
+    //enable memory cache
+    "memory_cache": {
+      "buckets": 2,
+      "bucket_size": 50,
+      "max_age_sec": 600,
+      "refresh_interval_sec": 60,
+      "zero_all": false,
+      "max_object_size": 8128
+    }
+  },
+
+  "secrets": {
+    "passwords": "aGVsbG8td29ybGQ=" //hello-world just a random pepper for password library
+  }
+}

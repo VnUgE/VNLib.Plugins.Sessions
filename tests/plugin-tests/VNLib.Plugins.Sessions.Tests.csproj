@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ErrorProne.NET.Structs" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\core\lib\Plugins.Essentials.ServiceStack\src\VNLib.Plugins.Essentials.ServiceStack.csproj" />
+    <ProjectReference Include="..\..\..\Plugins.Essentials\lib\VNLib.Plugins.Essentials.Users\src\VNLib.Plugins.Essentials.Users.csproj" />
+    <ProjectReference Include="..\..\..\VNLib.Data.Caching\plugins\VNLib.Data.Caching.Providers.VNCache\src\VNLib.Data.Caching.Providers.VNCache.csproj" />
+    <ProjectReference Include="..\..\..\VNLib.Plugins.Extensions\lib\sql-providers\sqlite\VNLib.Plugins.Extensions.Loading.Sql.SQLite\src\VNLib.Plugins.Extensions.Loading.Sql.SQLite.csproj" />
+    <ProjectReference Include="..\..\libs\VNLib.Plugins.Sessions.OAuth\src\VNLib.Plugins.Sessions.OAuth.csproj" />
+    <ProjectReference Include="..\..\libs\VNLib.Plugins.Sessions.VNCache\src\VNLib.Plugins.Sessions.VNCache.csproj" />
+    <ProjectReference Include="..\..\plugins\SessionProvider\src\SessionProvider.csproj" />
+  </ItemGroup>
+
+
+</Project>
