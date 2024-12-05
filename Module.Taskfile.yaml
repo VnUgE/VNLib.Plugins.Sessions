@@ -73,6 +73,11 @@ tasks:
 
   test:
     desc: "Runs managed tests against the entire solution and all loaded test projects"
+    vars:
+      NATIVE_BUILD_PATH: 'build/{{ OS }}/{{ if eq OS "windows"}}Debug/{{end}}'
+      LIB_PREFIX: '{{ if eq OS "windows"}}vnlib{{else}}libvn{{end}}'
+      CONFIG_DIR: '{{ .USER_WORKING_DIR }}/tests/plugin-tests/Config'
+      ARGON2_LIB_PATH: '{{ .USER_WORKING_DIR }}/../core/lib/Utils.Cryptography/argon2/{{ .NATIVE_BUILD_PATH }}argon2'
     cmds:
      - cmd: dotnet test
         {{ .CLI_ARGS }}
@@ -80,6 +85,8 @@ tasks:
         --configuration debug
         --verbosity normal
         --framework {{ .FRAMEWORK | default "net8.0" }}
+        --environment TEST_CONFIG_DIR="{{ .CONFIG_DIR }}"
+        --environment VNLIB_ARGON2_DLL_PATH="{{ .ARGON2_LIB_PATH }}"
 
 #called by build pipeline to clean module
   clean:

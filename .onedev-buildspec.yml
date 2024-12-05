@@ -39,6 +39,15 @@ jobs:
     checkoutPath: '@project_name@'
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !CommandStep
+    name: dev-init core
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands: |
+        cd core
+        task -t Module.Taskfile.yaml dev-init
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
     name: run unit tests
     runInContainer: false
     interpreter: !DefaultInterpreter
