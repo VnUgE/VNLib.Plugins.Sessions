@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 202 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Sessions.Cache.Client
@@ -42,7 +42,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
     /// <typeparam name="TSession"></typeparam>
     public abstract class SessionStore<TSession> : ISessionStore<TSession> where TSession: IRemoteSession
     {
-     
+
         /// <summary>
         /// Used to serialize access to session instances. Unless overridden, uses a <see cref="SessionSerializer{TSession}"/>
         /// implementation.
@@ -151,7 +151,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                     //Create a new session
                     TSession? session = SessionFactory.GetNewSession(entity, sessionId, sessionData);
 
-                    if(session != null)
+                    if (session != null)
                     {
                         //Enter wait for the new session
                         await Serializer.WaitAsync(session, cancellationToken);
@@ -160,7 +160,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                     return session;
                 }
             }
-            catch(OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 throw;
             }
@@ -172,7 +172,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             {
                 throw;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new SessionException("An exception occured during session processing", ex);
             }
@@ -185,7 +185,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             SessionStatus status = session.GetStatus();
 
             //confirm the cache client is connected
-            if(status != SessionStatus.None && !Cache.IsConnected)
+            if (status != SessionStatus.None && !Cache.IsConnected)
             {
                 throw new SessionUpdateFailedException("The required session operation cannot be completed because the cache is not connected");
             }
@@ -209,7 +209,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                 //Update data and id
                 _ = UpdateSessionAndIdAsync(session, newId);
             }
-            else if(status.HasFlag(SessionStatus.Detach))
+            else if (status.HasFlag(SessionStatus.Detach))
             {
                 /*
                  * Special case. We are regenerating the session id, but we are not updating the session.
@@ -270,7 +270,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
                  * and the session will be recovered from cache on load
                  */
 
-                if(newId != null)
+                if (newId != null)
                 {
                     session.Destroy(null);
                 }
@@ -304,7 +304,7 @@ namespace VNLib.Plugins.Sessions.Cache.Client
             Exception? cause = null;
 
             try
-            { 
+            {
                 //Update the session's data async
                 _ = await Cache.DeleteObjectAsync(session.SessionID);
             }
