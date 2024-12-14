@@ -69,7 +69,7 @@ namespace VNLib.Plugins.Sessions.VNCache
              * the config
              */
 
-            string cachePrefix = config.GetRequiredProperty("cache_prefix", p => p.GetString()!);               
+            string cachePrefix = config.GetRequiredProperty("cache_prefix", p => p.GetString()!);
 
             //Create a simple prefix cache provider
             IGlobalCacheProvider? cache = plugin

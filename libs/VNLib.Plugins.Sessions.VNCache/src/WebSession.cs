@@ -33,7 +33,7 @@ using VNLib.Plugins.Sessions.Cache.Client;
 
 namespace VNLib.Plugins.Sessions.VNCache
 {
-    internal sealed class WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew) 
+    internal sealed class WebSession(string sessionId, IDictionary<string, string> sessionData, bool isNew)
         : RemoteSession(sessionId, sessionData, isNew)
     {
         internal void InitNewSession(IHttpEvent entity)

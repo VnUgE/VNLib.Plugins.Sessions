@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2023 Vaughn Nugent
+* Copyright (c) 2024 Vaughn Nugent
 * 
 * Library: VNLib
 * Package: VNLib.Plugins.Essentials.Sessions.VNCache
@@ -45,7 +45,7 @@ namespace VNLib.Plugins.Sessions.VNCache
 
         ///<inheritdoc/>
         public bool RegenIdOnEmptyEntry { get; } = true;
-      
+
         private readonly int _cookieSize;
         private readonly SingleCookieController _cookieController;
 
@@ -60,7 +60,7 @@ namespace VNLib.Plugins.Sessions.VNCache
             _cookieSize = (int)cookieSize;
 
             //Create cookie controller
-            _cookieController = new (sessionCookieName, validFor)
+            _cookieController = new(sessionCookieName, validFor)
             {
                 Domain = null,
                 Path = "/",
@@ -92,7 +92,13 @@ namespace VNLib.Plugins.Sessions.VNCache
             return sessionId;
         }
 
-        public string? TryGetSessionId(IHttpEvent entity) => _cookieController.GetCookie(entity);
+        public string? TryGetSessionId(IHttpEvent entity)
+        {
+            //Handle empty cookie values
+            string? existingId = _cookieController.GetCookie(entity);
+
+            return string.IsNullOrWhiteSpace(existingId) ? null : existingId;
+        }
 
         public bool CanService(IHttpEvent entity)
         {

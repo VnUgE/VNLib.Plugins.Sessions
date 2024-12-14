@@ -42,17 +42,17 @@ namespace VNLib.Plugins.Sessions.VNCache
         internal const string WEB_SESSION_CONFIG = "web";
         internal const string LOGGER_SCOPE = "WEB-SESSIONS";
 
-        private static readonly SessionHandle _vf =  new (null, FileProcessArgs.VirtualSkip, null);
-       
+        private static readonly SessionHandle _vf =  new (sessionData: null, FileProcessArgs.VirtualSkip, callback: null);
+
         private readonly WebSessionStore _sessions;
         private readonly uint _maxConnections;
 
         private uint _waitingConnections;
-    
+
 
         public WebSessionProvider(PluginBase plugin, IConfigScope config)
         {
-            _maxConnections = config["max_waiting_connections"].GetUInt32();
+            _maxConnections = config.GetRequiredProperty<uint>("max_waiting_connections");
 
             //Init session provider
             _sessions = plugin.GetOrCreateSingleton<WebSessionStore>();
