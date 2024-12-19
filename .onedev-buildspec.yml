@@ -96,6 +96,10 @@ jobs:
     runInContainer: false
     interpreter: !DefaultInterpreter
       commands: |
+        dotnet-gitversion.exe core /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Data.Caching /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Plugins.Extensions /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Plugins.Essentials.Oauth /updateprojectfiles
         vnbuild build -S --include @project_name@ --verbose
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
@@ -134,6 +138,10 @@ jobs:
     runInContainer: false
     interpreter: !DefaultInterpreter
       commands: |
+        dotnet-gitversion.exe core /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Data.Caching /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Plugins.Extensions /updateprojectfiles
+        dotnet-gitversion.exe VNLib.Plugins.Essentials.Oauth /updateprojectfiles
         vnbuild build -S --include @project_name@
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
