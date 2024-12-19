@@ -56,14 +56,6 @@ jobs:
         task -t Module.Taskfile.yaml test
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-  - !CommandStep
-    name: mock publish
-    runInContainer: false
-    interpreter: !DefaultInterpreter
-      commands: |
-        vnbuild publish -i @project_name@
-    useTTY: true
-    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
   - !BranchUpdateTrigger
     branches: '** -master'
@@ -101,6 +93,14 @@ jobs:
         dotnet-gitversion.exe VNLib.Plugins.Extensions /updateprojectfiles
         dotnet-gitversion.exe VNLib.Plugins.Essentials.Oauth /updateprojectfiles
         vnbuild build -S --include @project_name@ --verbose
+    useTTY: true
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: mock publish
+    runInContainer: false
+    interpreter: !DefaultInterpreter
+      commands: |
+        vnbuild publish -i @project_name@
     useTTY: true
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
